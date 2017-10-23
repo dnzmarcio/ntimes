@@ -39,6 +39,9 @@ keep_levels <- function(x, y){
 #'and reordered if \code{order} is provided.
 #'
 #'@examples
+#'library(dplyr)
+#'library(magrittr)
+#'
 #'iris <- iris %>% mutate(species = ql_var(Species,
 #'from = c("setosa", "Versicolor", "virginica"),
 #'to = c("Setosa", "Versicolor", "Virginica"), label = "Species",
@@ -81,6 +84,9 @@ ql_var <- function(var, from = NULL, to = NULL, order = NULL, label = NULL){
 #'and an attribute unit if \code{unit} is provided.
 #'
 #'@examples
+#'library(dplyr)
+#'library(magrittr)
+#'
 #'iris <- iris %>% mutate(
 #'sepal.length = qt_var(Sepal.Length, label = "Sepal Length", unit = "cm"),
 #'sepal.width = qt_var(Sepal.Width, label = "Sepal Width", unit = "cm"),
@@ -123,8 +129,8 @@ qt_var <- function(var, label = NULL, unit = NULL){
 #'library(magrittr)
 #'
 #'iris_nt <- iris %>% filter(Species != "versicolor")
-#'tab01 <- nt_describe(iris_nt, group = "Species")
-#'tab02 <- nt_compare_tg(iris_nt, group = "Species")
+#'tab01 <- nt_describe(iris_nt, group = Species)
+#'tab02 <- nt_compare_tg(iris_nt, group = Species)
 #'tab <- put_together(tab01, tab02)
 #'
 #'@export
