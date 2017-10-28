@@ -170,15 +170,15 @@ quantitative_measures <- function(x, digits){
 
   x <- data_frame(x)
 
-  q25 <- function(x, na.rm) quantile(x, probs = 0.25, na.rm = TRUE)
-  q75 <- function(x, na.rm) quantile(x, probs = 0.75, na.rm = TRUE)
-  sample_size <- function(x) length(x)
-  missing <- function(x) sum(is.na(x))
+  q25 <- function(x, na.rm) quantile(x, probs = 0.25, na.rm = na.rm)
+  q75 <- function(x, na.rm) quantile(x, probs = 0.75, na.rm = na.rm)
+  sample_size <- function(x, na.rm) length(x)
+  missing <- function(x, na.rm) sum(is.na(x))
 
   funs <- c("mean", "median", "sd", "q25", "q75", "min",
             "max", "sample_size", "missing")
 
-  out <- round(summarise_all(.tbl = x, .funs = funs), digits)
+  out <- round(summarise_all(.tbl = x, .funs = funs, na.rm = TRUE), digits)
   rownames(out) <- NULL
   colnames(out)[length(funs) - 1] <- "n"
 

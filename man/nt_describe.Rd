@@ -5,7 +5,7 @@
 \title{Descriptive measures}
 \usage{
 nt_describe(data, group = NULL, measures = c("mean.sd", "median.quantiles",
-  "median.range", "missing"), digits = 2, save = FALSE,
+  "median.range"), digits = 2, save = FALSE,
   file = "descriptive_analysis")
 }
 \arguments{
