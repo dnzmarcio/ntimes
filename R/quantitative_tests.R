@@ -12,7 +12,7 @@ nt_dist_qt_auto <-  function(var, group,
                              format, digits, var.name, var.label, group.label) {
 
   data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
-  nlg <- nlevels(data.test$g)
+  nlg <- nlevels(fct_drop(data.test$g[!na.omit(x)]))
   lg <- levels(data.test$g)
 
   if (nlg == 2 & all(as.numeric(table(data.test$g)) != 0))  {
@@ -128,7 +128,7 @@ nt_dist_qt_par <-  function(var, group,
                             format, digits, var.name, var.label, group.label) {
 
   data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
-  nlg <- nlevels(data.test$g)
+  nlg <- nlevels(fct_drop(data.test$g[!na.omit(x)]))
   lg <- levels(data.test$g)
 
   if (nlg == 2 & all(as.numeric(table(data.test$g)) != 0)) {
@@ -197,7 +197,7 @@ nt_dist_qt_npar <-  function(var, group,
                              format, digits, var.name, var.label, group.label) {
 
   data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
-  nlg <- nlevels(data.test$g)
+  nlg <- nlevels(fct_drop(data.test$g[!na.omit(x)]))
   lg <- levels(data.test$g)
 
   if (nlg == 2 & all(as.numeric(table(data.test$g)) != 0)) {
