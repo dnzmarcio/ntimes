@@ -232,7 +232,7 @@ describe_qualitative <- function(var, group = NULL,
 
   } else {
     temp <- data_frame(!!var.name := var, g = fct_drop(group[[1]])) %>%
-      gather(key = .data$key, value = .data$value, -.data$g) %>%
+      gather(key = "key", value = "value", -.data$g) %>%
       filter(!is.na(.data$g)) %>% nest(.data$value) %>%
       mutate(desc = map(.data$data,
                         ~ qualitative_measures(h = .$value,
