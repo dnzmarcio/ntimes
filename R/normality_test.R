@@ -121,7 +121,7 @@ norm_test <-  function(var, group = NULL,
     if (test == "ps")
       result <- try(pearson.test(var), silent = TRUE)
 
-    out <- result$p.value
+    out <- ifelse(class(result) == "try-error", 0, result$p.value)
 
     return(out)
   }
