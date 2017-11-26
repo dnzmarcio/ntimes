@@ -119,11 +119,6 @@ qt_var <- function(var, label = NULL, unit = NULL){
 #'@param digits a numeric value specifying the number of digits for the p values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character value indicating the name of output file in csv format to be saved.
-
-#'
-#'@return A data frame similar to the \code{descriptive.tab} with an additional column of
-#'p values from the \code{p_value.tab}
-#'
 #'@examples
 #'library(dplyr)
 #'library(magrittr)
@@ -133,6 +128,10 @@ qt_var <- function(var, label = NULL, unit = NULL){
 #'tab01 <- nt_describe(iris_nt, group = Species)
 #'tab02 <- nt_compare_tg(iris_nt, group = Species)
 #'tab <- put_together(tab01, tab02)
+#'
+#'@return A data frame similar to the \code{descriptive.tab} with an additional column of
+#'p values from the \code{p_value.tab}
+#'
 #'
 #'@export
 put_together <- function(descriptive.tab, test.tab, digits = 3,
