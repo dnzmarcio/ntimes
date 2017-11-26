@@ -127,6 +127,7 @@ qt_var <- function(var, label = NULL, unit = NULL){
 #'@examples
 #'library(dplyr)
 #'library(magrittr)
+#'library(ntimes)
 #'
 #'iris_nt <- iris %>% filter(Species != "versicolor")
 #'tab01 <- nt_describe(iris_nt, group = Species)
