@@ -22,8 +22,15 @@
 #'missing data for qualitative variables.
 #'
 #'@examples
+#'library(dplyr)
 #'library(magrittr)
-#'iris %>% nt_describe(group = Species)
+#'
+#'iris <- iris %>%
+#'  mutate(species = ql_var(Species,
+#'                          from = c("setosa", "versicolor", "virginica"),
+#'                          to = c("Setosa", "Versicolor", "Virginica"),
+#'                          order = c("Virginica", "Setosa", "Versicolor")))
+#'nt_describe(iris)
 #'
 #'@export
 nt_describe <- function(data,

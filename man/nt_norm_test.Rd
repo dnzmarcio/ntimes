@@ -38,6 +38,7 @@ The function is a wrapper of \link[nortest]{ad.test},
 \link[nortest]{cvm.test}, and \link[nortest]{pearson.test}.
 }
 \examples{
-nt_norm_test(iris, group = Species)
+library(magrittr)
+iris \%>\% nt_norm_test(group = Species)
 
 }

@@ -27,7 +27,8 @@
 #'@return \code{plot} a Quantile-Quantile plot.
 #'
 #'@examples
-#'nt_norm_test(iris, group = Species)
+#'library(magrittr)
+#'iris %>% nt_norm_test(group = Species)
 #'
 #'@export
 nt_norm_test <- function(data, group = NULL, test = "sf",

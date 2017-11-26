@@ -57,9 +57,8 @@ if only normality is satisfied, then Welch t-test; if only homoscedasticity, the
 Mann-Whitney; if neither assumptions, then Brunner-Munzel t test.
 }
 \examples{
-library(dplyr)
 library(magrittr)
-iris_nt <- iris \%>\% filter(Species != "setosa")
-iris_nt \%>\% nt_compare_tg(group = Species)
+
+iris \%>\% nt_compare_tg(group = Species)
 
 }
