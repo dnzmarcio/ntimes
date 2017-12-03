@@ -23,6 +23,24 @@ keep_levels <- function(x, y){
   return(x)
 }
 
+#'@importFrom stats median quantile na.omit
+median_iqr <- function (x, limit = "both", type = 7) {
+  x <- na.omit(x)
+  q25 <- quantile(x, probs = 0.25, type = type)
+  q75 <- quantile(x, probs = 0.75, type = type)
+  m <- median(x)
+
+  if (limit == "both")
+    out <- data.frame(y = m, ymin = q25, ymax = q75)
+  if (limit == "lower")
+    out <- data.frame(y = m, ymin = q25, ymax = m)
+  if (limit == "upper")
+    out <- data.frame(y = m, ymin = m, ymax = q75)
+  if (limit == "none")
+    out <- data.frame(y = m, ymin = m, ymax = m)
+  return(out)
+}
+
 #'Format qualitative variables
 #'
 #'@description Recode factors, change the order of levels and
