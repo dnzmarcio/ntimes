@@ -69,7 +69,7 @@ nt_compare_tg <- function(data, group,
   vars.name <- names(vars)
   group.name <- names(group)
 
-  if (nlevels(fct_drop(group[[1]]) != 2))
+  if (nlevels(fct_drop(group[[1]])) != 2)
     stop("'group' should have only two levels.")
 
   temp <- map2(.x = vars, .y = vars.name, .f = aux_compare_tg,
@@ -84,8 +84,6 @@ nt_compare_tg <- function(data, group,
 
   out <- Reduce(rbind, temp)
 
-  if (format)
-    out <- out %>% mutate(`p value` = round(.data$`p value`, digits.p))
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
   return(out)
