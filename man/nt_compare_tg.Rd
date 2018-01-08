@@ -4,7 +4,7 @@
 \alias{nt_compare_tg}
 \title{Compare two groups}
 \usage{
-nt_compare_tg(data, group, alternative = "two.sided", test = "automatic",
+nt_compare_tg(data, group, alternative = "two.sided", test = "auto",
   conf.level = 0.95, paired = FALSE, norm.test = "sf", format = TRUE,
   digits.ci = 3, digits.p = 5, save = FALSE, file = "nt_compare_tg")
 }
@@ -17,7 +17,7 @@ nt_compare_tg(data, group, alternative = "two.sided", test = "automatic",
 must be one of "two.sided", "greater" or "less".}
 
 \item{test}{a character value indicating the tests to be performed.
-The options are "automatic", "parametric" and "non-parametric". See more in details.}
+The options are "auto", "par" and "npar". See more in details.}
 
 \item{conf.level}{a character value specifying the confidence level of the confidence interval for
 the difference between the two groups.}

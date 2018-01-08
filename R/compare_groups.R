@@ -14,7 +14,7 @@
 #'@param alternative a character value indicating the alternative hypothesis,
 #'must be one of "two.sided", "greater" or "less".
 #'@param test a character value indicating the tests to be performed.
-#'The options are "automatic", "parametric" and "non-parametric". See more in details.
+#'The options are "auto", "par" and "npar". See more in details.
 #'@param conf.level a character value specifying the confidence level of the confidence interval for
 #'the difference between the two groups.
 #'@param paired a logical value indicating whether a paired test should be used.
@@ -42,14 +42,16 @@
 #'Mann-Whitney; if neither assumptions, then Brunner-Munzel t test.
 #'
 #'@examples
-#'library(magrittr)
+#'library(dplyr)
+#'library(forcats)
 #'
-#'iris %>% nt_compare_tg(group = Species)
+#'iris_nt <- iris %>% filter(Species != "setosa") %>% mutate(Species = fct_drop(Species))
+#'iris_nt %>% nt_compare_tg(group = Species)
 #'
 #'@export
 nt_compare_tg <- function(data, group,
                           alternative = "two.sided",
-                          test = "automatic",
+                          test = "auto",
                           conf.level = 0.95,
                           paired = FALSE,
                           norm.test = "sf",
@@ -97,8 +99,36 @@ aux_compare <- function(var, var.name, group, group.name = group.name,
   var.label <- extract_label(var, var.name)
   group.label <- extract_label(group, group.name)
   if (is.numeric(var)){
-    if (test == "automatic")
-      out <- nt_dist_qt_auto(var = var,
+      out <- nt_dist_qt_tg(var = var,
+                           group = group,
+                           test = test,
+                           alternative = alternative,
+                           conf.level = conf.level,
+                           paired = paired,
+                           norm.test = norm.test,
+                           format = format,
+                           digits = digits,
+                           var.name = var.name,
+                           var.label = var.label,
+                           group.label = group.label)
+
+  } else {
+    out <- nt_dist_ql_tg(var = var,
+                         group = group,
+                         alternative = alternative,
+                         conf.level = conf.level,
+                         paired = paired,
+                         format = format,
+                         digits = digits,
+                         var.name = var.name,
+                         var.label = var.label,
+                         group.label = group.label)
+
+  }
+
+  return(out)
+}
+
                              group = group,
                              alternative = alternative,
                              conf.level = conf.level,
