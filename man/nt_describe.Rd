@@ -36,10 +36,10 @@ library(dplyr)
 library(magrittr)
 
 iris <- iris \%>\%
- mutate(species = ql_var(Species,
+ mutate(Species = ql_var(Species,
                          from = c("setosa", "versicolor", "virginica"),
                          to = c("Setosa", "Versicolor", "Virginica"),
-                         order = c("Virginica", "Setosa", "Versicolor")))
-nt_describe(iris)
+                         order = c("Virginica", "Setosa", "Versicolor"))) \%>\%
+iris \%>\% nt_describe()
 
 }

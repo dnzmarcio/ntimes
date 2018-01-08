@@ -28,7 +28,6 @@ Join a descriptive table and a p_value table.
 \examples{
 library(dplyr)
 library(magrittr)
-library(ntimes)
 
 iris_nt <- iris \%>\% filter(Species != "versicolor")
 tab01 <- nt_describe(iris_nt, group = Species)
