@@ -1,10 +1,10 @@
 #'@importFrom forcats fct_drop
 #'@importFrom dplyr bind_cols
 #'@importFrom stats prop.test fisher.test chisq.test mcnemar.test mantelhaen.test
-nt_dist_ql <-  function(var, group,
-                        alternative,
-                        conf.level, paired,
-                        format, digits, var.name, var.label, group.label){
+nt_dist_ql_tg <-  function(var, group,
+                           alternative,
+                           conf.level, paired,
+                           format, digits, var.name, var.label, group.label){
 
   data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
   lg <- levels(data.test$g)
@@ -41,16 +41,12 @@ nt_dist_ql <-  function(var, group,
         p.value <- result$p.value
         test <- "Chi-Square"
       }
-    }
 
-    if (nrow(tab) == 2){
       alt <- switch(alternative,
                     "greater" = ">",
                     "less" = "<",
                     "two.sided" = "!=")
       hypothesis <- paste(lg[2], alt, lg[1], sep = " ")
-    } else {
-      hypothesis <- "Association"
     }
 
   } else {
@@ -77,6 +73,46 @@ nt_dist_ql <-  function(var, group,
                           `p value` = .data$p.value) %>%
       select(-.data$Lower, -.data$Upper, -.data$p.value)
   }
+
+  return(out)
+}
+
+
+#'@importFrom forcats fct_drop
+#'@importFrom dplyr bind_cols
+#'@importFrom stats fisher.test chisq.test
+nt_dist_ql_mg <-  function(var, group,
+                           format, digits, var.name, var.label, group.label){
+
+  data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
+  lg <- levels(data.test$g)
+
+  tab <- table(data.test$g, data.test$x)
+
+  if (!is.finite(max(dim(tab))) | min(dim(tab)) < 2) {
+    test <- NA
+    p.value <- NA
+    hypothesis <- NA
+    lower <- NA
+    upper <- NA
+  } else {
+    result <- try(fisher.test(tab), silent = TRUE)
+
+    if (class(result) != "try-error"){
+      p.value <- result$p.value
+      test <- "Fisher's Exact test"
+    } else {
+      result <- chisq.test(tab)
+
+      p.value <- result$p.value
+      test <- "Chi-Square"
+    }
+  }
+
+  hypothesis <- "Association"
+
+  out <- data_frame(Variable = var.label[[1]], Group = group.label[[1]],
+                    Hypothesis = hypothesis,  Test = test, `p value` = p.value)
 
   return(out)
 }
