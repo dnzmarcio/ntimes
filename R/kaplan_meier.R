@@ -90,7 +90,7 @@ aux_km <- function(var, var.name, time, status, xlab, ylab,
 
   if (save)
     out <- out +
-      ggsave(filename = paste0(i, "_km_", var.name, ".jpeg"),
+      ggsave(filename = paste0("_km_", var.name, ".jpeg"),
              height = fig.height, width = fig.width)
   return(out)
 
@@ -117,7 +117,6 @@ aux_km <- function(var, var.name, time, status, xlab, ylab,
 #'@importFrom survival survfit Surv
 #'@importFrom tibble data_frame
 #'@importFrom dplyr bind_rows filter
-#'@importFrom ggalt stat_stepribbon
 #'@importFrom cowplot plot_grid
 #'@import ggplot2
 #'@export
@@ -135,7 +134,7 @@ std_km <- function(time, status, xlab, ylab){
   data.plot <- bind_rows(first.row, tidy(fit))
 
   ### Basic plot
-  surv.plot <- ggplot(data.plot, aes(x = time, y = estimate)) +
+  surv.plot <- ggplot(data.plot, aes_string(x = "time", y = "estimate")) +
     geom_step()
 
   ### Formatting
@@ -157,8 +156,9 @@ std_km <- function(time, status, xlab, ylab){
   ### Adding 95% confidence bands
   surv.plot <- surv.plot +
     geom_ribbon(data = data.plot,
-                stat = 'stepribbon',
-                aes(ymin = conf.low, ymax = conf.high, fill = group),
+                stat = "stepribbon",
+                aes_string(ymin = "conf.low", ymax = "conf.high",
+                           fill = "group"),
                 alpha = 0.2, size = 0, fill = "grey80")
 
   ### Adding risk table
@@ -169,8 +169,8 @@ std_km <- function(time, status, xlab, ylab){
   data.table <- data_frame(time = table$time,
                            n.risk = table$n.risk)
   ## Basic plot
-  risk.table <- ggplot(data.table, aes(x = time, y = 1)) +
-    geom_text(aes(label = n.risk))
+  risk.table <- ggplot(data.table, aes_string(x = "time", y = "1")) +
+    geom_text(aes_string(label = "n.risk"))
 
   ## Formatting
   risk.table <- risk.table +
@@ -189,10 +189,6 @@ std_km <- function(time, status, xlab, ylab){
 
 #'Standard Kaplan-Meier curve by group
 #'
-#'@importFrom broom tidy
-#'@importFrom tidyr separate
-#'@importFrom cowplot plot_grid
-#'@importFrom scales percent
 #'@description A function to plot a Kaplan-Meier curve with groups.
 #'
 #'@param time a numeric vector.
@@ -207,6 +203,14 @@ std_km <- function(time, status, xlab, ylab){
 #'It can be modified by the user.
 #'
 #'@return a ggplot object.
+#'
+#'@importFrom survival survfit Surv survdiff
+#'@importFrom broom tidy
+#'@importFrom tidyr separate
+#'@importFrom cowplot plot_grid
+#'@importFrom scales percent
+#'@importFrom survival survdiff
+#'@importFrom stats pchisq
 #'
 #'@export
 std_km_group <- function(time, status, var, var.label,
@@ -223,15 +227,17 @@ std_km_group <- function(time, status, var, var.label,
                           group = levels(var))
 
   data.plot <- tidy(fit) %>%
-    separate(strata, into = c("var", "group"), sep = "r=") %>%
+    separate(.data$strata, into = c("var", "group"), sep = "r=") %>%
     select(-var)
   data.plot <- rbind(first.row, data.plot) %>%
-    mutate(conf.high = ifelse(is.na(conf.high), estimate, conf.high),
-           conf.low = ifelse(is.na(conf.low), estimate, conf.low))
+    mutate(conf.high =
+             ifelse(is.na(.data$conf.high), .data$estimate, .data$conf.high),
+           conf.low =
+             ifelse(is.na(.data$conf.low), .data$estimate, .data$conf.low))
 
   ### Basic plot
-  surv.plot <- ggplot(data.plot, aes(x = time, y = estimate,
-                                     colour = group)) +
+  surv.plot <- ggplot(data.plot, aes_string(x = "time", y = "estimate",
+                                            colour = "group")) +
     geom_step()
 
   ### Formatting
@@ -247,16 +253,18 @@ std_km_group <- function(time, status, var, var.label,
                                               limits = c(0, 1))
 
   ### Adding censor marks
-  data.censor <- data.plot %>% filter(n.censor > 0)
+  data.censor <- data.plot %>% filter(.data$n.censor > 0)
   surv.plot <- surv.plot +
     geom_point(data = data.censor,
-               aes(x = time, y = estimate), shape = 124)
+               aes_string(x = "time", y = "estimate"), shape = 124)
 
   ### Adding 95% confidence bands
   surv.plot <- surv.plot +
     geom_ribbon(data = data.plot,
                 stat = 'stepribbon',
-                aes(ymin = conf.low, ymax = conf.high, fill = group),
+                aes_string(ymin = "conf.low",
+                           ymax = "conf.high",
+                           fill = "group"),
                 alpha = 0.2, size = 0) +
     scale_fill_brewer(var.label, palette = "Set1", drop = FALSE)
 
@@ -280,12 +288,12 @@ std_km_group <- function(time, status, var, var.label,
   data.table <- data.frame(time = table$time,
                            n.risk = table$n.risk,
                            group = table$strata) %>%
-    separate(group, into = c("var", "group"), sep = "r=") %>% select(-var) %>%
-    mutate(group = factor(group, levels = rev(levels(as.factor(group)))))
+    separate(.data$group, into = c("var", "group"), sep = "r=") %>% select(-var) %>%
+    mutate(group = factor(.data$group, levels = rev(levels(as.factor(.data$group)))))
 
   ## Basic plot
-  risk.table <- ggplot(data.table, aes(x = time, y = group)) +
-    geom_text(aes(label = n.risk), size = 3.5)
+  risk.table <- ggplot(data.table, aes_string(x = "time", y = "group")) +
+    geom_text(aes_string(label = "n.risk"), size = 3.5)
 
   ## Formatting
   risk.table <- risk.table + theme_bw() +

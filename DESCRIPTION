@@ -23,5 +23,8 @@ Imports:
     car (>= 2.1-4),
     nortest (>= 1.0-4), 
     rlang (>= 0.1),
-    ggalt (>= 0.4.0)
+    survival (>= 2.41-3),
+    scales (>= 0.5.0),
+    cowplot (>= 0.8.0),
+    broom (>= 0.4.2)
 RoxygenNote: 6.0.1

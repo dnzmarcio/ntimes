@@ -13,11 +13,11 @@ std_km_group(time, status, var, var.label, xlab, ylab)
 
 \item{var}{a character vector.}
 
+\item{var.label}{a character value specifying the group label.}
+
 \item{xlab}{a character value specifying the x axis label.}
 
 \item{ylab}{a character value specifying the y axis label.}
-
-\item{group.label}{a character value specifying the group label.}
 }
 \value{
 a ggplot object.
