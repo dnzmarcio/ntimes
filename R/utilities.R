@@ -127,9 +127,6 @@ qt_var <- function(var, label = NULL, unit = NULL){
 
 #'Put Together
 #'
-#'@importFrom tidyr replace_na
-#'@importFrom dplyr mutate select left_join
-#'
 #'@description Join a descriptive table and a p_value table.
 #'
 #'@param descriptive.tab a data frame of class "descriptive".
@@ -140,7 +137,6 @@ qt_var <- function(var, label = NULL, unit = NULL){
 #'@examples
 #'library(dplyr)
 #'library(magrittr)
-#'library(ntimes)
 #'
 #'iris_nt <- iris %>% filter(Species != "versicolor")
 #'tab01 <- nt_describe(iris_nt, group = Species)
@@ -150,6 +146,8 @@ qt_var <- function(var, label = NULL, unit = NULL){
 #'@return A data frame similar to the \code{descriptive.tab} with an additional column of
 #'p values from the \code{p_value.tab}
 #'
+#'@importFrom tidyr replace_na
+#'@importFrom dplyr mutate select left_join
 #'
 #'@export
 put_together <- function(descriptive.tab, test.tab, digits = 3,
@@ -170,7 +168,7 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
   out <- tab %>% mutate(`p value` =
                           ifelse(.data$`p value` < 0.001, "< 0.001",
                                  round(.data$`p value`, digits)))  %>%
-    replace_na(list(`p value` = ""))
+    tidyr::replace_na(list(`p value` = ""))
 
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
