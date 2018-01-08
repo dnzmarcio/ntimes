@@ -27,7 +27,8 @@
 #'@return \code{plot} a Quantile-Quantile plot.
 #'
 #'@examples
-#'nt_norm_test(iris, group = Species)
+#'library(magrittr)
+#'iris %>% nt_norm_test(group = Species)
 #'
 #'@export
 nt_norm_test <- function(data, group = NULL, test = "sf",
@@ -49,48 +50,35 @@ nt_norm_test <- function(data, group = NULL, test = "sf",
   }
 
   vars.name <- names(vars)
-  vars.label <- unlist(map2(vars, vars.name, extract_label))
+  vars.label <- map2(vars, vars.name, extract_label)
 
   plot <- list()
 
   if (!is.null(group)){
     tab <- vars %>%
       gather(key = "Variable", value = "value") %>%
-      nest(-.data$Variable) %>% mutate(Variable = vars.label) %>%
-      mutate(tab = map(.data$data,
+      nest(-.data$Variable) %>%
+      mutate(Variable = unlist(vars.label)) %>%
+      mutate(p.value = map(.data$data,
                        ~ norm_test(var = .$value, group = group[[1]],
                                    test = test, digits = digits))) %>%
-      unnest(tab, .drop = TRUE)
+      unnest(.data$p.value, .drop = TRUE)
   } else {
     tab <- vars %>%
       gather(key = "Variable", value = "value") %>%
-      nest(-.data$Variable) %>% mutate(Variable = vars.label) %>%
-      mutate(tab = map(.data$data,
+      nest(-.data$Variable) %>%
+      mutate(Variable = unlist(vars.label)) %>%
+      mutate(p.value = map(.data$data,
                        ~ norm_test(var = .$value, group = NULL,
                                    test = test, digits = digits))) %>%
-      unnest(tab, .drop = TRUE)
+      unnest(.data$p.value, .drop = TRUE)
   }
 
-  # for (i in 1:nv){
-  #
-  #   if (!is.null(group)){
-  #     plot[[paste(vars.name[i])]] <-
-  #       norm_plot(var = vars[[i]], group = group[[1]],
-  #                 test = test,
-  #                 var.label = vars.label[[i]],
-  #                 group.label = group.label[[1]],
-  #                 digits = digits,
-  #                 pvalue.plot  = pvalue.plot)
-  #   } else {
-  #     plot[[paste(vars.name[i])]] <-
-  #       norm_plot(var = vars[[i]], group = NULL,
-  #                 test = test,
-  #                 var.label = vars.label[[i]],
-  #                 group.label = group.label[[1]],
-  #                 digits = digits,
-  #                 pvalue.plot  = pvalue.plot)
-  #   }
-  # }
+   plot <- map2(vars, vars.label, norm_plot, group = group[[1]],
+                  test = test,
+                  group.label = group.label[[1]],
+                  digits = digits,
+                  pvalue.plot  = pvalue.plot)
 
   out <- list(pvalue = tab, plot = plot)
   return(out)
@@ -132,23 +120,43 @@ norm_test <-  function(var, group = NULL,
     data.test <- data_frame(var, g = group)
     out <- data.test %>% nest(-.data$g) %>%
       mutate(p = map(.data$data, ~ aux_norm_test(.$var, test = test))) %>%
-      unnest(.data$p, drop = TRUE) %>% select(Group = .data$g, `p value` = .data$p)
+      unnest(.data$p, .drop = TRUE) %>%
+      select(Group = .data$g, `p value` = .data$p)
   }
 
   return(out)
 }
 
 #'@import ggplot2
+#'@importFrom stats qnorm
+#'@importFrom dplyr summarise
 norm_plot <-  function(var,
+                       var.label,
                        group = NULL,
                        test = "sf",
-                       var.label = NULL,
                        group.label = NULL,
                        digits = 3,
                        pvalue.plot = TRUE){
 
+  qqline_slope <- function(var){
+    y <- quantile(var, c(0.25, 0.75), na.rm = TRUE)
+    x <- qnorm(c(0.25, 0.75))
+    slope <- diff(y)/diff(x)
+  }
+
+  qqline_int <- function(var){
+    y <- quantile(var, c(0.25, 0.75), na.rm = TRUE)
+    x <- qnorm(c(0.25, 0.75))
+    slope <- diff(y)/diff(x)
+    int <- y[1] - slope * x[1]
+  }
+
+
   if (is.null(group)){
-    data_plot <- data.frame(var = (var - mean(var))/sd(var))
+    data_plot <- data.frame(var = var)
+
+    slope <- qqline_slope(var)
+    int <- qqline_int(var)
 
     p <- norm_test(var = var, test = test)
     p <- ifelse(round(p[[1]], digits) != 0,
@@ -156,7 +164,7 @@ norm_plot <-  function(var,
     pvalue <- paste("p-value", p)
 
     out <- ggplot(data_plot, aes_string(sample = 'var')) + stat_qq() +
-      geom_abline(intercept = 0, slope = 1) + theme_bw()
+      geom_abline(slope = slope, intercept = int) + theme_bw()
     if (pvalue.plot)
       out <- out +
       annotate(geom = "text", label = pvalue,
@@ -170,14 +178,18 @@ norm_plot <-  function(var,
     group <- paste(group.label, group, sep = ": ")
     group <- as.factor(group)
     data_test <- data.frame(var, group)
+    data_qqline <- data.frame(var, group) %>% group_by(group) %>%
+      summarise(slope = qqline_slope(var),
+                int = qqline_int(var))
 
-    p <- norm_test(var = var, test = test, group = group) %>% dplyr::select(-group)
+    p <- norm_test(var = var, group = group, test = test) %>%
+      select(-.data$Group)
     p <- ifelse(round(p[[1]], digits) != 0,
                 paste("=", round(p[[1]], digits)), "< 0.001")
     pvalue <- paste("p-value", p)
 
     out <- ggplot(data_test, aes_string(sample = 'var')) + stat_qq() +
-      geom_abline(intercept = 0, slope = 1) + theme_bw() +
+      geom_abline(data = data_qqline, aes(intercept = int, slope = slope)) + theme_bw() +
       facet_grid(. ~ group) +
       ggtitle(paste0(var.label))
     if (pvalue.plot)

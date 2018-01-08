@@ -32,7 +32,14 @@ Calculating a descriptive table for quantitative and
 qualitative variables in the usual format to present in scientific article.
 }
 \examples{
+library(dplyr)
 library(magrittr)
-iris \%>\% nt_describe(group = Species)
+
+iris <- iris \%>\%
+ mutate(Species = ql_var(Species,
+                         from = c("setosa", "versicolor", "virginica"),
+                         to = c("Setosa", "Versicolor", "Virginica"),
+                         order = c("Virginica", "Setosa", "Versicolor"))) \%>\%
+iris \%>\% nt_describe()
 
 }
