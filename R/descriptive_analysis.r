@@ -196,7 +196,7 @@ format_quantitative <- function(var, group,
                                 var.label, unit.label, group.label = NULL){
 
   var.label <- ifelse(unit.label == "", var.label,
-                      paste0(" (", unit.label, ")"))
+                      paste0(var.label, " (", unit.label, ")"))
 
   aux_variable <- c(var.label,
                     paste(" Mean", "SD", sep = " \U00b1 "),
