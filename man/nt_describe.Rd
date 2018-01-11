@@ -40,6 +40,6 @@ iris <- iris \%>\%
                          from = c("setosa", "versicolor", "virginica"),
                          to = c("Setosa", "Versicolor", "Virginica"),
                          order = c("Virginica", "Setosa", "Versicolor"))) \%>\%
-iris \%>\% nt_describe()
+iris \%>\% nt_describe(group = Species)
 
 }

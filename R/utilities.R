@@ -60,12 +60,11 @@ median_iqr <- function (x, limit = "both", type = 7) {
 #'library(dplyr)
 #'library(magrittr)
 #'
-#'iris <- iris %>% mutate(species = ql_var(Species,
-#'from = c("setosa", "Versicolor", "virginica"),
+#'iris <- iris %>% mutate(species = ql_var(species,
+#'from = c("setosa", "versicolor", "virginica"),
 #'to = c("Setosa", "Versicolor", "Virginica"), label = "Species",
 #'order = c("Virginica", "Setosa", "Versicolor"))) %>%
-#'select(-Species)
-#'nt_describe(iris)
+#'iris %>% nt_describe(group = species)
 #'
 #'@export
 ql_var <- function(var, from = NULL, to = NULL, order = NULL, label = NULL){
@@ -105,12 +104,12 @@ ql_var <- function(var, from = NULL, to = NULL, order = NULL, label = NULL){
 #'library(dplyr)
 #'library(magrittr)
 #'
-#'iris <- iris %>% mutate(
-#'sepal.length = qt_var(Sepal.Length, label = "Sepal Length", unit = "cm"),
-#'sepal.width = qt_var(Sepal.Width, label = "Sepal Width", unit = "cm"),
-#'petal.length = qt_var(Petal.Length, label = "Petal Length", unit = "cm")) %>%
-#'select(-Sepal.Length, -Sepal.Width, -Petal.Length)
-#'nt_describe(iris)
+#'iris <- iris %>%
+#'mutate(Sepal.Length = qt_var(Sepal.Length, label = "Sepal Length", unit = "cm"),
+#'       Sepal.Width = qt_var(Sepal.Width, label = "Sepal Width", unit = "cm"),
+#'       Petal.Length = qt_var(Petal.Length, label = "Petal Length", unit = "cm"),
+#'       Petal.Width = qt_var(Petal.Width, label = "Petal Length", unit = "cm"))
+#'iris %>% nt_describe(group = Species)
 #'
 #'@export
 qt_var <- function(var, label = NULL, unit = NULL){

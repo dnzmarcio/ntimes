@@ -30,11 +30,10 @@ add a label to the qualitative variable.
 library(dplyr)
 library(magrittr)
 
-iris <- iris \%>\% mutate(species = ql_var(Species,
-from = c("setosa", "Versicolor", "virginica"),
+iris <- iris \%>\% mutate(species = ql_var(species,
+from = c("setosa", "versicolor", "virginica"),
 to = c("Setosa", "Versicolor", "Virginica"), label = "Species",
 order = c("Virginica", "Setosa", "Versicolor"))) \%>\%
-select(-Species)
-nt_describe(iris)
+iris \%>\% nt_describe(group = species)
 
 }
