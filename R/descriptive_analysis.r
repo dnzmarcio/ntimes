@@ -84,7 +84,7 @@ aux_describe <- function(var, var.name, group, group.name, format, digits){
   if (!is.null(group))
     group.label <- extract_label(group, group.name)
 
-  if (is.numeric(var)){
+  if (is.numeric(var) | all(is.na(var))){
     out <- describe_quantitative(var = var,
                                  group = group,
                                  format = format,
@@ -175,7 +175,11 @@ describe_quantitative <- function(var, group,
 #'@importFrom dplyr summarise_all
 quantitative_measures <- function(x, digits){
 
-  x <- data_frame(x)
+  if (all(is.na(x))){
+    x <- data_frame(x = as.numeric(x))
+  } else {
+    x <- data_frame(x)
+  }
 
   q25 <- function(x, na.rm) quantile(x, probs = 0.25, na.rm = na.rm)
   q75 <- function(x, na.rm) quantile(x, probs = 0.75, na.rm = na.rm)
