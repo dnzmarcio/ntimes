@@ -86,19 +86,30 @@ nt_km <-  function(data = NULL, time, status,
 aux_km <- function(var, var.name, time, status, xlab, ylab,
                    fig.height, fig.width, save, std_fun_group){
 
-  var <- as.factor(var)
-  var.label <- extract_label(var, var.name)
+  if (is.character(var))
+    var <- as.factor(var)
+  if (is.numeric(var))
+    stop(paste0(var.name, "is numeric!"))
 
-  out <- std_fun_group(time = time, status = status,
-                      var = var, var.label = var.label,
-                      xlab = xlab, ylab = ylab)
+  if (nlevels(var) > 2){
+    var.label <- extract_label(var, var.name)
 
-  if (save)
-    out <- out +
+    out <- std_fun_group(time = time, status = status,
+                         var = var, var.label = var.label,
+                         xlab = xlab, ylab = ylab)
+
+    if (save)
+      out <- out +
       ggsave(filename = paste0("_km_", var.name, ".jpeg"),
              height = fig.height, width = fig.width)
-  return(out)
 
+  } else {
+    out <- NA
+    warning(paste0(var.name, " has only one level."))
+  }
+
+
+  return(out)
 }
 
 #'Standard Kaplan-Meier curve
