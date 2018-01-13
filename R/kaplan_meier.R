@@ -47,15 +47,19 @@ nt_km <-  function(data = NULL, time, status,
                    std_fun_group = std_km_group) {
 
   data <- as_data_frame(data)
-  if (ncol(data) > 2){
-    vars <- select(.data = data, -c(time, status))
-    vars.name <- names(vars)
-  }
   time <- enquo(time)
   status <- enquo(status)
 
+  if (ncol(data) > 2){
+    vars <- select(.data = data, -!!time)
+    vars <- select(.data = vars, -!!status)
+    vars.name <- names(vars)
+  }
+
   time <- select(.data = data, !!time)
+  time <- time[[1]]
   status <- select(.data = data, !!status)
+  status <- as.numeric(as.factor(status[[1]]))
 
   out <- list()
 
@@ -82,6 +86,7 @@ nt_km <-  function(data = NULL, time, status,
 aux_km <- function(var, var.name, time, status, xlab, ylab,
                    fig.height, fig.width, save, std_fun_group){
 
+  var <- as.factor(var)
   var.label <- extract_label(var, var.name)
 
   out <- std_fun_group(time = time, status = status,
@@ -166,8 +171,7 @@ std_km <- function(time, status, xlab, ylab){
   ## Data
   x.ticks <- ggplot_build(surv.plot)$layout$panel_ranges[[1]]$x.major_source
   table <- summary(fit, times = x.ticks)
-  data.table <- data_frame(time = table$time,
-                           n.risk = table$n.risk)
+  data.table <- data_frame(time = table$time, n.risk = table$n.risk)
   ## Basic plot
   risk.table <- ggplot(data.table, aes_string(x = "time", y = "1")) +
     geom_text(aes_string(label = "n.risk"))
