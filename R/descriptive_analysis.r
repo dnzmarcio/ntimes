@@ -82,7 +82,7 @@ aux_describe <- function(var, var.name, group, group.name, format, digits){
   unit.label <- extract_unit(var)
 
   if (!is.null(group))
-    group.label <- extract_label(group, group.name)
+    group.label <- extract_label(group[[1]], group.name)
 
   if (is.numeric(var) | all(is.na(var))){
     out <- describe_quantitative(var = var,
