@@ -4,7 +4,7 @@
 \alias{std_dotplot_group}
 \title{Standard dotplot by group}
 \usage{
-std_dotplot_group(var, group, var.label, group.label)
+std_dotplot_group(var, group, var.label, group.label, binwidth)
 }
 \arguments{
 \item{var}{a numeric vector.}

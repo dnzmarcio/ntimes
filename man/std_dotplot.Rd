@@ -4,7 +4,7 @@
 \alias{std_dotplot}
 \title{Standard dotplot}
 \usage{
-std_dotplot(var, var.label)
+std_dotplot(var, var.label, binwidth)
 }
 \arguments{
 \item{var}{a numeric vector.}

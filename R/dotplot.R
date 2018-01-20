@@ -4,6 +4,7 @@
 #'
 #'@param data a data frame with the variables.
 #'@param group an optional data frame with the group variable.
+#'@param binwidth a numerical value specifying the bin width.
 #'@param save a logical value indicating whether the output
 #'should be saved as a jpeg file.
 #'@param fig.height a numeric value indicating the height (in) of the file.
@@ -30,7 +31,7 @@
 #'iris %>% nt_dotplot(group = Species)
 #'
 #'@export
-nt_dotplot <-  function(data, group = NULL,
+nt_dotplot <-  function(data, group = NULL, binwidth,
                         save = FALSE, fig.height = 5, fig.width = 5,
                         std_fun = std_dotplot,
                         std_fun_group = std_dotplot_group) {
@@ -50,14 +51,14 @@ nt_dotplot <-  function(data, group = NULL,
   vars.name <- names(vars)
 
   out <- map2(.x = vars, .y = vars.name, .f = aux_dotplot,
-              group = group, group.name = group.name,
+              group = group, group.name = group.name, binwidth = binwidth,
               fig.height = fig.height, fig.width = fig.width, save = save,
               std_fun = std_fun, std_fun_group = std_fun_group)
 
   return(out)
 }
 
-aux_dotplot <- function(var, var.name, group, group.name,
+aux_dotplot <- function(var, var.name, group, group.name, binwidth,
                         fig.height, fig.width, save, std_fun, std_fun_group){
 
   out <- list()
@@ -65,7 +66,8 @@ aux_dotplot <- function(var, var.name, group, group.name,
 
   if (is.null(group)) {
     gp <- std_fun(var = var,
-                  var.label = var.label)
+                  var.label = var.label,
+                  binwidth = binwidth)
 
     if(save)
       gp <- gp + ggsave(filename = paste0(var.name, ".jpeg"),
@@ -79,7 +81,8 @@ aux_dotplot <- function(var, var.name, group, group.name,
     gp <- std_fun_group(var = var,
                         group = group[[1]],
                         var.label = var.label,
-                        group.label = group.label)
+                        group.label = group.label,
+                        binwidth = binwidth)
 
     if (save)
       gp <- gp + ggsave(filename =
@@ -113,7 +116,7 @@ aux_dotplot <- function(var, var.name, group, group.name,
 #'@importFrom tibble data_frame
 #'@importFrom rlang .data
 #'@export
-std_dotplot <- function(var, var.label){
+std_dotplot <- function(var, var.label, binwidth){
 
   ### Data
   data_plot <- data_frame(var = var)
@@ -122,7 +125,8 @@ std_dotplot <- function(var, var.label){
   out <- ggplot(data_plot, aes(y = "var", x = NA)) +
     geom_dotplot(binaxis = "y", stackdir = "center",
                  method = "histodot",
-                 fill = "grey80")
+                 fill = "grey80",
+                 binwidth = binwidth)
 
   ### Formatting
   out <- out +
@@ -159,7 +163,7 @@ std_dotplot <- function(var, var.label){
 #'@importFrom tibble data_frame
 #'@importFrom rlang .data
 #'@export
-std_dotplot_group <- function(var, group, var.label, group.label){
+std_dotplot_group <- function(var, group, var.label, group.label, binwidth){
 
   ### Data
   data_plot <- data_frame(var = var, group = group)
@@ -168,7 +172,8 @@ std_dotplot_group <- function(var, group, var.label, group.label){
   out <- ggplot(data_plot,
                 aes_string(y = "var", x = "group", fill = "group")) +
     geom_dotplot(binaxis = "y", stackdir = "center", method = "histodot",
-                 fill = "grey80")
+                 fill = "grey80",
+                 binwidth = binwidth)
 
   ### Formatting
   out <- out +
