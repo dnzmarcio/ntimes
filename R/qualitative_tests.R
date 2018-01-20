@@ -29,11 +29,11 @@ nt_dist_ql_tg <-  function(var, group,
           pt <- prop.test(tab, conf.level = conf.level)
           lower <- pt$conf.int[[1]]
           upper <- pt$conf.int[[2]]
-          test <- "Fisher Exact"
+          test <- "Fisher's Exact"
         } else {
           lower <- NA
           upper <- NA
-          test <- "Fisher-Freeman-Halton"
+          test <- "Fisher-Freeman-Halton's Exact"
         }
       } else {
         result <- chisq.test(tab)
