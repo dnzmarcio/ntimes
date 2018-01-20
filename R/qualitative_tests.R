@@ -46,7 +46,7 @@ nt_dist_ql_tg <-  function(var, group,
                     "greater" = ">",
                     "less" = "<",
                     "two.sided" = "!=")
-      hypothesis <- paste(lg[2], alt, lg[1], sep = " ")
+      hypothesis <- paste(lg[2], "=", lg[1])
     }
 
   } else {
@@ -109,7 +109,7 @@ nt_dist_ql_mg <-  function(var, group,
     }
   }
 
-  hypothesis <- "Association"
+  hypothesis <- "No association"
 
   out <- data_frame(Variable = var.label[[1]], Group = group.label[[1]],
                     Hypothesis = hypothesis,  Test = test, `p value` = p.value)
