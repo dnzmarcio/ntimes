@@ -154,6 +154,7 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
 #'@param digits.p the number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character value indicating the name of output file in csv format to be saved.
+#'@param keep.data a logical value indicating if
 #'
 #'@details If \code{test = "automatic"}, the normality assumption will be verified by
 #'a normality test (Anderson-Daling (\link[nortest]{ad.test}),
@@ -179,7 +180,8 @@ nt_compare_mg <- function(data, group,
                           norm.test = "sf",
                           digits.p = 5,
                           save = FALSE,
-                          file = "nt_compare_mg"){
+                          file = "nt_compare_mg",
+                          keep.data = FALSE){
 
   group <- enquo(group)
 
@@ -202,6 +204,14 @@ nt_compare_mg <- function(data, group,
 
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
+
+  if (keep.data){
+    result <- out
+    out <- list()
+    out$result <- result
+    out$data <- data
+  }
+
   return(out)
 }
 
