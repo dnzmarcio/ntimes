@@ -5,7 +5,7 @@
 \title{Compare more than two groups}
 \usage{
 nt_compare_mg(data, group, test = "auto", norm.test = "sf", digits.p = 5,
-  save = FALSE, file = "nt_compare_mg")
+  save = FALSE, file = "nt_compare_mg", keep.data = FALSE)
 }
 \arguments{
 \item{data}{a data frame with the variables.}
@@ -26,6 +26,8 @@ Pearson (\code{p}). The default is Shapiro-Francia (\code{"sf"}). It is only use
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character value indicating the name of output file in csv format to be saved.}
+
+\item{keep.data}{a logical value indicating if}
 }
 \description{
 Performing comparisons among three or more groups.
