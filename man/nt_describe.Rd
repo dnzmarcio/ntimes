@@ -4,7 +4,7 @@
 \alias{nt_describe}
 \title{Descriptive measures}
 \usage{
-nt_describe(data, group = NULL, measures = c("mean.sd", "median.quantiles",
+nt_describe(data, group = NULL, measures = c("mean.sd", "median.iqr",
   "median.range"), digits = 2, save = FALSE,
   file = "descriptive_analysis")
 }
@@ -13,7 +13,7 @@ nt_describe(data, group = NULL, measures = c("mean.sd", "median.quantiles",
 
 \item{group}{an optional  with the group variable.}
 
-\item{measures}{a character vector indicating which measures should be presented.}
+\item{measures}{a character value indicating which measures should be presented: mean.sd, mean.iqr, median.range.}
 
 \item{digits}{a numeric value specifying the number of digits to present the results.}
 
