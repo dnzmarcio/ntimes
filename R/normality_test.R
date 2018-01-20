@@ -28,6 +28,8 @@
 #'
 #'@examples
 #'library(magrittr)
+#'data(iris)
+#'
 #'iris %>% nt_norm_test(group = Species)
 #'
 #'@export

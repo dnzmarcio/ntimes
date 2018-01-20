@@ -47,6 +47,7 @@ See \code{\link[ggplot2]{geom_bar}}, \code{\link{std_barplot}} and
 \examples{
 library(dplyr)
 library(magrittr)
+data(iris)
 
 vars <- iris \%>\%
 transmute(Species = Species,

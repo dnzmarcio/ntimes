@@ -34,6 +34,7 @@
 #'@examples
 #'library(dplyr)
 #'library(magrittr)
+#'data(iris)
 #'
 #'vars <- iris %>%
 #'transmute(Species = Species,

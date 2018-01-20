@@ -39,6 +39,8 @@ The function is a wrapper of \link[nortest]{ad.test},
 }
 \examples{
 library(magrittr)
+data(iris)
+
 iris \%>\% nt_norm_test(group = Species)
 
 }

@@ -45,6 +45,7 @@ or neither assumptions, then Kruskal-Wallis.
 }
 \examples{
 library(magrittr)
+data(iris)
 
 iris \%>\% nt_compare_mg(group = Species)
 

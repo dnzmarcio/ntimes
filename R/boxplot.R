@@ -32,6 +32,7 @@
 #'
 #'@examples
 #'library(magrittr)
+#'data(iris)
 #'
 #'iris %>% nt_boxplot(group = Species)
 #'

@@ -42,6 +42,8 @@ See \code{\link[ggplot2]{geom_dotplot}}, \code{\link{std_dotplot}} and
 }
 \examples{
 library(magrittr)
+data(iris)
+
 iris \%>\% nt_dotplot(group = Species)
 
 }

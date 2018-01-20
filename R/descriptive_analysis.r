@@ -24,12 +24,13 @@
 #'@examples
 #'library(dplyr)
 #'library(magrittr)
+#'data(iris)
 #'
 #'iris <- iris %>%
 #'  mutate(Species = ql_var(Species,
 #'                          from = c("setosa", "versicolor", "virginica"),
 #'                          to = c("Setosa", "Versicolor", "Virginica"),
-#'                          order = c("Virginica", "Setosa", "Versicolor"))) %>%
+#'                          order = c("Virginica", "Setosa", "Versicolor")))
 #'iris %>% nt_describe(group = Species)
 #'
 #'@export

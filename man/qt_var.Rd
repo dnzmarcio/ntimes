@@ -24,12 +24,13 @@ add a label to the qualitative variable.
 \examples{
 library(dplyr)
 library(magrittr)
+data(iris)
 
-iris <- iris \%>\%
+iris_nt <- iris \%>\%
 mutate(Sepal.Length = qt_var(Sepal.Length, label = "Sepal Length", unit = "cm"),
       Sepal.Width = qt_var(Sepal.Width, label = "Sepal Width", unit = "cm"),
       Petal.Length = qt_var(Petal.Length, label = "Petal Length", unit = "cm"),
       Petal.Width = qt_var(Petal.Width, label = "Petal Length", unit = "cm"))
-iris \%>\% nt_describe(group = Species)
+iris_nt \%>\% nt_describe(group = Species)
 
 }

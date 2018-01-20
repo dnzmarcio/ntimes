@@ -59,12 +59,14 @@ median_iqr <- function (x, limit = "both", type = 7) {
 #'@examples
 #'library(dplyr)
 #'library(magrittr)
+#'data(iris)
 #'
-#'iris <- iris %>% mutate(species = ql_var(species,
+#'iris_nt <- iris %>% mutate(Species = ql_var(Species,
 #'from = c("setosa", "versicolor", "virginica"),
 #'to = c("Setosa", "Versicolor", "Virginica"), label = "Species",
-#'order = c("Virginica", "Setosa", "Versicolor"))) %>%
-#'iris %>% nt_describe(group = species)
+#'order = c("Virginica", "Setosa", "Versicolor")))
+#'
+#'iris_nt %>% nt_describe(group = Species)
 #'
 #'@export
 ql_var <- function(var, from = NULL, to = NULL, order = NULL, label = NULL){
@@ -103,13 +105,14 @@ ql_var <- function(var, from = NULL, to = NULL, order = NULL, label = NULL){
 #'@examples
 #'library(dplyr)
 #'library(magrittr)
+#'data(iris)
 #'
-#'iris <- iris %>%
+#'iris_nt <- iris %>%
 #'mutate(Sepal.Length = qt_var(Sepal.Length, label = "Sepal Length", unit = "cm"),
 #'       Sepal.Width = qt_var(Sepal.Width, label = "Sepal Width", unit = "cm"),
 #'       Petal.Length = qt_var(Petal.Length, label = "Petal Length", unit = "cm"),
 #'       Petal.Width = qt_var(Petal.Width, label = "Petal Length", unit = "cm"))
-#'iris %>% nt_describe(group = Species)
+#'iris_nt %>% nt_describe(group = Species)
 #'
 #'@export
 qt_var <- function(var, label = NULL, unit = NULL){

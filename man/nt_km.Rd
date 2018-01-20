@@ -51,12 +51,13 @@ See \code{\link{std_km}} and \code{\link{std_km_group}}.
 library(survival)
 library(dplyr)
 data(lung)
-lung <- lung \%>\% mutate(sex =
-                         ql_var(sex, from = 1:2, to = c("Female", "Male"),
-                                label = "Sex"),
-                       ph.ecog = ql_var(as.factor(ph.ecog), label = "ECOG"))
 
-data_model <- lung \%>\% select(sex, ph.ecog, time, status)
+lung <- lung \%>\% mutate(sex = ql_var(sex, from = 1:2,
+                                    to = c("Female", "Male"),
+                                    label = "Sex"),
+                       ph.ecog = ql_var(ph.ecog, label = "ECOG"))
+
+data_model <- lung \%>\% dplyr::select(sex, ph.ecog, time, status)
 data_model \%>\% nt_km(time = time, status = status)
 
 

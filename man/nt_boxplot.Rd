@@ -43,6 +43,7 @@ See \code{\link[ggplot2]{geom_boxplot}}, \code{\link{std_boxplot}} and
 }
 \examples{
 library(magrittr)
+data(iris)
 
 iris \%>\% nt_boxplot(group = Species)
 

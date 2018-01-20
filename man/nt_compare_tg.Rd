@@ -59,6 +59,7 @@ Mann-Whitney; if neither assumptions, then Brunner-Munzel t test.
 \examples{
 library(dplyr)
 library(forcats)
+data(iris)
 
 iris_nt <- iris \%>\% filter(Species != "setosa") \%>\% mutate(Species = fct_drop(Species))
 iris_nt \%>\% nt_compare_tg(group = Species)

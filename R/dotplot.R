@@ -25,6 +25,8 @@
 #'
 #'@examples
 #'library(magrittr)
+#'data(iris)
+#'
 #'iris %>% nt_dotplot(group = Species)
 #'
 #'@export
