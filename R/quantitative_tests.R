@@ -9,7 +9,8 @@
 nt_dist_qt_tg <-  function(var, group, test,
                            alternative, conf.level, paired,
                            norm.test,
-                           format, digits, var.name, var.label, group.label) {
+                           format, digits.p, digits.ci,
+                           var.name, var.label, group.label) {
 
   data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
   nlg <- nlevels(fct_drop(data.test$g[!is.na(data.test$x)]))
@@ -64,7 +65,7 @@ nt_dist_qt_tg <-  function(var, group, test,
             result <- npar.t.test(x ~ g,
                                   data = data.test,
                                   method = "t.app",
-                                  rounds = digits,
+                                  rounds = max(digits.p, digits.ci),
                                   alternative = alternative,
                                   info = FALSE)
 
@@ -75,7 +76,7 @@ nt_dist_qt_tg <-  function(var, group, test,
           } else {
             result <- npar.t.test.paired(x ~ g,
                                          data = data.test,
-                                         rounds = digits,
+                                         rounds = max(digits.p, digits.ci),
                                          alternative = alternative,
                                          info = FALSE,
                                          plot.simci = FALSE)
@@ -135,7 +136,7 @@ nt_dist_qt_tg <-  function(var, group, test,
           result <- npar.t.test(x ~ g,
                                 data = data.test,
                                 method = "t.app",
-                                rounds = digits,
+                                rounds = max(digits.p, digits.ci),
                                 alternative = alternative,
                                 info = FALSE)
 
@@ -147,7 +148,7 @@ nt_dist_qt_tg <-  function(var, group, test,
           result <- npar.t.test.paired(x ~ g,
                                        data = data.test,
                                        alternative = alternative,
-                                       rounds = digits,
+                                       rounds = max(digits.p, digits.ci),
                                        info = FALSE, plot.simci = FALSE)
 
           p.value <- result$Analysis[1, 5]
@@ -171,13 +172,14 @@ nt_dist_qt_tg <-  function(var, group, test,
 
   out <- data_frame(Variable = var.label, Group = group.label,
                     Hypothesis = hypothesis, Lower = lower, Upper = upper,
-                    Test = test, p.value)
+                    Test = test, p.value) %>%
+    mutate(Lower = round(.data$Lower, digits.ci),
+           Upper = round(.data$Upper, digits.ci),
+           'p value' = round(.data$p.value, digits.p))
 
   if (format){
-    out <- out %>% mutate('95% CI' = paste0("(", round(.data$Lower, digits),
-                                            " ; ",
-                                            round(.data$Upper, digits), ")"),
-                          'p value' = .data$p.value) %>%
+    out <- out %>% mutate('95% CI' = paste0("(", .data$Lower, " ; ",
+                                           .data$Upper, ")")) %>%
       select(.data$Variable, .data$Group, .data$Hypothesis,
              .data$Test, .data$`95% CI`, .data$`p value`)
   }
@@ -195,7 +197,7 @@ nt_dist_qt_tg <-  function(var, group, test,
 #'@importFrom stats oneway.test kruskal.test
 nt_dist_qt_mg <-  function(var, group, test,
                            norm.test,
-                           digits, var.name, var.label, group.label) {
+                           digits.p, var.name, var.label, group.label) {
 
   data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
   nlg <- nlevels(fct_drop(data.test$g[!is.na(data.test$x)]))
@@ -254,7 +256,8 @@ nt_dist_qt_mg <-  function(var, group, test,
   }
 
   out <- data_frame(Variable = var.label, Group = group.label,
-                    Hypothesis = hypothesis, Test = test, `p value` = p.value)
+                    Hypothesis = hypothesis, Test = test,
+                    `p value` = round(p.value, digits.p))
 
     return(out)
 }

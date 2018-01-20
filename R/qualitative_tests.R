@@ -4,7 +4,8 @@
 nt_dist_ql_tg <-  function(var, group,
                            alternative,
                            conf.level, paired,
-                           format, digits, var.name, var.label, group.label){
+                           format, digits.p, digits.ci,
+                           var.name, var.label, group.label){
 
   data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
   lg <- levels(data.test$g)
@@ -64,13 +65,15 @@ nt_dist_ql_tg <-  function(var, group,
 
   out <- data_frame(Variable = var.label[[1]], Group = group.label[[1]],
                     Hypothesis = hypothesis, Lower = lower, Upper = upper,
-                    Test = test, p.value)
+                    Test = test, p.value) %>%
+    mutate(Lower = round(.data$Lower, digits.ci),
+           Upper = round(.data$Upper, digits.ci),
+           'p value' = round(.data$p.value, digits.p))
 
   if (format){
-    out <- out %>% mutate(`95% CI` = paste0("(", round(.data$Lower, digits),
+    out <- out %>% mutate(`95% CI` = paste0("(",.data$Lower,
                                             " ; ",
-                                            round(.data$Upper, digits), ")"),
-                          `p value` = .data$p.value) %>%
+                                            .data$Upper, ")")) %>%
       select(-.data$Lower, -.data$Upper, -.data$p.value)
   }
 
@@ -82,7 +85,7 @@ nt_dist_ql_tg <-  function(var, group,
 #'@importFrom dplyr bind_cols
 #'@importFrom stats fisher.test chisq.test
 nt_dist_ql_mg <-  function(var, group,
-                           format, digits, var.name, var.label, group.label){
+                           format, digits.p, var.name, var.label, group.label){
 
   data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
   lg <- levels(data.test$g)
@@ -112,7 +115,8 @@ nt_dist_ql_mg <-  function(var, group,
   hypothesis <- "No association"
 
   out <- data_frame(Variable = var.label[[1]], Group = group.label[[1]],
-                    Hypothesis = hypothesis,  Test = test, `p value` = p.value)
+                    Hypothesis = hypothesis,  Test = test,
+                    `p value` =  round(p.value, digits.p))
 
   return(out)
 }

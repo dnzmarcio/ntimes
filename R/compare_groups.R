@@ -81,7 +81,8 @@ nt_compare_tg <- function(data, group,
                paired = paired,
                norm.test = norm.test,
                format = format,
-               digits = digits.ci)
+               digits.p = digits.p,
+               digits.ci = digits.ci)
 
   out <- Reduce(rbind, temp)
 
@@ -91,9 +92,9 @@ nt_compare_tg <- function(data, group,
 }
 
 aux_compare_tg <- function(var, var.name, group, group.name = group.name,
-                        test, alternative, conf.level,
-                        paired = paired, norm.test,
-                        format, digits){
+                           test, alternative, conf.level,
+                           paired = paired, norm.test,
+                           format, digits.p, digits.ci){
 
   var.label <- extract_label(var, var.name)
   group.label <- extract_label(group, group.name)
@@ -106,7 +107,8 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
                            paired = paired,
                            norm.test = norm.test,
                            format = format,
-                           digits = digits,
+                           digits.p = digits.p,
+                           digits.ci = digits.ci,
                            var.name = var.name,
                            var.label = var.label,
                            group.label = group.label)
@@ -118,7 +120,8 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
                          conf.level = conf.level,
                          paired = paired,
                          format = format,
-                         digits = digits,
+                         digits.p = digits.p,
+                         digits.ci = digits.ci,
                          var.name = var.name,
                          var.label = var.label,
                          group.label = group.label)
@@ -197,8 +200,7 @@ nt_compare_mg <- function(data, group,
   temp <- map2(.x = vars, .y = vars.name, .f = aux_compare_mg,
                group = group, group.name = group.name,
                test = test,
-               norm.test = norm.test,
-               format = format)
+               norm.test = norm.test, digits.p = digits.p)
 
   out <- Reduce(rbind, temp)
 
@@ -218,25 +220,25 @@ nt_compare_mg <- function(data, group,
 
 aux_compare_mg <- function(var, var.name, group, group.name = group.name,
                            test, norm.test,
-                           format, digits){
+                           format, digits.p){
 
   var.label <- extract_label(var, var.name)
   group.label <- extract_label(group, group.name)
 
   if (is.numeric(var)){
-      out <- nt_dist_qt_mg(var = var,
-                             group = group,
-                             test = test,
-                             norm.test = norm.test,
-                             digits = digits,
-                             var.name = var.name,
-                             var.label = var.label,
-                             group.label = group.label)
+    out <- nt_dist_qt_mg(var = var,
+                         group = group,
+                         test = test,
+                         norm.test = norm.test,
+                         digits.p = digits.p,
+                         var.name = var.name,
+                         var.label = var.label,
+                         group.label = group.label)
 
   } else {
     out <- nt_dist_ql_mg(var = var,
                          group = group,
-                         digits = digits,
+                         digits.p = digits.p,
                          var.name = var.name,
                          var.label = var.label,
                          group.label = group.label)
