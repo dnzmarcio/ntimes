@@ -4,8 +4,8 @@
 \alias{nt_km}
 \title{Kaplan-Meier plot}
 \usage{
-nt_km(data = NULL, time, status, xlab = "Time", ylab = "Survival",
-  save = FALSE, fig.height = 5, fig.width = 5, std_fun = std_km,
+nt_km(data, time, status, xlab = "Time", ylab = "Survival", save = FALSE,
+  fig.height = 5, fig.width = 5, std_fun = std_km,
   std_fun_group = std_km_group)
 }
 \arguments{
