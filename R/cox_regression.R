@@ -213,7 +213,7 @@ fit_multiple_cox <- function(fit, data){
 
   vars.name <- names(fit$xlevels)
 
-  group <- data %>% select(.data$vars.name)
+  group <- data %>% select(vars.name)
   vars.label <- map2(group, vars.name, extract_label)
   nlv <- map(group, function(x) out <- nlevels(x) - 1)
 
