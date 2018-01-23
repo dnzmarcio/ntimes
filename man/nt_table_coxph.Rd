@@ -8,6 +8,8 @@ nt_table_coxph(fit.list, data, save = FALSE, file = "nt_table_cox")
 }
 \arguments{
 \item{fit.list}{a list of fitted models.}
+
+\item{data}{a data frame containing the variables used to fit the models listed in fit.list.}
 }
 \description{
 Tabulating results from fitted Proportional Hazards Cox models.
@@ -27,6 +29,6 @@ fit.list[[1]] <- coxph(Surv(futime, fustat) ~ ecog.ps, data = ovarian)
 fit.list[[2]] <- coxph(Surv(futime, fustat) ~ resid.ds + rx, data = ovarian)
 fit.list[[3]] <- coxph(Surv(futime, fustat) ~ ecog.ps + resid.ds + rx, data = ovarian)
 
-nt_table_coxph(fit.list)
+nt_table_coxph(fit.list, data = ovarian)
 
 }

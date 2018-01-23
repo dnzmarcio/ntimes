@@ -98,6 +98,11 @@ aux_simple_cox <- function(var, var.name, time, status, strata, digits, digits.p
   return(out)
 }
 
+#'@importFrom survival coxph Surv cox.zph
+#'@importFrom broom tidy glance
+#'@importFrom tidyr separate replace_na
+#'@importFrom dplyr select transmute mutate bind_cols
+#'@importFrom tibble data_frame
 fit_cox <- function(data, var.label, strata, digits, digits.p){
 
   if (!strata){
