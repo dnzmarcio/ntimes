@@ -92,7 +92,7 @@ aux_km <- function(var, var.name, time, status, xlab, ylab,
   if (is.numeric(var))
     stop(paste0(var.name, "is numeric!"))
 
-  if (nlevels(var) >= 2){
+  if (nlevels(droplevels(var)) >= 2){
     var.label <- extract_label(var, var.name)
 
     out <- std_fun_group(time = time, status = status,
