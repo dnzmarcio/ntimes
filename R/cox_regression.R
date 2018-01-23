@@ -134,8 +134,8 @@ fit_cox <- function(data, var.label, strata, digits, digits.p){
   if (!is.numeric(data$var)){
     first_row <- data_frame(Variable = var.label,
                             Group =
-                              as.character(unique(data$var)[!(unique(data$var)
-                                                 %in% temp$Group)]),
+                              na.exclude(as.character(unique(data$var)[
+                                !(unique(data$var) %in% temp$Group)])),
                             'HR (95% CI)' = "Reference",
                             'p value' = "")
 
