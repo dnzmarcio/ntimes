@@ -63,17 +63,14 @@ nt_describe <- function(data,
 
   out <- Reduce(rbind, temp)
 
-  all.measures <- c("mean.sd", "median.iqr", "median.range", "missing")
-  if (!all(measures != measures)){
-    if (!any(measures == "mean.sd"))
-      out <- out %>% filter(.data$Variable != " Mean \U00b1 SD")
-    if (!any(measures == "median.iqr"))
-      out <- out %>% filter(.data$Variable != " Median (Q25% ; Q75%)")
-    if (!any(measures == "median.range"))
-      out <- out %>% filter(.data$Variable != " Median (Min ; Max)")
-    if (!any(measures == "missing"))
-      out <- out %>% filter(.data$Variable != " Missing")
-  }
+  if (all(measures != "mean.sd"))
+    out <- out %>% filter(.data$Variable != " Mean \U00b1 SD")
+  if (all(measures != "median.iqr"))
+    out <- out %>% filter(.data$Variable != " Median (Q25% ; Q75%)")
+  if (all(measures != "median.range"))
+    out <- out %>% filter(.data$Variable != " Median (Min ; Max)")
+  if (all(measures != "missing"))
+    out <- out %>% filter(.data$Variable != " Missing")
 
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
