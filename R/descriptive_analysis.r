@@ -12,7 +12,7 @@
 #'
 #'@param data a data frame with the variables.
 #'@param group an optional  with the group variable.
-#'@param measures a character value indicating which measures should be presented: mean.sd, mean.iqr, median.range.
+#'@param measures a character value indicating which measures should be presented: mean.sd, mean.iqr, median.range, and missing.
 #'@param digits a numeric value specifying the number of digits to present the results.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character indicating the name of output file in csv format to be saved.
@@ -36,7 +36,8 @@
 #'@export
 nt_describe <- function(data,
                         group = NULL,
-                        measures = c("mean.sd", "median.iqr", "median.range"),
+                        measures = c("mean.sd", "median.iqr",
+                                     "median.range", "missing"),
                         digits = 2,
                         save = FALSE,
                         file = "descriptive_analysis"){
@@ -62,7 +63,7 @@ nt_describe <- function(data,
 
   out <- Reduce(rbind, temp)
 
-  all.measures <- c("mean.sd", "median.iqr", "median.range")
+  all.measures <- c("mean.sd", "median.iqr", "median.range", "missing")
   if (!all(measures != measures)){
     if (!any(measures == "mean.sd"))
       out <- out %>% filter(.data$Variable != " Mean \U00b1 SD")
@@ -70,6 +71,8 @@ nt_describe <- function(data,
       out <- out %>% filter(.data$Variable != " Median (Q25% ; Q75%)")
     if (!any(measures == "median.range"))
       out <- out %>% filter(.data$Variable != " Median (Min ; Max)")
+    if (!any(measures == "missing"))
+      out <- out %>% filter(.data$Variable != " Missing")
   }
 
   if (save)
