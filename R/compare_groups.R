@@ -99,19 +99,18 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
   var.label <- extract_label(var, var.name)
   group.label <- extract_label(group, group.name)
   if (is.numeric(var)){
-      out <- nt_dist_qt_tg(var = var,
-                           group = group,
-                           test = test,
-                           alternative = alternative,
-                           conf.level = conf.level,
-                           paired = paired,
-                           norm.test = norm.test,
-                           format = format,
-                           digits.p = digits.p,
-                           digits.ci = digits.ci,
-                           var.name = var.name,
-                           var.label = var.label,
-                           group.label = group.label)
+    out <- nt_dist_qt_tg(var = var,
+                         group = group,
+                         test = test,
+                         alternative = alternative,
+                         conf.level = conf.level,
+                         paired = paired,
+                         norm.test = norm.test,
+                         format = format,
+                         digits.p = digits.p,
+                         digits.ci = digits.ci,
+                         var.label = var.label,
+                         group.label = group.label)
 
   } else {
     out <- nt_dist_ql_tg(var = var,
@@ -122,7 +121,6 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
                          format = format,
                          digits.p = digits.p,
                          digits.ci = digits.ci,
-                         var.name = var.name,
                          var.label = var.label,
                          group.label = group.label)
 
@@ -231,7 +229,6 @@ aux_compare_mg <- function(var, var.name, group, group.name = group.name,
                          test = test,
                          norm.test = norm.test,
                          digits.p = digits.p,
-                         var.name = var.name,
                          var.label = var.label,
                          group.label = group.label)
 
@@ -239,7 +236,6 @@ aux_compare_mg <- function(var, var.name, group, group.name = group.name,
     out <- nt_dist_ql_mg(var = var,
                          group = group,
                          digits.p = digits.p,
-                         var.name = var.name,
                          var.label = var.label,
                          group.label = group.label)
 

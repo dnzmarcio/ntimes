@@ -10,7 +10,7 @@ nt_dist_qt_tg <-  function(var, group, test,
                            alternative, conf.level, paired,
                            norm.test,
                            format, digits.p, digits.ci,
-                           var.name, var.label, group.label) {
+                           var.label, group.label) {
 
   data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
   nlg <- nlevels(fct_drop(data.test$g[!is.na(data.test$x)]))
@@ -196,8 +196,8 @@ nt_dist_qt_tg <-  function(var, group, test,
 #'@importFrom car leveneTest
 #'@importFrom stats oneway.test kruskal.test
 nt_dist_qt_mg <-  function(var, group, test,
-                           norm.test,
-                           digits.p, var.name, var.label, group.label) {
+                           norm.test, digits.p,
+                           var.label, group.label) {
 
   data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
   nlg <- nlevels(fct_drop(data.test$g[!is.na(data.test$x)]))
