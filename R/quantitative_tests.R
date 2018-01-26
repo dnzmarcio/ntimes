@@ -266,4 +266,65 @@ nt_dist_qt_mg <-  function(var, group, test,
     return(out)
 }
 
+#'@importFrom multcomp glht mcp
+#'@importFrom nparcomp nparcomp
+nt_dist_qt_mc <-  function(var, otest, group, alternative, contrast,
+                           digits.p, var.label, group.label) {
+
+  data.test <- data_frame(x = var, g = group[[1]])
+
+  if(otest == "ANOVA"){
+    av <- aov(x ~ g, data = data.test)
+    mc <- glht(av, linfct = mcp(g = contrast), alternative = alternative)
+    sm <- summary(mc)
+    p.value <- round(sm$test$pvalues, digits.p)
+
+    test <- paste(contrast)
+    dif <- as.character(rownames(sm[2]$linfct))
+    alt <- switch(alternative,
+                  "two.sided" = " != ",
+                  "greater" = " < ",
+                  "less" = " > ")
+    hypothesis <- gsub(" - ", alt, dif)
+
+    test <- paste0("Parametric ", contrast)
+
+    out <- data_frame(Variable = var.label, Group = group.label,
+                      Test = test, Hypothesis = hypothesis,
+                      `p value` = p.value)
+  } else{
+
+    alternative <- switch(alternative,
+                          "less" = "greater",
+                          "greater" = "less",
+                          "two.sided" = "two.sided")
+
+    npc <- try(nparcomp(x ~ g, data = data.test,  type = contrast,
+                        alternative = alternative, rounds = digits.p,
+                        asy.method = "mult.t",
+                        plot.simci = FALSE, info = FALSE),
+               silent = TRUE)
+
+    if (class(npc) != "try.error") {
+      p.value <- round(npc$Analysis[,6], 3)
+    } else {
+      p.value <- NA
+    }
+
+    test <- paste("Non-parametric", contrast)
+    dif <-rownames(npc$Contrast)
+    alt <- switch(alternative,
+                  "two.sided" = " != ",
+                  "greater" = " > ",
+                  "less" = " < ")
+    hypothesis <- gsub(" - ", alt, dif)
+
+
+    out <- data_frame(Variable = var.label, Group = group.label,
+                      Test = test, Hypothesis = hypothesis,
+                      `p value` = p.value)
+  }
+  return(out)
+}
+
 

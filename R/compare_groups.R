@@ -98,6 +98,7 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
 
   var.label <- extract_label(var, var.name)
   group.label <- extract_label(group, group.name)
+
   if (is.numeric(var)){
     out <- nt_dist_qt_tg(var = var,
                          group = group,
@@ -155,7 +156,7 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
 #'@param digits.p the number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character value indicating the name of output file in csv format to be saved.
-#'@param keep.data a logical value indicating if
+#'@param mc a logical value indicating if pairwise comparisons should will be performed.
 #'
 #'@details If \code{test = "automatic"}, the normality assumption will be verified by
 #'a normality test (Anderson-Daling (\link[nortest]{ad.test}),
@@ -182,7 +183,7 @@ nt_compare_mg <- function(data, group,
                           digits.p = 5,
                           save = FALSE,
                           file = "nt_compare_mg",
-                          keep.data = FALSE){
+                          mc = FALSE){
 
   group <- enquo(group)
 
@@ -197,15 +198,15 @@ nt_compare_mg <- function(data, group,
 
   temp <- map2(.x = vars, .y = vars.name, .f = aux_compare_mg,
                group = group, group.name = group.name,
-               test = test,
-               norm.test = norm.test, digits.p = digits.p)
+               test = test, norm.test = norm.test,
+               digits.p = digits.p, mc = mc)
 
   out <- Reduce(rbind, temp)
 
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
 
-  if (keep.data){
+  if (mc){
     result <- out
     out <- list()
     out$result <- result
@@ -216,12 +217,16 @@ nt_compare_mg <- function(data, group,
 }
 
 
-aux_compare_mg <- function(var, var.name, group, group.name = group.name,
+aux_compare_mg <- function(var, var.name, group, group.name,
                            test, norm.test,
-                           format, digits.p){
-
-  var.label <- extract_label(var, var.name)
-  group.label <- extract_label(group, group.name)
+                           format, digits.p, mc){
+  if (mc){
+    var.label <- var.name
+    group.label <- group.name
+  } else {
+    var.label <- extract_label(var, var.name)
+    group.label <- extract_label(group, group.name)
+  }
 
   if (is.numeric(var)){
     out <- nt_dist_qt_mg(var = var,
@@ -239,6 +244,72 @@ aux_compare_mg <- function(var, var.name, group, group.name = group.name,
                          var.label = var.label,
                          group.label = group.label)
 
+  }
+
+  return(out)
+}
+
+#'@importFrom tidyr spread
+#'@importFrom purrr pmap
+#'@export
+nt_compare_mc <- function(omnibus.test,
+                          alternative = "two.sided",
+                          contrast = "Tukey",
+                          digits.p = 2,
+                          format = TRUE,
+                          save = FALSE,
+                          file = "nt_distribution_mc") {
+
+
+  mc.test <- omnibus.test$result %>% filter(.data$`p value` < 0.05)
+  vars.name <- omnibus.test$result$Variable
+  group.name <- unique(omnibus.test$result$Group)
+  otest <- omnibus.test$result$Test
+
+  vars <- omnibus.test$data %>% select(vars.name)
+  group <- omnibus.test$data %>% select(group.name)
+
+  if (nlevels(fct_drop(group[[1]])) == 2)
+    stop("'group' should have more than two levels.")
+
+  temp <- pmap(list(vars, vars.name, otest), .f = aux_compare_mc,
+               group = group, group.name = group.name,
+               alternative = alternative, contrast = contrast,
+               digits.p = digits.p)
+  temp <- Reduce(rbind, temp)
+
+  if (format)
+    out <- temp %>% spread(key = "Hypothesis", value = "p value")
+
+  if(save)
+    write.csv(out, file = paste0(file, ".csv"))
+
+  return(out)
+}
+
+
+aux_compare_mc <- function(var, var.name, otest, group, group.name,
+                           alternative, contrast, digits.p){
+
+  var.label <- extract_label(var, var.name)
+  group.label <- extract_label(group, group.name)
+
+  if (is.numeric(var)){
+    out <- nt_dist_qt_mc(var = var,
+                         otest = otest,
+                         group = group,
+                         alternative = alternative,
+                         contrast = contrast,
+                         digits.p = digits.p,
+                         var.label = var.label,
+                         group.label = group.label)
+
+  } else {
+    out <- nt_dist_ql_mc(var = var,
+                         group = group,
+                         digits.p = digits.p,
+                         var.label = var.label,
+                         group.label = group.label)
   }
 
   return(out)
