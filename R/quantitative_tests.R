@@ -16,7 +16,7 @@ nt_dist_qt_tg <-  function(var, group, test,
   nlg <- nlevels(fct_drop(data.test$g[!is.na(data.test$x)]))
   lg <- levels(data.test$g)
 
-  if (nlg == 2 & all(as.numeric(table(data.test$g)) != 0))  {
+  if (nlg == 2)  {
 
     if (test == "auto"){
       p.norm <- data.test %>% nest(-.data$g) %>%
@@ -203,7 +203,7 @@ nt_dist_qt_mg <-  function(var, group, test,
   nlg <- nlevels(fct_drop(data.test$g[!is.na(data.test$x)]))
   lg <- levels(data.test$g)
 
-  if (nlg > 2 & all(as.numeric(table(data.test$g)) != 0))  {
+  if (nlg > 2)  {
 
     if (test == "auto"){
       p.norm <- data.test %>% nest(-.data$g) %>%
