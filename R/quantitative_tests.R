@@ -159,7 +159,11 @@ nt_dist_qt_tg <-  function(var, group, test,
       }
     }
 
-    hypothesis <- paste(lg[2], "=", lg[1])
+    alt <- switch(alternative,
+                  "two.sided" = " != ",
+                  "greater" = " < ",
+                  "less" = " > ")
+    hypothesis <- paste(lg[2], alt, lg[1])
 
   } else {
     p.value <- NA
@@ -247,7 +251,7 @@ nt_dist_qt_mg <-  function(var, group, test,
     }
 
     p.value <- result$p.value
-    hypothesis <- "All groups are equal"
+    hypothesis <- "AT least one group is different"
 
   } else {
     p.value <- NA

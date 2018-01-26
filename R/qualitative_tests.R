@@ -60,7 +60,7 @@ nt_dist_ql_tg <-  function(var, group,
     test <- ifelse(dim(tab) == 2, "McNemar", "Cochran-Mantel-Haenszel")
     lower <- NA
     upper <- NA
-    hypothesis <- "Marginal Homogeneity"
+    hypothesis <- "Marginal Heterogeneity"
   }
 
   out <- data_frame(Variable = var.label[[1]], Group = group.label[[1]],
@@ -112,7 +112,7 @@ nt_dist_ql_mg <-  function(var, group,
     }
   }
 
-  hypothesis <- "No association"
+  hypothesis <- "Association"
 
   out <- data_frame(Variable = var.label[[1]], Group = group.label[[1]],
                     Hypothesis = hypothesis,  Test = test,
