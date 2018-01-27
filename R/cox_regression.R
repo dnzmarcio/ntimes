@@ -198,7 +198,7 @@ fit_cox <- function(data, var.label, strata, digits, digits.p){
 #'
 #'fit.list[[1]] <- coxph(Surv(futime, fustat) ~ ecog.ps, data = ovarian)
 #'fit.list[[2]] <- coxph(Surv(futime, fustat) ~ resid.ds + rx, data = ovarian)
-#'fit.list[[3]] <- coxph(Surv(futime, fustat) ~ ecog.ps*rx, data = ovarian)
+#'fit.list[[3]] <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = ovarian)
 #'
 #'nt_table_coxph(fit.list, data = ovarian)
 #'
@@ -221,21 +221,29 @@ nt_table_coxph <- function(fit.list, data, save = FALSE, file = "nt_table_cox"){
 #'@importFrom broom tidy glance
 #'@importFrom tidyr separate unite
 #'@importFrom tibble data_frame
+#'@importFrom gsubfn gsubfn
 fit_multiple_cox <- function(fit, data){
 
-  vars.name <- names(fit$xlevels)
+  aux <- tidy(fit, exponentiate = TRUE)
 
-  group <- data %>% select(vars.name)
-  vars.label <- map2(group, vars.name, extract_label)
-  nlv <- map(group, function(x) out <- nlevels(x) - 1)
+  if (!is.null(fit$xlevels)){
+    levels <- as.character(unlist(fit$xlevels))
+    pat <- paste(levels, collapse = "|")
+    temp <- rep("", length(levels))
+    terms <- gsubfn(pat, setNames(as.list(temp), levels), aux$term)
+  }
 
-  temp <- tidy(fit, exponentiate = TRUE) %>%
-    separate(col = .data$term, into = c("Variable", "Group"),
-             sep = rep(vars.name, nlv)) %>%
-    mutate(Variable = rep(vars.label, nlv)) %>%
-    unite(col = "Group", .data$Variable, .data$Group, sep = ":") %>%
+  vars.name <- names(data)[names(data) %in% terms]
+  factors.name <- names(data %>% select_if(is.factor))
+  factors <- map2(select(data, intersect(vars.name, factors.name)),
+                  intersect(vars.name, factors.name), extract_label)
+  vars.label <- map2(select(data, vars.name), vars.name, extract_label) %>%
+    map_if(~ any(.x == factors), ~ paste0(.x, ":"))
+
+  temp <- aux %>% mutate(term = gsubfn(paste(vars.name, collapse = "|"),
+                                vars.label, term)) %>%
     select(-.data$std.error, -.data$statistic) %>%
-    transmute(.data$Group,
+    transmute(Group = .data$term,
               'HR (95% CI)' = paste0(round(.data$estimate, 2), " (",
                                      round(.data$conf.low, 2), " ; ",
                                      round(.data$conf.high, 2), ")"),

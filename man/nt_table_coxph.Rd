@@ -16,7 +16,8 @@ Tabulating results from fitted Proportional Hazards Cox models.
 }
 \examples{
 library(survival)
-library(ntimes)
+library(magrittr)
+library(dplyr)
 
 data(ovarian)
 ovarian <- ovarian \%>\% mutate(resid.ds = ql_var(resid.ds,
@@ -38,7 +39,7 @@ fit.list <- list()
 
 fit.list[[1]] <- coxph(Surv(futime, fustat) ~ ecog.ps, data = ovarian)
 fit.list[[2]] <- coxph(Surv(futime, fustat) ~ resid.ds + rx, data = ovarian)
-fit.list[[3]] <- coxph(Surv(futime, fustat) ~ ecog.ps + resid.ds + rx, data = ovarian)
+fit.list[[3]] <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = ovarian)
 
 nt_table_coxph(fit.list, data = ovarian)
 
