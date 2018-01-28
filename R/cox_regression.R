@@ -222,6 +222,7 @@ nt_multiple_cox <- function(fit.list, data, save = FALSE, file = "nt_table_cox")
 #'@importFrom tidyr separate unite
 #'@importFrom tibble data_frame
 #'@importFrom gsubfn gsubfn
+#'@importFrom survival coxph cox.zph
 aux_multiple_cox <- function(fit, data){
 
   aux <- tidy(fit, exponentiate = TRUE)
