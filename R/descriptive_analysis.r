@@ -204,9 +204,9 @@ format_quantitative <- function(var, group,
                       paste0(var.label, " (", unit.label, ")"))
 
   aux_variable <- c(var.label,
-                    paste(" Mean", "SD", sep = " \U00b1 "),
-                    " Median (Q25% ; Q75%)",
-                    " Median (Min ; Max)", " Missing")
+                    paste("  Mean", "SD", sep = " \U00b1 "),
+                    "  Median (Q25% ; Q75%)",
+                    "  Median (Min ; Max)", " Missing")
   aux_measures <- c("", var$mean.sd, var$median.q25.q75,
                     var$median.min.max, unique(var$missing))
 
