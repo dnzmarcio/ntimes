@@ -234,17 +234,19 @@ aux_multiple_cox <- function(fit, fit.names = NULL, data){
 
   aux <- tidy(fit, exponentiate = TRUE)
 
+  if (!is.null(fit.names))
+    aux$term <- gsub("\\.x", fit.names, aux$term)
+
   if (!is.null(fit$xlevels)){
     levels <- as.character(unlist(fit$xlevels))
     pat <- paste(levels, collapse = "|")
     temp <- rep("", length(levels))
     terms.name <- gsubfn(pat, setNames(as.list(temp), levels), aux$term)
-
-    if (!is.null(fit.names))
-      terms.name <- gsub("\\.x", fit.names, terms.name)
+    vars.name <- names(data)[names(data) %in% terms.name]
+  } else {
+    vars.name <- names(data)[names(data) %in% aux$term]
   }
 
-  vars.name <- names(data)[names(data) %in% terms.name]
   factors.name <- names(data %>% select_if(is.factor))
   factors <- map2(select(data, intersect(vars.name, factors.name)),
                   intersect(vars.name, factors.name), extract_label)
