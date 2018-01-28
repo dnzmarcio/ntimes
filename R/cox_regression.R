@@ -278,11 +278,9 @@ aux_multiple_cox <- function(fit, fit.names = NULL, data){
 
   first_row <- data_frame(Group = "Reference", 'HR (95% CI)' = "1", 'p value' = "")
   first_row <- bind_cols(first_row, aux)
-  last_row <- data_frame(Group = as.character(""), 'HR (95% CI)' = as.character(""),
-                         'p value' = as.character(""))
 
   aux <- full_join(first_row, temp, by = c("Group", "HR (95% CI)", "p value"))
-  out <- full_join(aux, last_row, by = c("Group", "HR (95% CI)", "p value")) %>%
+  out <- aux %>%
     replace_na(list(n = "", n.event = "", concordance = "", r.squared = "",
                     AIC = "", ph.assumption = ""))
   return(out)
