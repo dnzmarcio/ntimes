@@ -70,7 +70,7 @@ aux_dotplot <- function(var, var.name, group, group.name, binwidth,
                   binwidth = binwidth)
 
     if(save)
-      gp <- gp + ggsave(filename = paste0(var.name, ".jpeg"),
+      gp <- gp + ggsave(filename = paste0("dot_", var.name, ".jpeg"),
                         height = fig.height, width = fig.width)
 
     out <- gp
@@ -86,7 +86,7 @@ aux_dotplot <- function(var, var.name, group, group.name, binwidth,
 
     if (save)
       gp <- gp + ggsave(filename =
-                          paste0(var.name, "_",
+                          paste0("dot_", var.name, "_",
                                  group.name, ".jpeg"),
                         height = fig.height,
                         width = fig.width)
