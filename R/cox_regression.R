@@ -205,9 +205,9 @@ fit_cox <- function(data, var.label, strata, digits, digits.p){
 #'@importFrom purrr map
 #'@importFrom utils write.csv
 #'@export
-nt_table_coxph <- function(fit.list, data, save = FALSE, file = "nt_table_cox"){
+nt_multiple_cox <- function(fit.list, data, save = FALSE, file = "nt_table_cox"){
 
-  temp <- map(fit.list, fit_multiple_cox, data = data)
+  temp <- map(fit.list, aux_multiple_cox, data = data)
   out <- Reduce(rbind, temp)
 
   if (save)
@@ -222,7 +222,7 @@ nt_table_coxph <- function(fit.list, data, save = FALSE, file = "nt_table_cox"){
 #'@importFrom tidyr separate unite
 #'@importFrom tibble data_frame
 #'@importFrom gsubfn gsubfn
-fit_multiple_cox <- function(fit, data){
+aux_multiple_cox <- function(fit, data){
 
   aux <- tidy(fit, exponentiate = TRUE)
 
