@@ -246,6 +246,7 @@ aux_multiple_cox <- function(fit, fit.names = NULL, data){
   } else {
     vars.name <- names(data)[names(data) %in% aux$term]
   }
+  vars.name <- gsub("\\:", " x ", vars.name)
 
   factors.name <- names(data %>% select_if(is.factor))
   factors <- map2(select(data, intersect(vars.name, factors.name)),
