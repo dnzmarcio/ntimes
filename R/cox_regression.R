@@ -202,12 +202,19 @@ fit_cox <- function(data, var.label, strata, digits, digits.p){
 #'
 #'nt_table_coxph(fit.list, data = ovarian)
 #'
-#'@importFrom purrr map
+#'@importFrom purrr map map2
 #'@importFrom utils write.csv
 #'@export
 nt_multiple_cox <- function(fit.list, data, save = FALSE, file = "nt_table_cox"){
 
-  temp <- map(fit.list, aux_multiple_cox, data = data)
+  if(is.null(names(fit.list))){
+    temp <- map(fit.list, aux_multiple_cox, data = data)
+  } else {
+    fit.names <- names(fit.list)
+    temp <- map2(fit.list, fit.names, aux_multiple_cox, data = data)
+  }
+
+
   out <- Reduce(rbind, temp)
 
   if (save)
@@ -223,7 +230,7 @@ nt_multiple_cox <- function(fit.list, data, save = FALSE, file = "nt_table_cox")
 #'@importFrom tibble data_frame
 #'@importFrom gsubfn gsubfn
 #'@importFrom survival coxph cox.zph
-aux_multiple_cox <- function(fit, data){
+aux_multiple_cox <- function(fit, fit.names = NULL, data){
 
   aux <- tidy(fit, exponentiate = TRUE)
 
@@ -231,10 +238,13 @@ aux_multiple_cox <- function(fit, data){
     levels <- as.character(unlist(fit$xlevels))
     pat <- paste(levels, collapse = "|")
     temp <- rep("", length(levels))
-    terms <- gsubfn(pat, setNames(as.list(temp), levels), aux$term)
+    terms.name <- gsubfn(pat, setNames(as.list(temp), levels), aux$term)
+
+    if (!is.null(fit.names))
+      terms.name <- gsub("\\.x", fit.names, terms.name)
   }
 
-  vars.name <- names(data)[names(data) %in% terms]
+  vars.name <- names(data)[names(data) %in% terms.name]
   factors.name <- names(data %>% select_if(is.factor))
   factors <- map2(select(data, intersect(vars.name, factors.name)),
                   intersect(vars.name, factors.name), extract_label)
