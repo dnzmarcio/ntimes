@@ -65,11 +65,11 @@ nt_describe <- function(data,
   all.measures <- c("mean.sd", "median.iqr", "median.range")
   if (!all(measures != measures)){
     if (!any(measures == "mean.sd"))
-      out <- out %>% filter(.data$Variable != " Mean \U00b1 SD")
+      out <- out %>% filter(.data$Variable != "  Mean \U00b1 SD")
     if (!any(measures == "median.iqr"))
-      out <- out %>% filter(.data$Variable != " Median (Q25% ; Q75%)")
+      out <- out %>% filter(.data$Variable != "  Median (Q25% ; Q75%)")
     if (!any(measures == "median.range"))
-      out <- out %>% filter(.data$Variable != " Median (Min ; Max)")
+      out <- out %>% filter(.data$Variable != "  Median (Min ; Max)")
   }
 
   if (save)
@@ -204,9 +204,9 @@ format_quantitative <- function(var, group,
                       paste0(var.label, " (", unit.label, ")"))
 
   aux_variable <- c(var.label,
-                    paste(" Mean", "SD", sep = " \U00b1 "),
-                    " Median (Q25% ; Q75%)",
-                    " Median (Min ; Max)", " Missing")
+                    paste("  Mean", "SD", sep = " \U00b1 "),
+                    "  Median (Q25% ; Q75%)",
+                    "  Median (Min ; Max)", " Missing")
   aux_measures <- c("", var$mean.sd, var$median.q25.q75,
                     var$median.min.max, unique(var$missing))
 
