@@ -7,7 +7,10 @@
 #'@param status a numeric vector indicating status, 0 = censored, 1 = event at time.
 #'@param strata a logical vector indicating if strata should be considered.
 #'@param id a character vector containing the strata.
-#'
+#'@param digits a numerical value defining of digits to present the results.
+#'@param digits.p a numerical value defining number of digits to present the p-values.
+#'@param save a logical value indicating whether the output should be saved as a csv file.
+#'@param file a character indicating the name of output file in csv format to be saved.
 #'@examples
 #'library(survival)
 #'library(dplyr)
@@ -29,7 +32,8 @@
 #'@export
 nt_simple_cox <- function(data, time, status,
                           cluster = FALSE, strata = FALSE, id = NULL,
-                          digits = 2, digits.p = 3, save = FALSE){
+                          digits = 2, digits.p = 3, save = FALSE,
+                          file = "simple_cox"){
 
   data <- as_data_frame(data)
   time <- enquo(time)
@@ -173,6 +177,8 @@ fit_cox <- function(data, var.label, strata, digits, digits.p){
 #'
 #'@param fit.list a list of fitted models.
 #'@param data a data frame containing the variables used to fit the models listed in fit.list.
+#'@param save a logical value indicating whether the output should be saved as a csv file.
+#'@param file a character indicating the name of output file in csv format to be saved.
 #'
 #'@examples library(survival)
 #'library(magrittr)

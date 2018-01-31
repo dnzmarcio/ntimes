@@ -10,6 +10,10 @@ nt_multiple_cox(fit.list, data, save = FALSE, file = "nt_table_cox")
 \item{fit.list}{a list of fitted models.}
 
 \item{data}{a data frame containing the variables used to fit the models listed in fit.list.}
+
+\item{save}{a logical value indicating whether the output should be saved as a csv file.}
+
+\item{file}{a character indicating the name of output file in csv format to be saved.}
 }
 \description{
 Tabulating results from fitted Proportional Hazards Cox models.
