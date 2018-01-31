@@ -120,7 +120,7 @@ norm_test <-  function(var, group = NULL,
     out <- aux_norm_test(var, test = test)
   } else {
     data.test <- data_frame(var, g = group)
-    out <- data.test %>% nest(-.data$g) %>%
+    out <- data.test %>% arrange(.data$g) %>% nest(-.data$g) %>%
       mutate(p = map(.data$data, ~ aux_norm_test(.$var, test = test))) %>%
       unnest(.data$p, .drop = TRUE) %>%
       select(Group = .data$g, `p value` = .data$p)
