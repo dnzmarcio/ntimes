@@ -5,7 +5,8 @@
 \title{Simple Cox Regression}
 \usage{
 nt_simple_cox(data, time, status, cluster = FALSE, strata = FALSE,
-  id = NULL, digits = 2, digits.p = 3, save = FALSE)
+  id = NULL, digits = 2, digits.p = 3, save = FALSE,
+  file = "simple_cox")
 }
 \arguments{
 \item{data}{a data frame with the variables.}
@@ -17,6 +18,14 @@ nt_simple_cox(data, time, status, cluster = FALSE, strata = FALSE,
 \item{strata}{a logical vector indicating if strata should be considered.}
 
 \item{id}{a character vector containing the strata.}
+
+\item{digits}{a numerical value defining of digits to present the results.}
+
+\item{digits.p}{a numerical value defining number of digits to present the p-values.}
+
+\item{save}{a logical value indicating whether the output should be saved as a csv file.}
+
+\item{file}{a character indicating the name of output file in csv format to be saved.}
 }
 \description{
 Performing simple Cox regression.
