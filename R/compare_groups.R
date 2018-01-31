@@ -96,7 +96,11 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
                            paired = paired, norm.test,
                            format, digits.p, digits.ci){
 
+  unit.label <- extract_unit(var)
   var.label <- extract_label(var, var.name)
+  ifelse(unit.label == "", var.label,
+         paste0(var.label, " (", unit.label, ")"))
+
   group.label <- extract_label(group, group.name)
 
   if (is.numeric(var)){
@@ -224,7 +228,11 @@ aux_compare_mg <- function(var, var.name, group, group.name,
     var.label <- var.name
     group.label <- group.name
   } else {
+    unit.label <- extract_unit(var)
     var.label <- extract_label(var, var.name)
+    ifelse(unit.label == "", var.label,
+           paste0(var.label, " (", unit.label, ")"))
+
     group.label <- extract_label(group, group.name)
   }
 
