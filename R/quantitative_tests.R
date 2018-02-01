@@ -92,7 +92,7 @@ nt_dist_qt_tg <-  function(var, group, test,
 
     if (test == "par"){
       p.var <- leveneTest(data.test$x ~ data.test$g)
-      p.var <- data.test$'Pr(>F)'[[1]]
+      p.var <- pvar$'Pr(>F)'[[1]]
 
       if (p.var > 0.05) {
         result <- t.test(data.test$x ~ data.test$g,
@@ -117,8 +117,7 @@ nt_dist_qt_tg <-  function(var, group, test,
 
     if (test == "npar"){
       p.var <- leveneTest(data.test$x ~ data.test$g)
-      p.var <- data.test$'Pr(>F)'[[1]]
-
+      p.var <- pvar$'Pr(>F)'[[1]]
 
       if (p.var > 0.05) {
         result <- wilcox.test(data.test$x ~ data.test$g,
