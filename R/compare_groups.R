@@ -238,7 +238,7 @@ aux_compare_mg <- function(var, var.name, group, group.name,
 =======
   unit.label <- extract_unit(var)
   var.label <- extract_label(var, var.name)
-  ifelse(unit.label == "", var.label,
+  var.label <- ifelse(unit.label == "", var.label,
          paste0(var.label, " (", unit.label, ")"))
 
   group.label <- extract_label(group, group.name)
