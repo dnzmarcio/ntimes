@@ -154,7 +154,7 @@ fit_cox <- function(data, var.label, strata, digits, digits.p){
 
     out <- full_join(first_row, temp, by = c("Variable", "Group", 'HR (95% CI)', 'p value')) %>%
       replace_na(list(n = "", n.event = "", concordance = "", r.squared = "",
-                      AIC = "", ph.assumption = "", 'p value' = ""))
+                      AIC = "", ph.assumption = ""))
 
   } else {
     aux <- glance(mod) %>% select(.data$n, n.event = .data$nevent,
