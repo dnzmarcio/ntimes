@@ -143,7 +143,7 @@ fit_cox <- function(data, var.label, strata, digits, digits.p){
                               na.exclude(as.character(unique(data$var)[
                                 !(unique(data$var) %in% temp$Group)])),
                             'HR (95% CI)' = "Reference",
-                            'p value' = NA)
+                            'p value' = ifelse(all(is.na(temp$p.value)), NA, ""))
 
     aux <- glance(mod) %>% select(.data$n, n.event = .data$nevent, .data$concordance,
                                   .data$r.squared, .data$AIC) %>%
