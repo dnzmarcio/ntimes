@@ -112,6 +112,8 @@ fit_cox <- function(data, var.label, strata, digits, digits.p){
   if (!strata){
     mod <- coxph(Surv(time, status) ~ var, data = data)
     temp <- tidy(mod, exponentiate = TRUE) %>%
+      mutate(statistic = ifelse(!is.finite(statistic), NA, statistic),
+             p.value = ifelse(!is.finite(p.value), NA, p.value)) %>%
       separate(col = .data$term, into = c("var", "Group"), sep = "ar") %>%
       select(-.data$var, -.data$std.error, -.data$statistic) %>%
       transmute(Variable = var.label, .data$Group,
