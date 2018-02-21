@@ -2,6 +2,12 @@
 #'
 #'@description Plot dotplot for several variables.
 #'
+#'@import ggplot2
+#'@importFrom stats median
+#'@importFrom magrittr %>%
+#'@importFrom tibble data_frame
+#'@importFrom rlang .data
+#'
 #'@param data a data frame with the variables.
 #'@param group an optional data frame with the group variable.
 #'@param binwidth a numerical value specifying the bin width.
@@ -110,11 +116,6 @@ aux_dotplot <- function(var, var.name, group, group.name, binwidth,
 #'
 #'@return a ggplot object.
 #'
-#'@import ggplot2
-#'@importFrom stats median
-#'@importFrom magrittr %>%
-#'@importFrom tibble data_frame
-#'@importFrom rlang .data
 #'@export
 std_dotplot <- function(var, var.label, binwidth){
 
@@ -157,11 +158,6 @@ std_dotplot <- function(var, var.label, binwidth){
 #'
 #'@return a ggplot object.
 #'
-#'@import ggplot2
-#'@importFrom stats median
-#'@importFrom magrittr %>%
-#'@importFrom tibble data_frame
-#'@importFrom rlang .data
 #'@export
 std_dotplot_group <- function(var, group, var.label, group.label, binwidth){
 

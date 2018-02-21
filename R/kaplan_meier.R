@@ -40,6 +40,13 @@
 #'data_model %>% nt_km(time = time, status = status)
 #'
 #'
+#'@importFrom broom tidy
+#'@importFrom tidyr separate
+#'@importFrom cowplot plot_grid
+#'@importFrom scales percent
+#'@importFrom survival survfit Surv survdiff
+#'@importFrom stats pchisq
+#'
 #'@export
 nt_km <-  function(data, time, status,
                    xlab = "Time", ylab = "Survival",
@@ -115,10 +122,6 @@ aux_km <- function(var, var.name, time, status, xlab, ylab,
 
 #'Standard Kaplan-Meier curve
 #'
-#'@importFrom broom tidy
-#'@importFrom tidyr separate
-#'@importFrom cowplot plot_grid
-#'@importFrom scales percent
 #'@description A function to plot a Kaplan-Meier curve without groups.
 #'
 #'@param time a numeric vector.
@@ -219,14 +222,6 @@ std_km <- function(time, status, xlab, ylab){
 #'It can be modified by the user.
 #'
 #'@return a ggplot object.
-#'
-#'@importFrom survival survfit Surv survdiff
-#'@importFrom broom tidy
-#'@importFrom tidyr separate
-#'@importFrom cowplot plot_grid
-#'@importFrom scales percent
-#'@importFrom survival survdiff
-#'@importFrom stats pchisq
 #'
 #'@export
 std_km_group <- function(time, status, var, var.label,

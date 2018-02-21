@@ -2,11 +2,11 @@
 #'
 #'@description Plot barplot for several variables.
 #'
-#'@importFrom purrr map2
-#'@importFrom dplyr select
+#'@importFrom stats na.omit
+#'@importFrom dplyr select count group_by mutate
 #'@importFrom magrittr %>%
+#'@importFrom tibble data_frame
 #'@importFrom rlang .data quo_is_null enquo
-#'@importFrom tibble as_data_frame
 #'
 #'@param data a data frame with the variables.
 #'@param group an optional data frame with the group variable.
@@ -111,12 +111,6 @@ aux_barplot <- function(var, var.name, group, group.name, ylab,
 
 #'Standard barplot
 #'
-#'@importFrom stats na.omit
-#'@importFrom dplyr count group_by mutate
-#'@importFrom magrittr %>%
-#'@importFrom tibble data_frame
-#'@importFrom rlang .data
-#'
 #'@description A function to plot a barplot without groups.
 #'
 #'@param var a character vector.
@@ -155,12 +149,6 @@ std_barplot <- function(var, var.label, ylab){
 }
 
 #'Standard barplot by group
-#'
-#'@importFrom stats na.omit
-#'@importFrom dplyr count group_by mutate
-#'@importFrom magrittr %>%
-#'@importFrom tibble data_frame
-#'@importFrom rlang .data
 #'
 #'@description A function to plot a barplot with groups.
 #'
