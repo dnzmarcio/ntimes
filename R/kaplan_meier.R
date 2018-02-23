@@ -323,7 +323,7 @@ std_km_group <- function(time, status, var, var.label,
           axis.ticks.y = element_blank())
 
   ## Combining plots
-  out <- plot_grid(surv.plot, risk.table, nrow = 2,
+  out <- cowplot::plot_grid(surv.plot, risk.table, nrow = 2,
                    align = "v", rel_heights = c(3, 1))
 
   return(out)
