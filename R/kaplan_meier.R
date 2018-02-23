@@ -110,7 +110,7 @@ aux_km <- function(var, var.name, time, status, xlab, ylab,
 
     if (save)
       out <- out +
-      ggsave(filename = paste0("_km_", var.name, ".jpeg"),
+      ggsave(filename = paste0("km_", var.name, ".jpeg"),
              height = fig.height, width = fig.width)
 
   } else {
