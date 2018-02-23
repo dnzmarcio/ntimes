@@ -76,7 +76,7 @@ nt_km <-  function(data, time, status,
   gp <- std_fun(time, status, xlab = xlab, ylab = ylab)
 
   if(save)
-    gp <- gp + ggsave(filename = "0_overall.jpeg",
+    gp <- gp + ggsave(filename = "km_overall.jpeg",
                       height = fig.height, width = fig.width)
 
 
