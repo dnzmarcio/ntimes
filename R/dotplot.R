@@ -4,7 +4,7 @@
 #'
 #'@param data a data frame with the variables.
 #'@param group an optional data frame with the group variable.
-#'@param binwidth a numerical value specifying the bin width.
+#'@param binwidth a numerical vector specifying the bin width for each variable.
 #'@param save a logical value indicating whether the output
 #'should be saved as a jpeg file.
 #'@param fig.height a numeric value indicating the height (in) of the file.
@@ -55,15 +55,17 @@ nt_dotplot <-  function(data, group = NULL, binwidth,
   }
   vars.name <- names(vars)
 
-  out <- map2(.x = vars, .y = vars.name, .f = aux_dotplot,
-              group = group, group.name = group.name, binwidth = binwidth,
+  L <- list(vars, vars.name, binwidth)
+
+  out <- map2(.l = L, .f = aux_dotplot,
+              group = group, group.name = group.name,
               fig.height = fig.height, fig.width = fig.width, save = save,
               std_fun = std_fun, std_fun_group = std_fun_group)
 
   return(out)
 }
 
-aux_dotplot <- function(var, var.name, group, group.name, binwidth,
+aux_dotplot <- function(var, var.name, binwidth, group, group.name,
                         fig.height, fig.width, save, std_fun, std_fun_group){
 
   out <- list()
@@ -108,6 +110,7 @@ aux_dotplot <- function(var, var.name, group, group.name, binwidth,
 #'
 #'@param var a numeric vector.
 #'@param var.label a character value specifying the variable label.
+#'@param binwidth a numerical value specifying the bin width.
 #'
 #'@details This function defines the standard dotplot without groups to be
 #'plotted by the function \code{\link{nt_dotplot}}. It can be modified by
@@ -116,7 +119,7 @@ aux_dotplot <- function(var, var.name, group, group.name, binwidth,
 #'@return a ggplot object.
 #'
 #'@export
-std_dotplot <- function(var, var.label, binwidth){
+std_dotplot <- function(var, binwidth, var.label){
 
   ### Data
   data_plot <- data_frame(var = var)
@@ -150,6 +153,7 @@ std_dotplot <- function(var, var.label, binwidth){
 #'@param group a character vector.
 #'@param var.label a character value specifying the variable label.
 #'@param group.label a character value specifying the group label.
+#'@param binwidth a numerical value specifying the bin width.
 #'
 #'@details This function defines the standard dotplot with groups to be
 #'plotted by the function \code{\link{nt_dotplot}}. It can be modified by
@@ -158,7 +162,7 @@ std_dotplot <- function(var, var.label, binwidth){
 #'@return a ggplot object.
 #'
 #'@export
-std_dotplot_group <- function(var, group, var.label, group.label, binwidth){
+std_dotplot_group <- function(var, group, binwidth, var.label, group.label){
 
   ### Data
   data_plot <- data_frame(var = var, group = group)
