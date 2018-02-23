@@ -230,19 +230,10 @@ aux_compare_mg <- function(var, var.name, group, group.name,
     unit.label <- extract_unit(var)
     var.label <- extract_label(var, var.name)
     var.label <- ifelse(unit.label == "", var.label,
-           paste0(var.label, " (", unit.label, ")"))
+                        paste0(var.label, " (", unit.label, ")"))
 
-<<<<<<< c48cccfbf7dfe7fb1f84d2d868d86433f0dd67ca
     group.label <- extract_label(group, group.name)
   }
-=======
-  unit.label <- extract_unit(var)
-  var.label <- extract_label(var, var.name)
-  var.label <- ifelse(unit.label == "", var.label,
-         paste0(var.label, " (", unit.label, ")"))
-
-  group.label <- extract_label(group, group.name)
->>>>>>> Match variable label + unit label between tables.
 
   if (is.numeric(var)){
     out <- nt_dist_qt_mg(var = var,

@@ -99,8 +99,8 @@ aux_barplot <- function(var, var.name, group, group.name, ylab,
 
     if (save)
       gp <- gp + ggsave(filename =
-                          paste0("bar_", var.name, "_",
-                                 group.name, ".jpeg"),
+                          paste0("bar_", group.name, "_",
+                                 var.name, ".jpeg"),
                         height = fig.height,
                         width = fig.width)
 
