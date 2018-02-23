@@ -2,12 +2,6 @@
 #'
 #'@description Plot dotplot for several variables.
 #'
-#'@import ggplot2
-#'@importFrom stats median
-#'@importFrom magrittr %>%
-#'@importFrom tibble data_frame
-#'@importFrom rlang .data
-#'
 #'@param data a data frame with the variables.
 #'@param group an optional data frame with the group variable.
 #'@param binwidth a numerical value specifying the bin width.
@@ -35,6 +29,11 @@
 #'data(iris)
 #'
 #'iris %>% nt_dotplot(group = Species)
+#'
+#'@import ggplot2 dplyr
+#'@importFrom stats median
+#'@importFrom tibble as_data_frame
+#'@importFrom rlang .data quo_is_null enquo
 #'
 #'@export
 nt_dotplot <-  function(data, group = NULL, binwidth,

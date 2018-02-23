@@ -39,13 +39,15 @@
 #'data_model <- lung %>% dplyr::select(sex, ph.ecog, time, status)
 #'data_model %>% nt_km(time = time, status = status)
 #'
-#'
+#'@import ggplot2 dplyr
 #'@importFrom broom tidy
 #'@importFrom tidyr separate
 #'@importFrom cowplot plot_grid
 #'@importFrom scales percent
+#'@importFrom tibble as_data_frame
 #'@importFrom survival survfit Surv survdiff
 #'@importFrom stats pchisq
+#'@importFrom rlang .data quo_is_null enquo
 #'
 #'@export
 nt_km <-  function(data, time, status,
@@ -134,24 +136,19 @@ aux_km <- function(var, var.name, time, status, xlab, ylab,
 #'
 #'@return a ggplot object.
 #'
-#'@importFrom survival survfit Surv
-#'@importFrom tibble data_frame
-#'@importFrom dplyr bind_rows filter
-#'@importFrom cowplot plot_grid
-#'@import ggplot2
 #'@export
 std_km <- function(time, status, xlab, ylab){
 
   ### Data
   data.model <- data.frame(time, status)
-  fit <- survfit(Surv(time, status) ~ 1, data = data.model)
+  fit <- survival::survfit(Surv(time, status) ~ 1, data = data.model)
 
-  first.row <- data_frame(time = 0, n.risk = nrow(data.model),
+  first.row <- data.frame(time = 0, n.risk = nrow(data.model),
                           n.event = 0, n.censor = 0,
                           estimate = 1, std.error = NA,
                           conf.high = 1, conf.low = 1)
 
-  data.plot <- bind_rows(first.row, tidy(fit))
+  data.plot <- bind_rows(first.row, broom::tidy(fit))
 
   ### Basic plot
   surv.plot <- ggplot(data.plot, aes_string(x = "time", y = "estimate")) +
@@ -164,7 +161,7 @@ std_km <- function(time, status, xlab, ylab){
 
   ### Changing from proportion to percentage
   surv.plot <- surv.plot +
-    scale_y_continuous(labels = percent, limits = c(0, 1))
+    scale_y_continuous(labels = scales::percent, limits = c(0, 1))
 
   ### Adding censor marks
   data.censor <- data.plot %>% filter(.data$n.censor > 0)
@@ -186,7 +183,8 @@ std_km <- function(time, status, xlab, ylab){
   ## Data
   x.ticks <- ggplot_build(surv.plot)$layout$panel_ranges[[1]]$x.major_source
   table <- summary(fit, times = x.ticks)
-  data.table <- data_frame(time = table$time, n.risk = table$n.risk)
+  data.table <- data.frame(time = table$time, n.risk = table$n.risk)
+
   ## Basic plot
   risk.table <- ggplot(data.table, aes_string(x = "time", y = "1")) +
     geom_text(aes_string(label = "n.risk"))
@@ -200,7 +198,7 @@ std_km <- function(time, status, xlab, ylab){
           axis.ticks.y = element_blank())
 
   ## Combining plots
-  out <- plot_grid(surv.plot, risk.table, nrow = 2,
+  out <- cowplot::plot_grid(surv.plot, risk.table, nrow = 2,
                    align = "v", rel_heights = c(3, 1))
 
   return(out)
@@ -229,7 +227,7 @@ std_km_group <- function(time, status, var, var.label,
 
   ### Data
   data.model <- data.frame(time, status, var)
-  fit <- survfit(Surv(time, status) ~ var, data = data.model)
+  fit <- survival::survfit(Surv(time, status) ~ var, data = data.model)
 
   first.row <- data.frame(time = 0, n.risk = as.numeric(table(var)),
                           n.event = 0, n.censor = 0,
@@ -237,7 +235,7 @@ std_km_group <- function(time, status, var, var.label,
                           conf.high = 1, conf.low = 1,
                           group = levels(var))
 
-  data.plot <- tidy(fit) %>%
+  data.plot <- broom::tidy(fit) %>%
     separate(.data$strata, into = c("var", "group"), sep = "r=") %>%
     select(-var)
   data.plot <- rbind(first.row, data.plot) %>%
@@ -260,7 +258,7 @@ std_km_group <- function(time, status, var, var.label,
 
 
   ### Changing from proportion to percentage
-  surv.plot <- surv.plot + scale_y_continuous(labels = percent,
+  surv.plot <- surv.plot + scale_y_continuous(labels = scales::percent,
                                               limits = c(0, 1))
 
   ### Adding censor marks
@@ -281,8 +279,8 @@ std_km_group <- function(time, status, var, var.label,
 
 
   ### Adding p-values
-  test <- survdiff(Surv(time, status) ~ var, data = data.model)
-  p <- 1 - pchisq(test$chisq, 1)
+  test <- survival::survdiff(Surv(time, status) ~ var, data = data.model)
+  p <- 1 - stats::pchisq(test$chisq, 1)
   p <- ifelse(round(p, 3) != 0,
               paste0("p = ", round(p, 3)),
               "p < 0.001")

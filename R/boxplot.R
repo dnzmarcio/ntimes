@@ -2,12 +2,6 @@
 #'
 #'@description Plot boxplot for several variables.
 #'
-#'@importFrom purrr map2
-#'@importFrom dplyr select
-#'@importFrom magrittr %>%
-#'@importFrom rlang .data quo_is_null enquo
-#'@importFrom tibble as_data_frame
-#'
 #'@param data a data frame with the variables.
 #'@param group an optional data frame with the group variable.
 #'@param save a logical value indicating whether the output
@@ -35,6 +29,12 @@
 #'data(iris)
 #'
 #'iris %>% nt_boxplot(group = Species)
+#'
+#'@import ggplot2 dplyr
+#'@importFrom purrr map2
+#'@importFrom magrittr %>%
+#'@importFrom rlang .data quo_is_null enquo
+#'@importFrom tibble as_data_frame
 #'
 #'@export
 nt_boxplot <-  function(data, group = NULL,

@@ -2,12 +2,6 @@
 #'
 #'@description Plot barplot for several variables.
 #'
-#'@importFrom stats na.omit
-#'@importFrom dplyr select count group_by mutate
-#'@importFrom magrittr %>%
-#'@importFrom tibble data_frame
-#'@importFrom rlang .data quo_is_null enquo
-#'
 #'@param data a data frame with the variables.
 #'@param group an optional data frame with the group variable.
 #'@param ylab a character value specifying the y axis label.
@@ -41,6 +35,13 @@
 #'          Sepal.Length.C = ifelse(Sepal.Length > 5, "> 5", "<= 5"),
 #'          Sepal.Width.C = ifelse(Sepal.Width > 3.5, "> 3.5", "<= 3.5"))
 #'vars %>% nt_barplot(group = Species)
+#'
+#'@import ggplot2 dplyr
+#'@importFrom stats na.omit
+#'@importFrom dplyr select count group_by mutate
+#'@importFrom tibble as_data_frame
+#'@importFrom magrittr %>%
+#'@importFrom rlang .data quo_is_null enquo
 #'
 #'@export
 nt_barplot <-  function(data, group = NULL, ylab = "Percent (%)",
@@ -176,8 +177,8 @@ std_barplot_group <- function(var, group, var.label, group.label, ylab){
 
   ### Basic plot
   out <- ggplot(data_plot, aes_string(x = "group",
-                               y = "perc",
-                               fill = "var")) +
+                                      y = "perc",
+                                      fill = "var")) +
     geom_bar(stat = 'identity', position = position_dodge(width = .9))
 
   ### Formatting
