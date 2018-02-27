@@ -4,12 +4,14 @@
 \alias{std_dotplot_group}
 \title{Standard dotplot by group}
 \usage{
-std_dotplot_group(var, group, var.label, group.label, binwidth)
+std_dotplot_group(var, group, binwidth, var.label, group.label)
 }
 \arguments{
 \item{var}{a numeric vector.}
 
 \item{group}{a character vector.}
+
+\item{binwidth}{a numerical value specifying the bin width.}
 
 \item{var.label}{a character value specifying the variable label.}
 

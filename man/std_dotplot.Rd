@@ -4,10 +4,12 @@
 \alias{std_dotplot}
 \title{Standard dotplot}
 \usage{
-std_dotplot(var, var.label, binwidth)
+std_dotplot(var, binwidth, var.label)
 }
 \arguments{
 \item{var}{a numeric vector.}
+
+\item{binwidth}{a numerical value specifying the bin width.}
 
 \item{var.label}{a character value specifying the variable label.}
 }
