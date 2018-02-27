@@ -41,6 +41,7 @@ The function is a wrapper of \link[nortest]{ad.test},
 library(magrittr)
 data(iris)
 
+iris \%>\% select(-Species) \%>\% nt_norm_test()
 iris \%>\% nt_norm_test(group = Species)
 
 }
