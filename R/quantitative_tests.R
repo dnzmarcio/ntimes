@@ -250,7 +250,7 @@ nt_dist_qt_mg <-  function(var, group, test,
     }
 
     p.value <- result$p.value
-    hypothesis <- "AT least one group is different"
+    hypothesis <- "At least one group is different"
 
   } else {
     p.value <- NA
