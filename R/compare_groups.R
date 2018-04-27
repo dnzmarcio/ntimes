@@ -282,11 +282,8 @@ nt_compare_mc <- function(omnibus.test,
   temp <- pmap(list(vars, vars.name, otest), .f = aux_compare_mc,
                group = group, group.name = group.name,
                alternative = alternative, contrast = contrast,
-               digits.p = digits.p)
+               format = format, digits.p = digits.p)
   out <- Reduce(rbind, temp)
-
-  if (format)
-    out <- out %>% spread(key = "Hypothesis", value = "p value", sep = ": ")
 
   if(save)
     write.csv(out, file = paste0(file, ".csv"))
@@ -296,7 +293,7 @@ nt_compare_mc <- function(omnibus.test,
 
 
 aux_compare_mc <- function(var, var.name, otest, group, group.name,
-                           alternative, contrast, digits.p){
+                           alternative, contrast, format, digits.p){
 
   var.label <- extract_label(var, var.name)
   group.label <- extract_label(group, group.name)
@@ -307,6 +304,7 @@ aux_compare_mc <- function(var, var.name, otest, group, group.name,
                          group = group,
                          alternative = alternative,
                          contrast = contrast,
+                         format = format,
                          digits.p = digits.p,
                          var.label = var.label,
                          group.label = group.label)
