@@ -283,10 +283,10 @@ nt_compare_mc <- function(omnibus.test,
                group = group, group.name = group.name,
                alternative = alternative, contrast = contrast,
                digits.p = digits.p)
-  temp <- Reduce(rbind, temp)
+  out <- Reduce(rbind, temp)
 
   if (format)
-    out <- temp %>% spread(key = "Hypothesis", value = "p value", sep = ": ")
+    out <- out %>% spread(key = "Hypothesis", value = "p value", sep = ": ")
 
   if(save)
     write.csv(out, file = paste0(file, ".csv"))
