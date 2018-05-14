@@ -30,7 +30,7 @@ should be presented in the Quantile-Quantile plot.}
 \description{
 Perform Anderson-Darling, Shapiro-Francia,
 Kolmogorov-Smirnov, Cramer-vonMises, and Pearson normality tests
-for several variables. In addition, it also plots a Quantile-Quantile plot.
+for several variables. In addition, it also plots a Quantile-Quantile plot and a histogram.
 }
 \details{
 The function is a wrapper of \link[nortest]{ad.test},
