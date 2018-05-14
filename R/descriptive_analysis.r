@@ -64,13 +64,13 @@ nt_describe <- function(data,
   out <- Reduce(rbind, temp)
 
   if (all(measures != "mean.sd"))
-    out <- out %>% filter(.data$Variable != " Mean \U00b1 SD")
+    out <- out %>% filter(.data$Variable != "  Mean \U00b1 SD")
   if (all(measures != "median.iqr"))
-    out <- out %>% filter(.data$Variable != " Median (Q25% ; Q75%)")
+    out <- out %>% filter(.data$Variable != "  Median (Q25% ; Q75%)")
   if (all(measures != "median.range"))
-    out <- out %>% filter(.data$Variable != " Median (Min ; Max)")
+    out <- out %>% filter(.data$Variable != "  Median (Min ; Max)")
   if (all(measures != "missing"))
-    out <- out %>% filter(.data$Variable != " Missing")
+    out <- out %>% filter(.data$Variable != "  Missing")
 
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
@@ -204,9 +204,9 @@ format_quantitative <- function(var, group,
                       paste0(var.label, " (", unit.label, ")"))
 
   aux_variable <- c(var.label,
-                    paste(" Mean", "SD", sep = " \U00b1 "),
-                    " Median (Q25% ; Q75%)",
-                    " Median (Min ; Max)", " Missing")
+                    paste("  Mean", "SD", sep = " \U00b1 "),
+                    "  Median (Q25% ; Q75%)",
+                    "  Median (Min ; Max)", " Missing")
   aux_measures <- c("", var$mean.sd, var$median.q25.q75,
                     var$median.min.max, unique(var$missing))
 

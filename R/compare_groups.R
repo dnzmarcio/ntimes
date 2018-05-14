@@ -100,7 +100,6 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
   var.label <- extract_label(var, var.name)
   var.label <- ifelse(unit.label == "", var.label,
          paste0(var.label, " (", unit.label, ")"))
-
   group.label <- extract_label(group, group.name)
 
   if (is.numeric(var)){
@@ -231,7 +230,7 @@ aux_compare_mg <- function(var, var.name, group, group.name,
     unit.label <- extract_unit(var)
     var.label <- extract_label(var, var.name)
     var.label <- ifelse(unit.label == "", var.label,
-           paste0(var.label, " (", unit.label, ")"))
+                        paste0(var.label, " (", unit.label, ")"))
 
     group.label <- extract_label(group, group.name)
   }
@@ -283,11 +282,8 @@ nt_compare_mc <- function(omnibus.test,
   temp <- pmap(list(vars, vars.name, otest), .f = aux_compare_mc,
                group = group, group.name = group.name,
                alternative = alternative, contrast = contrast,
-               digits.p = digits.p)
-  temp <- Reduce(rbind, temp)
-
-  if (format)
-    out <- temp %>% spread(key = "Hypothesis", value = "p value", sep = ": ")
+               format = format, digits.p = digits.p)
+  out <- Reduce(rbind, temp)
 
   if(save)
     write.csv(out, file = paste0(file, ".csv"))
@@ -297,7 +293,7 @@ nt_compare_mc <- function(omnibus.test,
 
 
 aux_compare_mc <- function(var, var.name, otest, group, group.name,
-                           alternative, contrast, digits.p){
+                           alternative, contrast, format, digits.p){
 
   var.label <- extract_label(var, var.name)
   group.label <- extract_label(group, group.name)
@@ -308,6 +304,7 @@ aux_compare_mc <- function(var, var.name, otest, group, group.name,
                          group = group,
                          alternative = alternative,
                          contrast = contrast,
+                         format = format,
                          digits.p = digits.p,
                          var.label = var.label,
                          group.label = group.label)

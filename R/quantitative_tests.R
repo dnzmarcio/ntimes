@@ -92,7 +92,7 @@ nt_dist_qt_tg <-  function(var, group, test,
 
     if (test == "par"){
       p.var <- leveneTest(data.test$x ~ data.test$g)
-      p.var <- pvar$'Pr(>F)'[[1]]
+      p.var <- p.var$'Pr(>F)'[[1]]
 
       if (p.var > 0.05) {
         result <- t.test(data.test$x ~ data.test$g,
@@ -117,7 +117,7 @@ nt_dist_qt_tg <-  function(var, group, test,
 
     if (test == "npar"){
       p.var <- leveneTest(data.test$x ~ data.test$g)
-      p.var <- pvar$'Pr(>F)'[[1]]
+      p.var <- p.var$'Pr(>F)'[[1]]
 
       if (p.var > 0.05) {
         result <- wilcox.test(data.test$x ~ data.test$g,
@@ -178,7 +178,7 @@ nt_dist_qt_tg <-  function(var, group, test,
                     Test = test, p.value) %>%
     mutate(Lower = round(.data$Lower, digits.ci),
            Upper = round(.data$Upper, digits.ci),
-           'p value' = round(.data$p.value, digits.p))
+           'p value' = round(.data$p.value, digits.p), -.data$p.value)
 
   if (format){
     out <- out %>% mutate('95% CI' = paste0("(", .data$Lower, " ; ",
@@ -250,7 +250,7 @@ nt_dist_qt_mg <-  function(var, group, test,
     }
 
     p.value <- result$p.value
-    hypothesis <- "AT least one group is different"
+    hypothesis <- "At least one group is different"
 
   } else {
     p.value <- NA
@@ -268,7 +268,7 @@ nt_dist_qt_mg <-  function(var, group, test,
 #'@importFrom multcomp glht mcp
 #'@importFrom nparcomp nparcomp
 nt_dist_qt_mc <-  function(var, otest, group, alternative, contrast,
-                           digits.p, var.label, group.label) {
+                           format, digits.p, var.label, group.label) {
 
   data.test <- data_frame(x = var, g = group[[1]])
 
@@ -288,9 +288,12 @@ nt_dist_qt_mc <-  function(var, otest, group, alternative, contrast,
 
     test <- paste0("Parametric ", contrast)
 
+    lower <- round(confint(mc)$confint[, 2], 2)
+    upper <- round(confint(mc)$confint[, 3], 2)
+
     out <- data_frame(Variable = var.label, Group = group.label,
-                      Test = test, Hypothesis = hypothesis,
-                      `p value` = p.value)
+                      Hypothesis = hypothesis, Lower = lower, Upper = upper,
+                      Test = test, `p value` = p.value)
   } else{
 
     alternative <- switch(alternative,
@@ -306,23 +309,33 @@ nt_dist_qt_mc <-  function(var, otest, group, alternative, contrast,
 
     if (class(npc) != "try.error") {
       p.value <- round(npc$Analysis[,6], 3)
+      lower <- ifelse(npc$Analysis[, 3] < 0, 0, round(npc$Analysis[, 3], 2))
+      upper <- ifelse(npc$Analysis[, 4] > 1, 1, round(npc$Analysis[, 4], 2))
     } else {
       p.value <- NA
     }
 
     test <- paste("Non-parametric", contrast)
-    dif <-rownames(npc$Contrast)
+    dif <- rownames(npc$Contrast)
     alt <- switch(alternative,
                   "two.sided" = " != ",
                   "greater" = " > ",
                   "less" = " < ")
     hypothesis <- gsub(" - ", alt, dif)
 
-
     out <- data_frame(Variable = var.label, Group = group.label,
-                      Test = test, Hypothesis = hypothesis,
-                      `p value` = p.value)
+                      Hypothesis = hypothesis, Lower = lower, Upper = upper,
+                      Test = test, `p value` = p.value)
+
   }
+
+  if (format){
+    out <- out %>% mutate('95% CI' = paste0("(", .data$Lower, " ; ",
+                                            .data$Upper, ")")) %>%
+      select(.data$Variable, .data$Group, .data$Hypothesis,
+             .data$Test, .data$`95% CI`, .data$`p value`)
+  }
+
   return(out)
 }
 

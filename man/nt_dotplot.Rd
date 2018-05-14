@@ -12,7 +12,7 @@ nt_dotplot(data, group = NULL, binwidth, save = FALSE, fig.height = 5,
 
 \item{group}{an optional data frame with the group variable.}
 
-\item{binwidth}{a numerical value specifying the bin width.}
+\item{binwidth}{a numerical vector specifying the bin width for each variable.}
 
 \item{save}{a logical value indicating whether the output
 should be saved as a jpeg file.}
