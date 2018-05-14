@@ -7,7 +7,7 @@
 #'
 #'@description Perform Anderson-Darling, Shapiro-Francia,
 #'Kolmogorov-Smirnov, Cramer-vonMises, and Pearson normality tests
-#'for several variables. In addition, it also plots a Quantile-Quantile plot.
+#'for several variables. In addition, it also plots a Quantile-Quantile plot and a histogram.
 #'
 #'@param data a data frame with the variables.
 #'@param group an optional character indicating the group variable.
@@ -77,13 +77,19 @@ nt_norm_test <- function(data, group = NULL, test = "sf",
       unnest(.data$p.value, .drop = TRUE)
   }
 
-   plot <- map2(vars, vars.label, norm_plot, group = group[[1]],
+  qq_plot <- map2(vars, vars.label, qq_plot, group = group[[1]],
                   test = test,
                   group.label = group.label[[1]],
                   digits = digits,
                   pvalue.plot  = pvalue.plot)
 
-  out <- list(pvalue = tab, plot = plot)
+  hist <- map2(vars, vars.label, hist_plot, group = group[[1]],
+               test = test,
+               group.label = group.label[[1]],
+               digits = digits,
+               pvalue.plot  = pvalue.plot)
+
+  out <- list(pvalue = tab, qq_plot = qq_plot, hist = hist)
   return(out)
 }
 
@@ -133,7 +139,7 @@ norm_test <-  function(var, group = NULL,
 #'@import ggplot2
 #'@importFrom stats qnorm
 #'@importFrom dplyr summarise
-norm_plot <-  function(var,
+qq_plot <-  function(var,
                        var.label,
                        group = NULL,
                        test = "sf",
@@ -205,4 +211,55 @@ norm_plot <-  function(var,
   return(out)
 }
 
+hist_plot <-  function(var,
+                       var.label,
+                       group = NULL,
+                       test = "sf",
+                       group.label = NULL,
+                       digits = 3,
+                       pvalue.plot = TRUE){
+
+  if (is.null(group)){
+    data_plot <- data.frame(var = var)
+
+    p <- norm_test(var = var, test = test)
+    p <- ifelse(round(p[[1]], digits) != 0,
+                paste0("= ", round(p[[1]], digits)), "< 0.001")
+    pvalue <- paste("p-value", p)
+
+    out <- ggplot(data_plot, aes_string(x = 'var')) +
+      geom_histogram() + theme_bw()
+    if (pvalue.plot)
+      out <- out +
+      annotate(geom = "text", label = pvalue,
+               x = -Inf, y = Inf,
+               hjust = -0.5, vjust = 2, size = 4)
+
+  } else {
+    if (is.null(group.label))
+      group.label <- "group"
+
+    group <- paste(group.label, group, sep = ": ")
+    group <- as.factor(group)
+    data_test <- data.frame(var, group)
+
+    p <- norm_test(var = var, group = group, test = test) %>%
+      select(-.data$Group)
+    p <- ifelse(round(p[[1]], digits) != 0,
+                paste("=", round(p[[1]], digits)), "< 0.001")
+    pvalue <- paste("p-value", p)
+
+    out <- ggplot(data_test, aes_string(x = 'var')) +
+      geom_histogram() + theme_bw() +
+      facet_grid(. ~ group) +
+      ggtitle(paste0(var.label))
+    if (pvalue.plot)
+      out <- out +
+      annotate(geom = "text", label = pvalue,
+               x = -Inf, y = Inf,
+               hjust=-0.5, vjust=2, size = 4)
+
+  }
+  return(out)
+}
 
