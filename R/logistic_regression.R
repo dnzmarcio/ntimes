@@ -184,7 +184,7 @@ fit_logistic <- function(data, fit.labels){
 #'fit.list[[2]] <- glm(Survived ~ Age + Sex, data = dt)
 #'fit.list[[3]] <- glm(Survived ~ Age + Sex + Pclass, data = dt)
 #'
-#'nt_table_coxph(fit.list, data = dt)
+#'nt_multiple_logistic(fit.list, data = dt)
 #'
 #'@importFrom purrr map
 #'@importFrom utils write.csv
