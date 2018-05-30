@@ -134,7 +134,7 @@ fit_logistic <- function(data, fit.labels){
   null.fit <- glm(response ~ 1, data = data.model, family = "binomial")
   p.value.F <- anova(null.fit, fit)$"p.value"
 
-  temp <- tidy(fit, exponentiate=TRUE, conf.int=TRUE) %>%
+  temp <- tidy(fit, exponentiate = TRUE, conf.int = TRUE) %>%
     mutate(term = str_replace_all(.data$term, unlist(fit.labels))) %>%
     select(-.data$std.error, -.data$statistic) %>%
     mutate(estimate = replace(.data$estimate, 1, 1),
