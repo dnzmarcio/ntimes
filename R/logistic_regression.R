@@ -123,10 +123,11 @@ aux_simple_logistic <- function(var, var.name, response, response.label,
 #'@importFrom stringr str_replace_all
 fit_logistic <- function(data, fit.labels){
 
-  fit <- glm(response ~ ., data = data, family = "binomial")
+  data.model <- na.exclude(data)
 
-  null.data <- data %>% select(-.data$var)
-  null.fit <- glm(response ~ ., data = null.data, family = "binomial")
+  fit <- glm(response ~ ., data = data.model, family = "binomial")
+
+  null.fit <- glm(response ~ 1, data = data.model, family = "binomial")
   p.value.F <- anova(null.fit, fit)$"p.value"
 
   temp <- tidy(fit, exponentiate=TRUE, conf.int=TRUE) %>%
@@ -137,7 +138,7 @@ fit_logistic <- function(data, fit.labels){
            conf.high = replace(.data$conf.high, 1, NA),
            p.value = replace(.data$p.value, 1, NA))
 
-  aux <- bind_cols(n = nrow(na.exclude(data)), glance(fit))
+  aux <- bind_cols(n = nrow(na.exclude(data.model)), glance(fit))
 
   out <- merge(data.frame(temp, row.names=NULL), data.frame(aux, row.names=NULL),
                by = 0, all = TRUE)[-1] %>%
