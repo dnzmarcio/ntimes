@@ -76,21 +76,25 @@ nt_simple_logistic <- function(data, response, ...,
   out <- Reduce(rbind, temp)
 
   if (format){
-    out <- out %>%
+    out <- out %>% mutate(null.deviance = round(.data$null.deviance, digits),
+                          logLik = round(.data$logLik, digits),
+                          AIC = round(.data$AIC, digits),
+                          BIC = round(.data$BIC, digits),
+                          deviance = round(deviance, digits)) %>%
+      replace_na(list(null.deviance = "", df.null = "",
+                      logLik = "", AIC = "", BIC = "",
+                      deviance = "", df.residual = "")) %>%
       transmute(Variable = term,
                 OR.95CI = paste0(round(.data$estimate, digits), " (",
                                  round(.data$conf.low, digits), " ; ",
                                  round(.data$conf.high, digits), ")"),
                 p.value = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, digits.p))),
-                null.deviance = round(.data$null.deviance, digits),
-                logLik = round(.data$logLik, digits),
-                AIC = round(.data$AIC, digits),
-                BIC = round(.data$BIC, digits),
-                deviance = round(deviance, digits)) %>%
+                                 as.character(round(.data$p.value, digits.p)))) %>%
       rename(`OR (95% CI)` = OR.95CI, `p value` = p.value) %>%
-      mutate(`OR (95% CI)` = replace(`OR (95% CI)`, 1, "(Reference)"),
-             `p value` = replace(`p value`, 1, ""))
+      mutate(`OR (95% CI)` = ifelse(Variable == "(Intercept)",
+                                  "(Reference)", `OR (95% CI)`),
+             `p value` = ifelse(Variable == "(Intercept)",
+                                "", `p value`))
   }
 
   if (save){
@@ -141,10 +145,7 @@ fit_logistic <- function(data, fit.labels){
   aux <- bind_cols(n = nrow(na.exclude(data.model)), glance(fit))
 
   out <- merge(data.frame(temp, row.names=NULL), data.frame(aux, row.names=NULL),
-               by = 0, all = TRUE)[-1] %>%
-    replace_na(list(null.deviance = "", df.null = "",
-                    logLik = "", AIC = "", BIC = "",
-                    deviance = "", df.residual = ""))
+               by = 0, all = TRUE)[-1]
 
   return(out)
 }
