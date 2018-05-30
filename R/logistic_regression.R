@@ -120,6 +120,7 @@ aux_simple_logistic <- function(var, var.name, response, response.label,
 #'@importFrom broom tidy glance
 #'@importFrom tidyr replace_na
 #'@importFrom dplyr select transmute mutate
+#'@importFrom stringr str_replace_all
 fit_logistic <- function(data, fit.labels){
 
   fit <- glm(response ~ ., data = data, family = "binomial")
