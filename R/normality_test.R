@@ -99,8 +99,7 @@ nt_norm_test <- function(data, group = NULL, test = "sf",
 #'@importFrom tidyr nest unnest
 #'@importFrom tibble data_frame
 norm_test <-  function(var, group = NULL,
-                       test,
-                       digits = 3){
+                       test, digits = 3){
 
   if (!is.numeric(var))
     stop("'var' contains non-numeric variable.")
@@ -139,13 +138,9 @@ norm_test <-  function(var, group = NULL,
 #'@import ggplot2
 #'@importFrom stats qnorm
 #'@importFrom dplyr summarise
-qq_plot <-  function(var,
-                       var.label,
-                       group = NULL,
-                       test = "sf",
-                       group.label = NULL,
-                       digits = 3,
-                       pvalue.plot = TRUE){
+qq_plot <-  function(var, var.label,
+                     group = NULL, group.label = NULL,
+                     test = "sf", digits = 3, pvalue.plot = TRUE){
 
   qqline_slope <- function(var){
     y <- quantile(var, c(0.25, 0.75), na.rm = TRUE)
@@ -211,13 +206,9 @@ qq_plot <-  function(var,
   return(out)
 }
 
-hist_plot <-  function(var,
-                       var.label,
-                       group = NULL,
-                       test = "sf",
-                       group.label = NULL,
-                       digits = 3,
-                       pvalue.plot = TRUE){
+hist_plot <-  function(var, var.label,
+                       group = NULL, group.label = NULL,
+                       test = "sf", digits = 3, pvalue.plot = TRUE){
 
   if (is.null(group)){
     data_plot <- data.frame(var = var)

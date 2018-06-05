@@ -49,12 +49,12 @@ a normality test (Anderson-Daling (\link[nortest]{ad.test}),
 Shapiro-Francia (\link[nortest]{sf.test}),
 'Kolmogorov-Smirnov (\link[nortest]{lillie.test}),
 Cramer-vonMises (\link[nortest]{cvm.test}),
-and Pearson (\link[nortest]{pearson.test})) and
+or Pearson (\link[nortest]{pearson.test})) and
 Levene test (\link[car]{leveneTest}) will evaluate the assumption of
 homocedasticity at a significance level of 0.05.
 If the data satisfies both assumptions, then t-test is chosen;
-if only normality is satisfied, then Welch t-test; if only homoscedasticity, then
-Mann-Whitney; if neither assumptions, then Brunner-Munzel t test.
+if only normality is satisfied, then Welch t-test is performed; if only homoscedasticity, then
+Mann-Whitney is used; if neither assumptions, then Brunner-Munzel t test is applied.
 }
 \examples{
 library(dplyr)

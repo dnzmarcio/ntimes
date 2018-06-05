@@ -4,7 +4,7 @@
 \alias{nt_compare_mg}
 \title{Compare more than two groups}
 \usage{
-nt_compare_mg(data, group, test = "auto", norm.test = "sf", digits.p = 5,
+nt_compare_mg(data, group, test = "auto", norm.test = "sf", digits.p = 3,
   save = FALSE, file = "nt_compare_mg", mc = FALSE)
 }
 \arguments{

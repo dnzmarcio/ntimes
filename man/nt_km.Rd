@@ -60,5 +60,4 @@ lung <- lung \%>\% mutate(sex = ql_var(sex, from = 1:2,
 data_model <- lung \%>\% dplyr::select(sex, ph.ecog, time, status)
 data_model \%>\% nt_km(time = time, status = status)
 
-
 }

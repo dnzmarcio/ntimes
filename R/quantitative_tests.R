@@ -268,7 +268,7 @@ nt_dist_qt_mg <-  function(var, group, test,
 #'@importFrom multcomp glht mcp
 #'@importFrom nparcomp nparcomp
 nt_dist_qt_mc <-  function(var, otest, group, alternative, contrast,
-                           format, digits.p, var.label, group.label) {
+                           format, digits.p, digits.ci, var.label, group.label) {
 
   data.test <- data_frame(x = var, g = group[[1]])
 
@@ -288,8 +288,8 @@ nt_dist_qt_mc <-  function(var, otest, group, alternative, contrast,
 
     test <- paste0("Parametric ", contrast)
 
-    lower <- round(confint(mc)$confint[, 2], 2)
-    upper <- round(confint(mc)$confint[, 3], 2)
+    lower <- round(confint(mc)$confint[, 2], digits.ci)
+    upper <- round(confint(mc)$confint[, 3], digits.ci)
 
     out <- data_frame(Variable = var.label, Group = group.label,
                       Hypothesis = hypothesis, Lower = lower, Upper = upper,
