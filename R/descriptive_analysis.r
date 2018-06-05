@@ -58,8 +58,8 @@ nt_describe <- function(data,
   vars.name <- names(vars)
 
   temp <- map2(.x = vars, .y = vars.name, .f = aux_describe,
-               group = group, group.name = group.name,
-               format = format, digits = digits)
+               group = group, group.name = group.name, digits = digits,
+               measures = measures)
 
   out <- Reduce(rbind, temp)
 
@@ -77,7 +77,7 @@ nt_describe <- function(data,
   return(out)
 }
 
-aux_describe <- function(var, var.name, group, group.name, format, digits){
+aux_describe <- function(var, var.name, group, group.name, digits, measures){
 
   var.label <- extract_label(var, var.name)
   unit.label <- extract_unit(var)
@@ -88,16 +88,15 @@ aux_describe <- function(var, var.name, group, group.name, format, digits){
   if (is.numeric(var)){
     out <- describe_quantitative(var = var,
                                  group = group,
-                                 format = format,
                                  digits = digits,
                                  var.name = var.name,
                                  var.label = var.label,
                                  unit.label = unit.label,
-                                 group.label = group.label)
+                                 group.label = group.label,
+                                 measures = measures)
   } else {
     out <- describe_qualitative(var = var,
                                 group = group,
-                                format = format,
                                 digits = digits,
                                 var.name = var.name,
                                 var.label = var.label,
@@ -111,9 +110,9 @@ aux_describe <- function(var, var.name, group, group.name, format, digits){
 #'@importFrom tidyr gather nest unnest
 #'@importFrom magrittr %>%
 describe_quantitative <- function(var, group,
-                                  format, digits,
+                                  digits,
                                   var.name, var.label,
-                                  unit.label, group.label){
+                                  unit.label, group.label, measures){
 
   if (is.null(group)) {
 
@@ -133,7 +132,8 @@ describe_quantitative <- function(var, group,
 
     out <- format_quantitative(temp, group = FALSE,
                                var.label = var.label,
-                               unit.label = unit.label)
+                               unit.label = unit.label,
+                               measures = measures)
 
   } else {
     temp <- data_frame(!!var.name := var, g = fct_drop(group[[1]])) %>%
@@ -161,7 +161,8 @@ describe_quantitative <- function(var, group,
     temp <- map(.x = temp, .f = format_quantitative, group = TRUE,
                 var.label = var.label,
                 unit.label = unit.label,
-                group.label = group.label)
+                group.label = group.label,
+                measures = measures)
 
     out <- Reduce(function(x, y)
       merge(x, y, by = "Variable", all = TRUE, sort = F),
@@ -198,17 +199,27 @@ quantitative_measures <- function(x, digits){
 }
 
 format_quantitative <- function(var, group,
-                                var.label, unit.label, group.label = NULL){
+                                var.label, unit.label, group.label = NULL,
+                                measures){
 
   var.label <- ifelse(unit.label == "", var.label,
                       paste0(var.label, " (", unit.label, ")"))
 
-  aux_variable <- c(var.label,
-                    paste("  Mean", "SD", sep = " \U00b1 "),
-                    "  Median (Q25% ; Q75%)",
-                    "  Median (Min ; Max)", " Missing")
-  aux_measures <- c("", var$mean.sd, var$median.q25.q75,
-                    var$median.min.max, unique(var$missing))
+  if (length(measures) > 1){
+    aux_variable <- c(var.label,
+                      paste("  Mean", "SD", sep = " \U00b1 "),
+                      "  Median (Q25% ; Q75%)",
+                      "  Median (Min ; Max)", "  Missing")
+    aux_measures <- c("", var$mean.sd, var$median.q25.q75,
+                      var$median.min.max, unique(var$missing))
+  } else {
+    aux_variable <- var.label
+    aux_measures <-  switch(measures,
+                            "mean.sd" = var$mean.sd,
+                            "median.iqr" = var$median.q25.q75,
+                            "median.range" = var$median.min.max,
+                            "missing" = unique(var$missing))
+  }
 
   out <- data_frame(Variable = aux_variable, Measure = aux_measures)
 
@@ -226,7 +237,6 @@ format_quantitative <- function(var, group,
 #'@importFrom tidyr gather nest unnest
 #'@importFrom magrittr %>%
 describe_qualitative <- function(var, group = NULL,
-                                 format = TRUE,
                                  digits = 2,
                                  var.name, var.label, group.label){
 
