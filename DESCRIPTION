@@ -28,5 +28,7 @@ Imports:
     car (>= 2.1-4),
     nortest (>= 1.0-4), 
     cowplot (>= 0.8.0),
-    multcomp (>= 1.4-8)
+    multcomp (>= 1.4-8),
+    titanic (>= 0.1.0),
+    gsubfn (>= 0.6-6)
 RoxygenNote: 6.0.1

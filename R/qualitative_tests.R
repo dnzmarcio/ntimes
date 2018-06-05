@@ -120,3 +120,42 @@ nt_dist_ql_mg <-  function(var, group,
 
   return(out)
 }
+
+#'@importFrom multcomp glht mcp
+#'@export
+nt_dist_ql_mc <-  function(var, group, alternative, contrast,
+                           format, digits.p, digits.ci, var.label, group.label) {
+
+  data.test <- data_frame(x = var, g = group[[1]])
+
+  av <- glm(x ~ g, data = data.test, family = "binomial")
+  mc <- glht(av, linfct = mcp(g = contrast), alternative = alternative)
+  sm <- summary(mc)
+  p.value <- round(sm$test$pvalues, digits.p)
+
+  test <- paste(contrast)
+  dif <- as.character(rownames(sm[2]$linfct))
+  alt <- switch(alternative,
+                "two.sided" = " != ",
+                "greater" = " < ",
+                "less" = " > ")
+  hypothesis <- gsub(" - ", alt, dif)
+
+  test <- paste0("Parametric ", contrast)
+
+  lower <- round(exp(confint(mc)$confint[, 2]), digits.ci)
+  upper <- round(exp(confint(mc)$confint[, 3]), digits.ci)
+
+  out <- data_frame(Variable = var.label, Group = group.label,
+                    Hypothesis = hypothesis, Lower = lower, Upper = upper,
+                    Test = test, `p value` = p.value)
+
+  if (format){
+    out <- out %>% mutate('95% CI' = paste0("(", .data$Lower, " ; ",
+                                            .data$Upper, ")")) %>%
+      select(.data$Variable, .data$Group, .data$Hypothesis,
+             .data$Test, .data$`95% CI`, .data$`p value`)
+  }
+
+  return(out)
+}

@@ -34,12 +34,12 @@
 #'Shapiro-Francia (\link[nortest]{sf.test}),
 #''Kolmogorov-Smirnov (\link[nortest]{lillie.test}),
 #'Cramer-vonMises (\link[nortest]{cvm.test}),
-#'and Pearson (\link[nortest]{pearson.test})) and
+#'or Pearson (\link[nortest]{pearson.test})) and
 #'Levene test (\link[car]{leveneTest}) will evaluate the assumption of
 #'homocedasticity at a significance level of 0.05.
 #'If the data satisfies both assumptions, then t-test is chosen;
-#'if only normality is satisfied, then Welch t-test; if only homoscedasticity, then
-#'Mann-Whitney; if neither assumptions, then Brunner-Munzel t test.
+#'if only normality is satisfied, then Welch t-test is performed; if only homoscedasticity, then
+#'Mann-Whitney is used; if neither assumptions, then Brunner-Munzel t test is applied.
 #'
 #'@examples
 #'library(dplyr)
@@ -134,8 +134,6 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
 }
 
 
-
-
 #'Compare more than two groups
 #'
 #'@description Performing comparisons among three or more groups.
@@ -181,12 +179,8 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
 #'
 #'@export
 nt_compare_mg <- function(data, group,
-                          test = "auto",
-                          norm.test = "sf",
-                          digits.p = 5,
-                          save = FALSE,
-                          file = "nt_compare_mg",
-                          mc = FALSE){
+                          test = "auto", norm.test = "sf", digits.p = 3,
+                          save = FALSE, file = "nt_compare_mg", mc = FALSE){
 
   group <- enquo(group)
 
@@ -209,12 +203,8 @@ nt_compare_mg <- function(data, group,
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
 
-  if (mc){
-    result <- out
-    out <- list()
-    out$result <- result
-    out$data <- data
-  }
+  if (mc)
+    out <- list(result = out, data = data)
 
   return(out)
 }
@@ -262,7 +252,8 @@ aux_compare_mg <- function(var, var.name, group, group.name,
 nt_compare_mc <- function(omnibus.test,
                           alternative = "two.sided",
                           contrast = "Tukey",
-                          digits.p = 2,
+                          digits.ci = 2,
+                          digits.p = 3,
                           format = TRUE,
                           save = FALSE,
                           file = "nt_distribution_mc") {
@@ -282,7 +273,7 @@ nt_compare_mc <- function(omnibus.test,
   temp <- pmap(list(vars, vars.name, otest), .f = aux_compare_mc,
                group = group, group.name = group.name,
                alternative = alternative, contrast = contrast,
-               format = format, digits.p = digits.p)
+               format = format, digits.p = digits.p, digits.ci = digits.ci)
   out <- Reduce(rbind, temp)
 
   if(save)
@@ -293,7 +284,7 @@ nt_compare_mc <- function(omnibus.test,
 
 
 aux_compare_mc <- function(var, var.name, otest, group, group.name,
-                           alternative, contrast, format, digits.p){
+                           alternative, contrast, format, digits.p, digits.ci){
 
   var.label <- extract_label(var, var.name)
   group.label <- extract_label(group, group.name)
@@ -306,13 +297,18 @@ aux_compare_mc <- function(var, var.name, otest, group, group.name,
                          contrast = contrast,
                          format = format,
                          digits.p = digits.p,
+                         digits.ci = digits.ci,
                          var.label = var.label,
                          group.label = group.label)
 
   } else {
     out <- nt_dist_ql_mc(var = var,
                          group = group,
+                         alternative = alternative,
+                         contrast = contrast,
+                         format = format,
                          digits.p = digits.p,
+                         digits.ci = digits.ci,
                          var.label = var.label,
                          group.label = group.label)
   }
