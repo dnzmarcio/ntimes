@@ -4,9 +4,9 @@
 \alias{nt_simple_cox}
 \title{Simple Cox Regression}
 \usage{
-nt_simple_cox(data, time, status, cluster = FALSE, strata = FALSE,
-  id = NULL, digits = 2, digits.p = 3, save = FALSE,
-  file = "simple_cox")
+nt_simple_cox(data, time, status, ..., cluster = FALSE, strata = NULL,
+  digits = 2, digits.p = 3, save = FALSE, file = "simple_cox",
+  format = TRUE)
 }
 \arguments{
 \item{data}{a data frame with the variables.}
@@ -15,9 +15,7 @@ nt_simple_cox(data, time, status, cluster = FALSE, strata = FALSE,
 
 \item{status}{a numeric vector indicating status, 0 = censored, 1 = event at time.}
 
-\item{strata}{a logical vector indicating if strata should be considered.}
-
-\item{id}{a character vector containing the strata.}
+\item{strata}{a character vector containing the strata.}
 
 \item{digits}{a numerical value defining of digits to present the results.}
 

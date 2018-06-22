@@ -5,8 +5,7 @@
 #'@param data a data frame with the variables.
 #'@param time a numeric vector with the follow-up time.
 #'@param status a numeric vector indicating status, 0 = censored, 1 = event at time.
-#'@param strata a logical vector indicating if strata should be considered.
-#'@param id a character vector containing the strata.
+#'@param strata a character vector containing the strata.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
@@ -29,21 +28,30 @@
 #'                                             to = c("t1", "t2")))
 #'ovarian_nt %>% nt_simple_cox(time = futime, status = fustat)
 #'
+#'@importFrom rlang quo_get_expr
+#'
 #'@export
-nt_simple_cox <- function(data, time, status,
-                          cluster = FALSE, strata = FALSE, id = NULL,
 nt_simple_cox <- function(data, time, status, ...,
+                          cluster = FALSE, strata = NULL,
                           digits = 2, digits.p = 3, save = FALSE,
                           file = "simple_cox", format = TRUE){
 
   data <- as_data_frame(data)
   time <- enquo(time)
   status <- enquo(status)
+  strata <- enquo(strata)
   aux <- quos(...)
 
   if (ncol(data) > 2){
     vars <- select(.data = data, -!!time)
     vars <- select(.data = vars, -!!status)
+    if (!is.null(quo_get_expr(strata))){
+      vars <- select(.data = vars, -!!strata)
+      strata.var <- select(.data = data, !!strata)
+      strata.var <- strata.var[[1]]
+    } else {
+      strata.var <- NULL
+    }
     vars.name <- names(vars)
 
     if (length(aux) > 0){
@@ -65,7 +73,6 @@ nt_simple_cox <- function(data, time, status, ...,
   status <- select(.data = data, !!status)
   status <- as.numeric(as.factor(status[[1]])) - 1
 
-
   fit <- survfit(Surv(time, status) ~ 1)
   survival <- tidy(fit) %>% select(-.data$std.error) %>%
     mutate(estimate = round(100*.data$estimate, digits),
@@ -77,8 +84,9 @@ nt_simple_cox <- function(data, time, status, ...,
                                            .data$conf.high, ")"))
 
   temp <- map2(.x = vars, .y = vars.name, .f = aux_simple_cox,
-               time = time, status = status, strata - strata,
+               time = time, status = status,
                add = add, add.name = add.name, add.label = add.label,
+               strata.var = strata.var, digits = digits,
                digits.p = digits.p, format = format)
 
   cox <- Reduce(rbind, temp)
@@ -109,40 +117,26 @@ nt_simple_cox <- function(data, time, status, ...,
   return(out)
 }
 
-aux_simple_cox <- function(var, var.name, time, status, strata, digits, digits.p){
+aux_simple_cox <- function(var, var.name, time, status,
                            add, add.name, add.label,
                            strata.var, digits, digits.p, format){
 
   var.label <- extract_label(var, var.name)
-
-  if (strata){
-    data.model <- bind_cols(time = time, status = status, id = id, var = var)
-    temp <- fit_cox(data.model, var.label, strata, digits, digits.p)
-
-    out <- temp %>%
-      mutate(Variable = ifelse(.data$`HR (95% CI)` == "Reference" |
-                                 .data$Group == "", .data$Variable, ""))
-
   aux <- cbind(add, var)
   if(ncol(aux) > 1) {
     var.class <- unlist(map(cbind(add, var), is.numeric))
   } else {
-    data.model <- bind_cols(time = time, status = status, var = var)
-    temp <- fit_cox(data.model, var.label, strata, digits, digits.p)
     var.class <- list(var = is.numeric(var))
   }
 
-    out <- temp %>%
-      mutate(Variable = ifelse(duplicated(.data$Variable), "", .data$Variable),
-             n = ifelse(duplicated(.data$n), "", .data$n))
   fit.labels <- ifelse(var.class,
                        c(add.label, var.label),
                        paste0(c(add.label, var.label), ": "))
   if (!is.list(fit.labels))
     fit.labels <- setNames(as.list(fit.labels), "var")
 
-  }
   data.model <- bind_cols(time = time, status = status, var = var, add = add)
+  temp <- fit_cox(data.model, fit.labels, strata.var)
 
   out <- temp %>%
     mutate(term = ifelse(duplicated(.data$term), "", .data$term),
@@ -156,16 +150,16 @@ aux_simple_cox <- function(var, var.name, time, status, strata, digits, digits.p
 #'@importFrom tidyr separate replace_na
 #'@importFrom dplyr select transmute mutate bind_cols
 #'@importFrom tibble data_frame
-fit_cox <- function(data, var.label, strata, digits, digits.p){
+fit_cox <- function(data, fit.labels, strata.var){
 
-  if (!strata){
-    mod <- coxph(Surv(time, status) ~ var, data = data)
+  if (is.null(strata.var)){
+    mod <- coxph(Surv(time, status) ~ ., data = data)
     temp <- tidy(mod, exponentiate = TRUE) %>%
       mutate(term = str_replace_all(.data$term,
                                     unlist(fit.labels))) %>%
       select(-.data$std.error, -.data$statistic)
   } else {
-    mod <- coxph(Surv(time, status) ~ strata(id) + var, data = data)
+    mod <- coxph(Surv(time, status) ~ strata(strata.var) + ., data = data)
     temp <- tidy(mod, exponentiate = TRUE) %>%
       mutate(term = str_replace_all(.data$term,
                                     unlist(fit.labels))) %>%
