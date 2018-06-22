@@ -48,7 +48,7 @@ nt_simple_logistic <- function(data, response, ...,
   aux <- quos(...)
 
   vars <- select(.data = data, -!!response)
-  if (!is.null(add)){
+  if (length(aux) > 0){
     for (i in 1:length(aux)){
       vars <- select(.data = vars, -!!aux[[i]])
     }
@@ -84,15 +84,16 @@ nt_simple_logistic <- function(data, response, ...,
       replace_na(list(null.deviance = "", df.null = "",
                       logLik = "", AIC = "", BIC = "",
                       deviance = "", df.residual = "")) %>%
-      transmute(Variable = term,
+      transmute(Variable = .data$term,
                 OR.95CI = paste0(round(.data$estimate, digits), " (",
                                  round(.data$conf.low, digits), " ; ",
                                  round(.data$conf.high, digits), ")"),
                 p.value = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, digits.p)))) %>%
+                                 as.character(round(.data$p.value, digits.p))),
+                n, null.deviance, logLik, AIC, BIC, deviance) %>%
       rename(`OR (95% CI)` = OR.95CI, `p value` = p.value) %>%
       mutate(`OR (95% CI)` = ifelse(Variable == "(Intercept)",
-                                  "(Reference)", `OR (95% CI)`),
+                                  "1", `OR (95% CI)`),
              `p value` = ifelse(Variable == "(Intercept)",
                                 "", `p value`))
   }
