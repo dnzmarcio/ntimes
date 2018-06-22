@@ -34,7 +34,7 @@ nt_simple_cox <- function(data, time, status,
                           cluster = FALSE, strata = FALSE, id = NULL,
 nt_simple_cox <- function(data, time, status, ...,
                           digits = 2, digits.p = 3, save = FALSE,
-                          file = "simple_cox"){
+                          file = "simple_cox", format = TRUE){
 
   data <- as_data_frame(data)
   time <- enquo(time)
@@ -78,10 +78,26 @@ nt_simple_cox <- function(data, time, status, ...,
 
   temp <- map2(.x = vars, .y = vars.name, .f = aux_simple_cox,
                time = time, status = status, strata - strata,
-               digits = digits, digits.p = digits.p)
                add = add, add.name = add.name, add.label = add.label,
+               digits.p = digits.p, format = format)
 
   cox <- Reduce(rbind, temp)
+
+  if (format) {
+
+  cox <- cox %>% mutate(concordance = round(.data$concordance, digits),
+                        r.squared = round(.data$r.squared, digits),
+                        AIC = round(.data$AIC, digits),
+                        ph.assumption = round(.data$ph.assumption, digits.p)) %>%
+    transmute(Variable = .data$term,
+              HR.95CI = paste0(round(.data$estimate, digits), " (",
+                               round(.data$conf.low, digits), " ; ",
+                               round(.data$conf.high, digits), ")"),
+              p.value = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+                               as.character(round(.data$p.value, digits.p))),
+              n, n.event, concordance, r.squared, AIC, ph.assumption) %>%
+    rename(`HR (95% CI)` = HR.95CI, `p value` = p.value)
+  }
 
   if (save){
     utils::write.csv(cox, file = paste0(file, "_regression.csv"))
@@ -95,6 +111,7 @@ nt_simple_cox <- function(data, time, status, ...,
 
 aux_simple_cox <- function(var, var.name, time, status, strata, digits, digits.p){
                            add, add.name, add.label,
+                           strata.var, digits, digits.p, format){
 
   var.label <- extract_label(var, var.name)
 
@@ -127,6 +144,10 @@ aux_simple_cox <- function(var, var.name, time, status, strata, digits, digits.p
   }
   data.model <- bind_cols(time = time, status = status, var = var, add = add)
 
+  out <- temp %>%
+    mutate(term = ifelse(duplicated(.data$term), "", .data$term),
+           n = ifelse(duplicated(.data$n), "", .data$n))
+
   return(out)
 }
 
@@ -154,36 +175,15 @@ fit_cox <- function(data, var.label, strata, digits, digits.p){
 
   zph.table <- cox.zph(mod)$table
 
-  if (!is.numeric(data$var)){
-    first_row <- data_frame(Variable = var.label,
-                            Group =
-                              na.exclude(as.character(unique(data$var)[
-                                !(unique(data$var) %in% temp$Group)])),
-                            'HR (95% CI)' = "Reference",
-                            'p value' = ifelse(all(is.na(temp$'p value')), NA, ""))
+  aux <- glance(mod) %>% select(.data$n, n.event = .data$nevent,
+                                .data$concordance, .data$r.squared, .data$AIC) %>%
+    mutate(concordance = .data$concordance,
+           r.squared = .data$r.squared,
+           AIC = .data$AIC,
+           ph.assumption = zph.table[nrow(zph.table), 3])
 
-    aux <- glance(mod) %>% select(.data$n, n.event = .data$nevent, .data$concordance,
-                                  .data$r.squared, .data$AIC) %>%
-      mutate(concordance = round(.data$concordance, 3), r.squared = round(.data$r.squared, 3),
-             AIC = round(.data$AIC, 3),
-             ph.assumption = round(zph.table[nrow(zph.table), 3], 3))
-    first_row <- bind_cols(first_row, aux)
-
-    out <- full_join(first_row, temp, by = c("Variable", "Group", 'HR (95% CI)', 'p value')) %>%
-      replace_na(list(n = "", n.event = "", concordance = "", r.squared = "",
-                      AIC = "", ph.assumption = ""))
-
-  } else {
-    aux <- glance(mod) %>% select(.data$n, n.event = .data$nevent,
-                                  .data$concordance, .data$r.squared, .data$AIC) %>%
-      mutate(concordance = round(.data$concordance, 3), r.squared = round(.data$r.squared, 3),
-             AIC = round(.data$AIC, 3),
-             ph.assumption = round(zph.table[nrow(zph.table), 3], 3))
-
-    out <- bind_cols(temp, aux) %>%
-      replace_na(list(n = "", n.event = "", concordance = "", r.squared = "",
-                      AIC = "", ph.assumption = ""))
-  }
+  out <- merge(data.frame(temp, row.names=NULL), data.frame(aux, row.names=NULL),
+               by = 0, all = TRUE)[-1]
 
   return(out)
 }
