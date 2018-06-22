@@ -32,17 +32,32 @@
 #'@export
 nt_simple_cox <- function(data, time, status,
                           cluster = FALSE, strata = FALSE, id = NULL,
+nt_simple_cox <- function(data, time, status, ...,
                           digits = 2, digits.p = 3, save = FALSE,
                           file = "simple_cox"){
 
   data <- as_data_frame(data)
   time <- enquo(time)
   status <- enquo(status)
+  aux <- quos(...)
 
   if (ncol(data) > 2){
     vars <- select(.data = data, -!!time)
     vars <- select(.data = vars, -!!status)
     vars.name <- names(vars)
+
+    if (length(aux) > 0){
+      for (i in 1:length(aux)){
+        vars <- select(.data = vars, -!!aux[[i]])
+      }
+      add <- select(.data = data, !!!aux)
+      add.name <- names(add)
+      add.label <- map2(add, add.name, extract_label)
+    } else {
+      add <- NULL
+      add.name <- NULL
+      add.label <- NULL
+    }
   }
 
   time <- select(.data = data, !!time)
@@ -64,6 +79,7 @@ nt_simple_cox <- function(data, time, status,
   temp <- map2(.x = vars, .y = vars.name, .f = aux_simple_cox,
                time = time, status = status, strata - strata,
                digits = digits, digits.p = digits.p)
+               add = add, add.name = add.name, add.label = add.label,
 
   cox <- Reduce(rbind, temp)
 
@@ -78,6 +94,7 @@ nt_simple_cox <- function(data, time, status,
 }
 
 aux_simple_cox <- function(var, var.name, time, status, strata, digits, digits.p){
+                           add, add.name, add.label,
 
   var.label <- extract_label(var, var.name)
 
@@ -89,15 +106,26 @@ aux_simple_cox <- function(var, var.name, time, status, strata, digits, digits.p
       mutate(Variable = ifelse(.data$`HR (95% CI)` == "Reference" |
                                  .data$Group == "", .data$Variable, ""))
 
+  aux <- cbind(add, var)
+  if(ncol(aux) > 1) {
+    var.class <- unlist(map(cbind(add, var), is.numeric))
   } else {
     data.model <- bind_cols(time = time, status = status, var = var)
     temp <- fit_cox(data.model, var.label, strata, digits, digits.p)
+    var.class <- list(var = is.numeric(var))
+  }
 
     out <- temp %>%
       mutate(Variable = ifelse(duplicated(.data$Variable), "", .data$Variable),
              n = ifelse(duplicated(.data$n), "", .data$n))
+  fit.labels <- ifelse(var.class,
+                       c(add.label, var.label),
+                       paste0(c(add.label, var.label), ": "))
+  if (!is.list(fit.labels))
+    fit.labels <- setNames(as.list(fit.labels), "var")
 
   }
+  data.model <- bind_cols(time = time, status = status, var = var, add = add)
 
   return(out)
 }
@@ -112,27 +140,16 @@ fit_cox <- function(data, var.label, strata, digits, digits.p){
   if (!strata){
     mod <- coxph(Surv(time, status) ~ var, data = data)
     temp <- tidy(mod, exponentiate = TRUE) %>%
-      mutate(statistic = ifelse(!is.finite(statistic), NA, statistic),
-             p.value = ifelse(!is.finite(p.value), NA, p.value)) %>%
-      separate(col = .data$term, into = c("var", "Group"), sep = "ar") %>%
-      select(-.data$var, -.data$std.error, -.data$statistic) %>%
-      transmute(Variable = var.label, .data$Group,
-                'HR (95% CI)' = paste0(round(.data$estimate, digits), " (",
-                                       round(.data$conf.low, digits), " ; ",
-                                       round(.data$conf.high, digits), ")"),
-                'p value' = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                   as.character(round(.data$p.value, digits.p))))
+      mutate(term = str_replace_all(.data$term,
+                                    unlist(fit.labels))) %>%
+      select(-.data$std.error, -.data$statistic)
   } else {
     mod <- coxph(Surv(time, status) ~ strata(id) + var, data = data)
     temp <- tidy(mod, exponentiate = TRUE) %>%
-      separate(col = .data$term, into = c("var", "Group"), sep = "ar") %>%
-      select(-.data$var, -.data$std.error, -.data$statistic) %>%
-      transmute(Variable = var.label, .data$Group,
-                'HR (95% CI)' = paste0(round(.data$estimate, digits), " (",
-                                       round(.data$conf.low, digits), " ; ",
-                                       round(.data$conf.high, digits), ")"),
-                'p value' = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                   as.character(round(.data$p.value, digits.p))))
+      mutate(term = str_replace_all(.data$term,
+                                    unlist(fit.labels))) %>%
+      mutate(term = str_replace_all(.data$term, unlist(fit.labels))) %>%
+      select(-.data$std.error, -.data$statistic)
   }
 
   zph.table <- cox.zph(mod)$table
