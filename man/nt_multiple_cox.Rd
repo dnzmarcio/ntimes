@@ -4,8 +4,8 @@
 \alias{nt_multiple_cox}
 \title{Proportional Hazards Cox regression table}
 \usage{
-nt_multiple_cox(fit.list, format = FALSE, digits = 2, digits.p = 3,
-  save = FALSE, file = "nt_multiple_cox")
+nt_multiple_cox(fit.list, fit.labels = NULL, format = FALSE, digits = 2,
+  digits.p = 3, save = FALSE, file = "nt_multiple_cox")
 }
 \arguments{
 \item{fit.list}{a list of fitted models.}

@@ -240,13 +240,15 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'@importFrom purrr map map2
 #'@importFrom utils write.csv
 #'@export
-nt_multiple_cox <- function(fit.list, format = FALSE, digits = 2, digits.p = 3,
+nt_multiple_cox <- function(fit.list, fit.labels = NULL, format = FALSE, digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 
-  if (is.null(names(fit.list)))
-    fit.labels <- 1:length(fit.list)
+  if (class(fit.list) != "list")
+    fit.list <- list(fit.list)
+  if (is.null(fit.labels))
+    model.labels <- 1:length(fit.list)
 
-  temp <- map2(fit.list, fit.labels, aux_multiple_cox,
+  temp <- map2(fit.list, model.labels, aux_multiple_cox,
                format = format, digits = digits, digits.p = digits.p)
   tab <- Reduce(rbind, temp)
   adj <- map(fit.list, ~ reference_df(.x)$adj)
