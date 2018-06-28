@@ -34,16 +34,20 @@ library(dplyr)
 library(magrittr)
 data(ovarian)
 
-ovarian_nt <- ovarian \%>\% mutate(age = qt_var(age, label = "Age"),
-                                resid.ds = ql_var(resid.ds,
-                                                  from = 1:2,
-                                                  to = c("no", "yes")),
-                                ecog.ps = ql_var(ecog.ps,
-                                                 from = 1:2,
-                                                 to = c("I", "II")),
-                                rx = ql_var(rx,
-                                            from = 1:2,
-                                            to = c("t1", "t2")))
+ovarian_nt <- ovarian \%>\% mutate(resid.ds = ql_var(resid.ds,
+                                               from = 1:2,
+                                               to = c("no", "yes"),
+                                               label = "Residual Disease"),
+                             ecog.ps = ql_var(ecog.ps,
+                                              from = 1:2,
+                                              to = c("I", "II"),
+                                              label = "ECOG-PS"),
+                             rx = ql_var(rx,
+                                         from = 1:2,
+                                         to = c("t1", "t2"),
+                                         label = "Treatment"),
+                             age = qt_var(age,
+                                          label = "Age"))
 ovarian_nt \%>\% nt_simple_cox(time = futime, status = fustat)
 
 }

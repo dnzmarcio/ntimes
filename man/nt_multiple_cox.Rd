@@ -4,16 +4,17 @@
 \alias{nt_multiple_cox}
 \title{Proportional Hazards Cox regression table}
 \usage{
-nt_multiple_cox(fit.list, data, save = FALSE, file = "nt_table_cox")
+nt_multiple_cox(fit.list, format = FALSE, digits = 2, digits.p = 3,
+  save = FALSE, file = "nt_multiple_cox")
 }
 \arguments{
 \item{fit.list}{a list of fitted models.}
 
-\item{data}{a data frame containing the variables used to fit the models listed in fit.list.}
-
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character indicating the name of output file in csv format to be saved.}
+
+\item{data}{a data frame containing the variables used to fit the models listed in fit.list.}
 }
 \description{
 Tabulating results from fitted Proportional Hazards Cox models.
@@ -24,7 +25,7 @@ library(magrittr)
 library(dplyr)
 
 data(ovarian)
-ovarian <- ovarian \%>\% mutate(resid.ds = ql_var(resid.ds,
+ovarian_nt <- ovarian \%>\% mutate(resid.ds = ql_var(resid.ds,
                                                from = 1:2,
                                                to = c("no", "yes"),
                                                label = "Residual Disease"),
@@ -41,10 +42,10 @@ ovarian <- ovarian \%>\% mutate(resid.ds = ql_var(resid.ds,
 
 fit.list <- list()
 
-fit.list[[1]] <- coxph(Surv(futime, fustat) ~ ecog.ps, data = ovarian)
-fit.list[[2]] <- coxph(Surv(futime, fustat) ~ resid.ds + rx, data = ovarian)
-fit.list[[3]] <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = ovarian)
+fit.list[[1]] <- coxph(Surv(futime, fustat) ~ ecog.ps, data = ovarian_nt)
+fit.list[[2]] <- coxph(Surv(futime, fustat) ~ resid.ds + rx, data = ovarian_nt)
+fit.list[[3]] <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = ovarian_nt)
 
-nt_table_coxph(fit.list, data = ovarian)
+nt_multiple_coxph(fit.list)
 
 }
