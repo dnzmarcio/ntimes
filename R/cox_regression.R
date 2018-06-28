@@ -253,7 +253,7 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, format = FALSE, digits 
     model.labels <- 1:length(fit.list)
 
   temp <- map2(fit.list, model.labels, aux_multiple_cox,
-               format = format, digits = digits, digits.p = digits.p)
+               format = format)
   tab <- Reduce(rbind, temp)
   adj <- map(fit.list, ~ reference_df(.x)$ref)
 
@@ -279,14 +279,17 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, format = FALSE, digits 
 #'@importFrom stringr str_replace_all
 #'@importFrom dplyr select
 #'@importFrom tidyr separate
-aux_multiple_cox <- function(fit, model.label, format, digits, digits.p){
+aux_multiple_cox <- function(fit, model.label, format){
 
   aux <- extract_data(fit)
   temp <- table_fit(fit, exponentiate = TRUE)
   out <- temp %>%
     mutate(model = model.label,
       term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
-    separate(.data$term, into = c("variable", "group"), sep = ":") %>%
+    separate(.data$term, into = c("variable", "group"), sep = ":")
+
+  if (format)
+    out <- out %>%
     mutate(variable = ifelse(duplicated(.data$variable), "", .data$variable))
 
   return(out)
