@@ -126,12 +126,13 @@ effect.coxph <- function(fit){
     p.value <- anova(fit0, fit)$`P(>|Chi|)`[2]
 
     for (j in 2:nrow(design.matrix)){
-      estimate <- as.numeric(exp(pred[j] - pred[1]))
+      estimate <- as.numeric(pred[j] - pred[1])
       diff <- design.matrix[j, ] - design.matrix[1, ]
       pred.se <- sqrt(t(diff)%*%beta.var%*%diff)
 
       lower <- exp(estimate - 1.96*pred.se)
       upper <- exp(estimate + 1.96*pred.se)
+      estimate <- exp(estimate)
 
       if (j == 2){
         L[[temp$label[j-1]]] <- data.frame(estimate, lower, upper, p.value)
