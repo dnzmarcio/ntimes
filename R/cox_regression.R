@@ -97,7 +97,7 @@ nt_simple_cox <- function(data, time, status, ...,
                         r.squared = round(.data$r.squared, digits),
                         AIC = round(.data$AIC, digits),
                         ph.assumption = round(.data$ph.assumption, digits.p)) %>%
-    transmute(Variable = .data$term,
+    transmute(Variable = .data$term,  Group = .data$group,
               HR.95CI = paste0(round(.data$estimate, digits), " (",
                                round(.data$conf.low, digits), " ; ",
                                round(.data$conf.high, digits), ")"),
@@ -129,14 +129,25 @@ aux_simple_cox <- function(var, var.name, time, status,
     var.class <- list(var = is.numeric(var))
   }
 
-  fit.labels <- ifelse(var.class,
-                       c(add.label, var.label),
-                       paste0(c(add.label, var.label), ": "))
-  if (!is.list(fit.labels))
-    fit.labels <- setNames(as.list(fit.labels), "var")
+  for (i in 1:length(var.class)){
+    tab.labels <- list()
+    tab.levels <- list()
+
+    if (var.class[[i]]){
+      tab.labels <- c(add.label, var.label)
+      tab.levels <- ""
+    } else {
+      tab.labels <- paste0(c(add.label, var.label), ": ")
+      lv <- levels(var)
+      tab.levels <- paste0(lv[2:length(lv)], "/", lv[1])
+    }
+  }
+
+  if (!is.list(tab.labels))
+    tab.labels <- setNames(as.list(tab.labels), "var")
 
   data.model <- bind_cols(time = time, status = status, var = var, add = add)
-  temp <- fit_cox(data.model, fit.labels, strata.var)
+  temp <- fit_cox(data.model, tab.labels, tab.levels, strata.var)
 
   out <- temp %>%
     mutate(term = ifelse(duplicated(.data$term), "", .data$term),
@@ -150,21 +161,22 @@ aux_simple_cox <- function(var, var.name, time, status,
 #'@importFrom tidyr separate replace_na
 #'@importFrom dplyr select transmute mutate bind_cols
 #'@importFrom tibble data_frame
-fit_cox <- function(data, fit.labels, strata.var){
+fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 
   if (is.null(strata.var)){
-    mod <- coxph(Surv(time, status) ~ ., data = data)
-    temp <- tidy(mod, exponentiate = TRUE) %>%
-      mutate(term = str_replace_all(.data$term,
-                                    unlist(fit.labels))) %>%
-      select(-.data$std.error, -.data$statistic)
+    fit <- coxph(Surv(time, status) ~ ., data = data)
+    temp <- tidy(fit, exponentiate = TRUE) %>%
+      mutate(term = str_replace_all(.data$term, unlist(tab.labels))) %>%
+      select(-.data$std.error, -.data$statistic) %>%
+      separate(term, into = c("term", "group"), sep = ":", fill = "right") %>%
+      mutate(group = tab.levels)
   } else {
-    mod <- coxph(Surv(time, status) ~ strata(strata.var) + ., data = data)
-    temp <- tidy(mod, exponentiate = TRUE) %>%
-      mutate(term = str_replace_all(.data$term,
-                                    unlist(fit.labels))) %>%
-      mutate(term = str_replace_all(.data$term, unlist(fit.labels))) %>%
-      select(-.data$std.error, -.data$statistic)
+    fit <- coxph(Surv(time, status) ~ strata(strata.var) + ., data = data)
+    temp <- tidy(fit, exponentiate = TRUE) %>%
+      mutate(term = str_replace_all(.data$term, unlist(tab.labels))) %>%
+      select(-.data$std.error, -.data$statistic) %>%
+      separate(term, into = c("term", "group"), sep = ":", fill = "right") %>%
+      mutate(group = tab.levels)
   }
 
   zph.table <- cox.zph(mod)$table
