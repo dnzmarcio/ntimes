@@ -235,7 +235,7 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'fit.list[[2]] <- coxph(Surv(futime, fustat) ~ resid.ds + rx, data = ovarian_nt)
 #'fit.list[[3]] <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = ovarian_nt)
 #'
-#'nt_multiple_coxph(fit.list)
+#'nt_multiple_cox(fit.list)
 #'
 #'@importFrom purrr map map2
 #'@importFrom utils write.csv
