@@ -1,3 +1,7 @@
+effect <- function(fit) {
+  UseMethod("effect")
+}
+
 extract_label <- function(x, y){
   out <- ifelse(is.null(attr(x, "label")), y, attr(x, "label"))
   return(out)
