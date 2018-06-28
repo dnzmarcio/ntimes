@@ -108,7 +108,8 @@ nt_simple_cox <- function(data, time, status, ...,
               p.value = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
                                as.character(round(.data$p.value, digits.p))),
               n, n.event, concordance, r.squared, AIC, ph.assumption) %>%
-    rename(`HR (95% CI)` = HR.95CI, `p value` = p.value)
+    rename(`HR (95% CI)` = HR.95CI, `p value` = p.value) %>%
+    mutate(Variable = ifelse(duplicated(Variable), "", Variable))
   }
 
   if (save){
@@ -151,11 +152,12 @@ aux_simple_cox <- function(var, var.name, time, status,
     tab.labels <- setNames(as.list(tab.labels), "var")
 
   data.model <- bind_cols(time = time, status = status, var = var, add = add)
-  temp <- fit_cox(data.model, tab.labels, tab.levels, strata.var)
+  out <- fit_cox(data.model, tab.labels, tab.levels, strata.var)
 
-  out <- temp %>%
-    mutate(term = ifelse(duplicated(.data$term), "", .data$term),
-           n = ifelse(duplicated(.data$n), "", .data$n))
+  if (is.factor(var))
+    if (length(levels(var)) > 2)
+      out <- out %>%
+    mutate(p.value = p.value.lh)
 
   return(out)
 }
@@ -183,13 +185,15 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
       mutate(group = tab.levels)
   }
 
+
+  fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - var")), data = data)
+  p.value.lh <- anova(fit0, fit)$`P(>|Chi|)`[2]
+
   zph.table <- cox.zph(fit)$table
 
   aux <- glance(fit) %>% select(.data$n, n.event = .data$nevent,
                                 .data$concordance, .data$r.squared, .data$AIC) %>%
-    mutate(concordance = .data$concordance,
-           r.squared = .data$r.squared,
-           AIC = .data$AIC,
+    mutate(p.value.lh = p.value.lh,
            ph.assumption = zph.table[nrow(zph.table), 3])
 
   out <- merge(data.frame(temp, row.names=NULL), data.frame(aux, row.names=NULL),
@@ -251,7 +255,7 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, format = FALSE, digits 
   temp <- map2(fit.list, model.labels, aux_multiple_cox,
                format = format, digits = digits, digits.p = digits.p)
   tab <- Reduce(rbind, temp)
-  adj <- map(fit.list, ~ reference_df(.x)$adj)
+  adj <- map(fit.list, ~ reference_df(.x)$ref)
 
   if (format)
     tab <-  tab %>%  transmute(Model = .data$model,
@@ -277,11 +281,13 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, format = FALSE, digits 
 #'@importFrom tidyr separate
 aux_multiple_cox <- function(fit, model.label, format, digits, digits.p){
 
+  aux <- extract_data(fit)
   temp <- table_fit(fit, exponentiate = TRUE)
   out <- temp %>%
     mutate(model = model.label,
       term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
-    separate(.data$term, into = c("variable", "group"), sep = ":")
+    separate(.data$term, into = c("variable", "group"), sep = ":") %>%
+    mutate(variable = ifelse(duplicated(.data$variable), "", .data$variable))
 
   return(out)
 }
