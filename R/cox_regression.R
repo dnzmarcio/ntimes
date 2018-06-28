@@ -214,7 +214,7 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'library(dplyr)
 #'
 #'data(ovarian)
-#'ovarian <- ovarian %>% mutate(resid.ds = ql_var(resid.ds,
+#'ovarian_nt <- ovarian %>% mutate(resid.ds = ql_var(resid.ds,
 #'                                                from = 1:2,
 #'                                                to = c("no", "yes"),
 #'                                                label = "Residual Disease"),
@@ -231,94 +231,56 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'
 #'fit.list <- list()
 #'
-#'fit.list[[1]] <- coxph(Surv(futime, fustat) ~ ecog.ps, data = ovarian)
-#'fit.list[[2]] <- coxph(Surv(futime, fustat) ~ resid.ds + rx, data = ovarian)
-#'fit.list[[3]] <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = ovarian)
+#'fit.list[[1]] <- coxph(Surv(futime, fustat) ~ ecog.ps, data = ovarian_nt)
+#'fit.list[[2]] <- coxph(Surv(futime, fustat) ~ resid.ds + rx, data = ovarian_nt)
+#'fit.list[[3]] <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = ovarian_nt)
 #'
-#'nt_multiple_coxph(fit.list, data = ovarian)
+#'nt_multiple_coxph(fit.list)
 #'
 #'@importFrom purrr map map2
 #'@importFrom utils write.csv
 #'@export
-nt_multiple_cox <- function(fit.list, data, save = FALSE, file = "nt_table_cox"){
+nt_multiple_cox <- function(fit.list, format = FALSE, digits = 2, digits.p = 3,
+                            save = FALSE, file = "nt_multiple_cox"){
 
-  if(is.null(names(fit.list))){
-    temp <- map(fit.list, aux_multiple_cox, data = data)
-  } else {
-    fit.names <- names(fit.list)
-    temp <- map2(fit.list, fit.names, aux_multiple_cox, data = data)
-  }
+  if (is.null(names(fit.list)))
+    fit.labels <- 1:length(fit.list)
+
+  temp <- map2(fit.list, fit.labels, aux_multiple_cox,
+               format = format, digits = digits, digits.p = digits.p)
+  tab <- Reduce(rbind, temp)
+  adj <- map(fit.list, ~ reference_df(.x)$adj)
+
+  if (format)
+    tab <-  tab %>%  transmute(Model = .data$model,
+                               Variable = .data$variable, Group = .data$group,
+                               'HR (95% CI)' = paste0(round(.data$estimate, digits), " (",
+                                                      round(.data$conf.low, digits), " ; ",
+                                                      round(.data$conf.high, digits), ")"),
+                               'p value' = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+                                                as.character(round(.data$p.value, digits.p))))
 
 
-  out <- Reduce(rbind, temp)
 
   if (save)
-    write.csv(out, file = paste0(file, ".csv"))
+    write.csv(tab, file = paste0(file, ".csv"))
+
+  out <- list(tab = tab, adj = adj)
 
   return(out)
 }
 
-#'@importFrom dplyr select mutate transmute bind_cols full_join
-#'@importFrom purrr map map2
-#'@importFrom broom tidy glance
-#'@importFrom tidyr separate unite
-#'@importFrom tibble data_frame
-#'@importFrom gsubfn gsubfn
-#'@importFrom survival coxph cox.zph
-aux_multiple_cox <- function(fit, fit.names = NULL, data){
+#'@importFrom stringr str_replace_all
+#'@importFrom dplyr select
+#'@importFrom tidyr separate
+aux_multiple_cox <- function(fit, model.label, format, digits, digits.p){
 
-  aux <- tidy(fit, exponentiate = TRUE)
+  temp <- table_fit(fit, exponentiate = TRUE)
+  out <- temp %>%
+    mutate(model = model.label,
+      term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
+    separate(.data$term, into = c("variable", "group"), sep = ":")
 
-  if (!is.null(fit.names))
-    aux$term <- gsub("\\.x", fit.names, aux$term)
-
-  if (!is.null(fit$xlevels)){
-    levels <- as.character(unlist(fit$xlevels))
-    pat <- paste(levels, collapse = "|")
-    temp <- rep("", length(levels))
-    terms.name <- gsubfn(pat, setNames(as.list(temp), levels), aux$term)
-    vars.name <- names(data)[names(data) %in% terms.name]
-  } else {
-    vars.name <- names(data)[names(data) %in% aux$term]
-  }
-  vars.name <- gsub("\\:", " x ", vars.name)
-
-  factors.name <- names(data %>% select_if(is.factor))
-  factors <- map2(select(data, intersect(vars.name, factors.name)),
-                  intersect(vars.name, factors.name), extract_label)
-  vars.label <- map2(select(data, vars.name), vars.name, extract_label) %>%
-    map_if(~ any(.x == factors), ~ paste0(.x, ":"))
-
-  temp <- aux %>% mutate(term = gsubfn(paste(vars.name, collapse = "|"),
-                                vars.label, term)) %>%
-    select(-.data$std.error, -.data$statistic) %>%
-    transmute(Group = .data$term,
-              'HR (95% CI)' = paste0(round(.data$estimate, 2), " (",
-                                     round(.data$conf.low, 2), " ; ",
-                                     round(.data$conf.high, 2), ")"),
-              'p value' = ifelse(round(.data$p.value, 3) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, 3))))
-
-  if (nrow(temp) > 1){
-    ph.assumption <- round(cox.zph(fit)$table[-nrow(temp), 3], 3)
-  } else {
-    ph.assumption <- round(cox.zph(fit)$table[, 3], 3)
-  }
-
-  temp <- bind_cols(temp, ph.assumption = ph.assumption)
-
-  aux <- glance(fit) %>% select(.data$n, n.event = .data$nevent,
-                                .data$concordance, .data$r.squared, .data$AIC) %>%
-    mutate(concordance = round(.data$concordance, 3), r.squared = round(.data$r.squared, 3),
-           AIC = round(.data$AIC, 3))
-
-  first_row <- data_frame(Group = "Reference", 'HR (95% CI)' = "1", 'p value' = "")
-  first_row <- bind_cols(first_row, aux)
-
-  aux <- full_join(first_row, temp, by = c("Group", "HR (95% CI)", "p value"))
-  out <- aux %>%
-    replace_na(list(n = "", n.event = "", concordance = "", r.squared = "",
-                    AIC = "", ph.assumption = ""))
   return(out)
 }
 
