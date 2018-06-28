@@ -35,11 +35,11 @@ reference_df <- function(fit){
     }
   }
 
-  adj <- df[, which(sapply(var, grepl,
+  ref <- df[, which(sapply(aux$var, grepl,
                            x = names(df),
-                           fixed = TRUE), arr.ind = TRUE)[1, ]]
+                           fixed = TRUE), arr.ind = TRUE)[, 1]]
 
-  out <- list(df = df, adj = adj)
+  out <- list(df = df, ref = ref)
 
   return(out)
 }
