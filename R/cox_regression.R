@@ -87,7 +87,7 @@ nt_simple_cox <- function(data, time, status, ...,
                time = time, status = status,
                add = add, add.name = add.name, add.label = add.label,
                strata.var = strata.var, digits = digits,
-               digits.p = digits.p, format = format)
+               digits.p = digits.p)
 
   cox <- Reduce(rbind, temp)
 
@@ -119,7 +119,7 @@ nt_simple_cox <- function(data, time, status, ...,
 
 aux_simple_cox <- function(var, var.name, time, status,
                            add, add.name, add.label,
-                           strata.var, digits, digits.p, format){
+                           strata.var, digits, digits.p){
 
   var.label <- extract_label(var, var.name)
   aux <- cbind(add, var)
