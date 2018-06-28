@@ -120,7 +120,7 @@ effect.coxph <- function(fit){
            x = as.character(term.labels),
            fixed = TRUE))
 
-    fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", term.labels[drop])),
+    fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], sep = " - "))),
           data = aux$data)
 
     p.value <- anova(fit0, fit)$`P(>|Chi|)`[2]
