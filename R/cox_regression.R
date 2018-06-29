@@ -189,12 +189,9 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
       separate(term, into = c("term", "group"), sep = ":", fill = "right") %>%
       mutate(group = tab.levels)
   }
-  if (is.null(strata.var)){
 
   fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - var")),
                 data = data)
-  } else {
-  }
 
   p.value.lh <- anova(fit0, fit)$`P(>|Chi|)`[2]
 
