@@ -170,7 +170,9 @@ aux_simple_cox <- function(var, var.name, time, status,
 fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 
   data <- na.exclude(data)
-  strata.var <- strata.var[-apply(data, 1, is.na)]
+
+  if (any(apply(data, 1, is.na)))
+    strata.var <- strata.var[-apply(data, 1, is.na)]
 
   if (is.null(strata.var)){
     fit <- coxph(Surv(time, status) ~ ., data = data)
@@ -187,10 +189,13 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
       separate(term, into = c("term", "group"), sep = ":", fill = "right") %>%
       mutate(group = tab.levels)
   }
-
+  if (is.null(strata.var)){
 
   fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - var")),
                 data = data)
+  } else {
+  }
+
   p.value.lh <- anova(fit0, fit)$`P(>|Chi|)`[2]
 
   zph.table <- cox.zph(fit)$table
