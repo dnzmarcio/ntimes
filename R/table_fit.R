@@ -3,7 +3,7 @@ extract_data <- function(fit){
   data <- eval(fit$call$data)
   temp <- get_all_vars(formula(fit), data)
   var.names <- colnames(temp)
-  var.labels <- map2(temp, var.names, ~ extract.label(.x, .y))
+  var.labels <- map2(temp, var.names, ~ extract_label(.x, .y))
 
   suppressWarnings(temp <- temp[!apply(is.na(temp), 1, any), , drop = FALSE])
   var <- sapply(names(temp), grepl,
