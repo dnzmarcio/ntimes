@@ -169,10 +169,9 @@ aux_simple_cox <- function(var, var.name, time, status,
 #'@importFrom tibble data_frame
 fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 
-  data <- na.exclude(data)
-
   if (any(apply(data, 1, is.na)))
     strata.var <- strata.var[-apply(data, 1, is.na)]
+  data <- na.exclude(data)
 
   if (is.null(strata.var)){
     fit <- coxph(Surv(time, status) ~ ., data = data)
