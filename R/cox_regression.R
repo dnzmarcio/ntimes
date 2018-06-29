@@ -169,8 +169,8 @@ aux_simple_cox <- function(var, var.name, time, status,
 #'@importFrom tibble data_frame
 fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 
-  if (any(apply(data, 1, is.na)))
-    strata.var <- strata.var[-which(apply(data, 1, is.na))]
+  if (any(is.na(data)))
+    strata.var <- strata.var[-which(is.na(data), arr.ind = TRUE)[, 1]]
   data <- na.exclude(data)
 
   if (is.null(strata.var)){
