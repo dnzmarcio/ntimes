@@ -169,6 +169,9 @@ aux_simple_cox <- function(var, var.name, time, status,
 #'@importFrom tibble data_frame
 fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 
+  data <- na.exclude(data)
+  strata.var <- strata.var[-apply(data, 1, is.na)]
+
   if (is.null(strata.var)){
     fit <- coxph(Surv(time, status) ~ ., data = data)
     temp <- tidy(fit, exponentiate = TRUE) %>%
@@ -187,7 +190,7 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 
 
   fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - var")),
-                data = na.exclude(data))
+                data = data)
   p.value.lh <- anova(fit0, fit)$`P(>|Chi|)`[2]
 
   zph.table <- cox.zph(fit)$table
