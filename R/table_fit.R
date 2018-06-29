@@ -2,7 +2,8 @@ extract_data <- function(fit){
 
   data <- eval(fit$call$data)
   temp <- get_all_vars(formula(fit), data)
-  var.labels <- unlist(lapply(temp, function(x) attr(x, "label")))
+  var.names <- colnames(temp)
+  var.labels <- map2(temp, var.names, ~ extract.label(.x, .y))
 
   suppressWarnings(temp <- temp[!apply(is.na(temp), 1, any), , drop = FALSE])
   var <- sapply(names(temp), grepl,
