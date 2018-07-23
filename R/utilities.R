@@ -2,6 +2,16 @@ effect <- function(fit) {
   UseMethod("effect")
 }
 
+flattenlist <- function(x){
+  morelists <- sapply(x, function(xprime) class(xprime)[1]=="list")
+  out <- c(x[!morelists], unlist(x[morelists], recursive=FALSE))
+  if(sum(morelists)){
+    Recall(out)
+  }else{
+    return(out)
+  }
+}
+
 extract_label <- function(x, y){
   out <- ifelse(is.null(attr(x, "label")), y, attr(x, "label"))
   return(out)
