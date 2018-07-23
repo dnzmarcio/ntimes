@@ -249,7 +249,8 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'@importFrom purrr map map2
 #'@importFrom utils write.csv
 #'@export
-nt_multiple_cox <- function(fit.list, fit.labels = NULL, format = FALSE, digits = 2, digits.p = 3,
+nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
+                            format = FALSE, digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 
   if (class(fit.list) != "list")
@@ -257,13 +258,20 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, format = FALSE, digits 
   if (is.null(fit.labels))
     model.labels <- 1:length(fit.list)
 
-  temp <- map2(fit.list, model.labels, aux_multiple_cox,
-               format = format)
-  tab <- Reduce(rbind, temp)
-  adj <- map(fit.list, ~ reference_df(.x)$ref)
+  if (type == "hr"){
+    temp <- map2(fit.list, model.labels, aux_multiple_cox,
+                 format = format, type = "hr")
+    tab <- Reduce(rbind, temp)
+  } else {
+    temp <- map2(fit.list, model.labels, aux_multiple_cox,
+                 format = format, type = "coef")
+    tab <- Reduce(rbind, temp)
+  }
+
+  ref <- map(fit.list, ~ reference_df(.x)$ref)
 
   if (format)
-    tab <-  tab %>%  transmute(Model = .data$model,
+    tab <-  tab %>% transmute(Model = .data$model,
                                Variable = .data$variable, Group = .data$group,
                                'HR (95% CI)' = paste0(round(.data$estimate, digits), " (",
                                                       round(.data$conf.low, digits), " ; ",
@@ -276,7 +284,7 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, format = FALSE, digits 
   if (save)
     write.csv(tab, file = paste0(file, ".csv"))
 
-  out <- list(tab = tab, adj = adj)
+  out <- list(tab.hr = tab, ref = ref)
 
   return(out)
 }
@@ -284,19 +292,27 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, format = FALSE, digits 
 #'@importFrom stringr str_replace_all
 #'@importFrom dplyr select
 #'@importFrom tidyr separate
-aux_multiple_cox <- function(fit, model.label, format){
+#'@importFrom broom tidy
+aux_multiple_cox <- function(fit, model.label, format, type){
 
   aux <- extract_data(fit)
-  temp <- table_fit(fit, exponentiate = TRUE)
-  out <- temp %>%
-    mutate(model = model.label,
-      term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
-    separate(.data$term, into = c("variable", "group"), sep = ":")
 
-  if (format)
-    out <- out %>%
-    mutate(variable = ifelse(duplicated(.data$variable), "", .data$variable))
+  if (type == "hr"){
+    temp <- table_fit(fit, exponentiate = TRUE)
+    out <- temp %>%
+      mutate(model = model.label,
+             term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
+      separate(.data$term, into = c("variable", "group"), sep = ":")
 
+    if (format)
+      out <- out %>% group_by(.data$variable) %>%
+      mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
+             p.value = ifelse(duplicated(.data$p.value), NA, .data$p.value)) %>%
+      ungroup(.data$variable) %>% select(-variable) %>% rename(variable = aux_variable)
+
+  } else {
+    out <- tidy(fit)
+  }
   return(out)
 }
 
