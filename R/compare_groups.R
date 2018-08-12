@@ -14,7 +14,7 @@
 #'@param alternative a character value indicating the alternative hypothesis,
 #'must be one of "two.sided", "greater" or "less".
 #'@param test a character value indicating the tests to be performed.
-#'The options are "auto", "par" and "npar". See more in details.
+#'The options are "auto", "par", "npar", "t", "wt", "mw", "bm". See more in details.
 #'@param conf.level a character value specifying the confidence level of the confidence interval for
 #'the difference between the two groups.
 #'@param paired a logical value indicating whether a paired test should be used.
@@ -29,7 +29,7 @@
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character value indicating the name of output file in csv format to be saved.
 #'
-#'@details If \code{test = "automatic"}, the normality assumption will be verified by
+#'@details If \code{test = "auto"}, the normality assumption will be verified by
 #'a normality test (Anderson-Daling (\link[nortest]{ad.test}),
 #'Shapiro-Francia (\link[nortest]{sf.test}),
 #''Kolmogorov-Smirnov (\link[nortest]{lillie.test}),
@@ -39,7 +39,10 @@
 #'homocedasticity at a significance level of 0.05.
 #'If the data satisfies both assumptions, then t-test is chosen;
 #'if only normality is satisfied, then Welch t-test is performed; if only homoscedasticity, then
-#'Mann-Whitney is used; if neither assumptions, then Brunner-Munzel t test is applied.
+#'Mann-Whitney is used; if neither assumptions, then Brunner-Munzel t test is applied;
+#'If \code{test = "par"}, then only parametric tests will be performed; If \code{test = "npar"}, then
+#'only non-parametric tests will be performed; If either "t", "wt", "mw" and "bm", then only t-test,
+#'Welch-t test, Mann-Whitney or Brunner-Munzel test will be performed, respectively.
 #'
 #'@examples
 #'library(dplyr)
