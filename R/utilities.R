@@ -172,23 +172,50 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
 
   if (!any(names(descriptive.tab) == "Variable"))
     stop("'descriptive.tab' does not have any column 'Variable'.")
+
   if (!any(names(test.tab) == "p value"))
     stop("'test.tab' does not have any column 'p value'.")
 
-  test.tab <- test.tab %>% mutate(Variable = as.character(.data$Variable)) %>%
-    select(.data$Variable, .data$`p value`)
-  descriptive.tab <- descriptive.tab %>%
-    mutate(Variable = as.character(.data$Variable))
+  if (class(test.tab) == "two_groups" | class(test.tab) == "multiple_groups"){
+    test.tab <- test.tab %>% mutate(Variable = as.character(.data$Variable)) %>%
+      select(.data$Variable, .data$`p value`)
+    descriptive.tab <- descriptive.tab %>%
+      mutate(Variable = as.character(.data$Variable))
 
-  tab <- left_join(descriptive.tab, test.tab, by = "Variable")
-  out <- tab %>% mutate(`p value` =
-                          ifelse(.data$`p value` < 0.001, "< 0.001",
-                                 round(.data$`p value`, digits)))  %>%
-    tidyr::replace_na(list(`p value` = ""))
+    tab <- left_join(descriptive.tab, test.tab, by = "Variable")
+    out <- tab %>% mutate(`p value` =
+                            ifelse(.data$`p value` < 0.001, "< 0.001",
+                                   round(.data$`p value`, digits)))  %>%
+      replace_na(list(`p value` = ""))
 
-  if (save)
-    write.csv(out, file = paste0(file, ".csv"))
+    if (save)
+      write.csv(tab, file = paste0(file, ".csv"))
+  }
 
+  if (class(test.tab) == "multiple_comparisons"){
+    test.tab <- test.tab$omnibus %>%
+      mutate(Variable = as.character(.data$Variable)) %>%
+      select(.data$Variable, .data$`p value`)
+
+    temp <- test.tab$mc %>% select(- `95% CI`, - Test, - Group) %>%
+      spread(key = Hypothesis, value = "p value", drop = TRUE)
+
+    for(i in 2:ncol(temp)){
+      temp[, i] <- ifelse(temp[, i] < alpha, letters[i-1], "")
+    }
+
+    aux <- temp %>% unite(col = "Comparisons", -Variable, sep = "")
+
+    test.tab <- left_join(test.tab, aux, by = "Variable")
+    tab <- left_join(descriptive.tab, test.tab, by = "Variable")
+
+    out <- list(tab = tab, comparisons = comparisons)
+
+    if (save){
+      write.csv(tab, file = paste0(file, ".csv"))
+      write.csv(comparisons, file = paste0(file, ".csv"))
+    }
+  }
   return(out)
 }
 
