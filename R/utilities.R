@@ -215,6 +215,9 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
 
     test.tab <- left_join(aux, mc, by = "Variable")
     tab <- left_join(descriptive.tab, test.tab, by = "Variable") %>%
+      mutate(`p value` =
+               ifelse(.data$`p value` < 0.001, "< 0.001",
+                      round(.data$`p value`, digits))) %>%
       replace_na(list(`p value` = "", Comparisons = ""))
     comparisons <- setNames(names(temp[-1]), letters[1:(ncol(temp)-1)])
 
