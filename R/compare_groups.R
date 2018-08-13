@@ -92,7 +92,7 @@ nt_compare_tg <- function(data, group,
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
 
-  class(out) <- "two_groups"
+  class(out) <- c("data.frame", "two_groups")
   return(out)
 }
 
@@ -204,14 +204,14 @@ nt_compare_mg <- function(data, group,
                digits.p = digits.p, mc = mc)
 
   out <- Reduce(rbind, temp)
+  class(out) <- c("data.frame", "multiple_groups")
 
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
 
   if (mc)
-    out <- list(result = out, data = data)
+    out <- list(results = out, data = data)
 
-  class(out) <- "multiple_groups"
   return(out)
 }
 
@@ -281,13 +281,14 @@ nt_compare_mc <- function(omnibus.test,
                alternative = alternative, contrast = contrast,
                format = format, digits.p = digits.p, digits.ci = digits.ci)
   results <- Reduce(rbind, temp)
+  class(results) <- c("data.frame", "multiple_comparisons")
 
-  out <-list(omnibus = omnibus.test, mc = results)
+  out <-list(omnibus = omnibus.test$results, mc = results)
 
   if(save)
     write.csv(results, file = paste0(file, ".csv"))
 
-  class(out) <- "multiple_comparisons"
+
   return(out)
 }
 

@@ -4,8 +4,8 @@
 \alias{put_together}
 \title{Put Together}
 \usage{
-put_together(descriptive.tab, test.tab, digits = 3, save = FALSE,
-  file = "table")
+put_together(descriptive.tab, test.tab, digits = 3, alpha = 0.05,
+  save = FALSE, file = "table")
 }
 \arguments{
 \item{descriptive.tab}{a data frame of class "descriptive".}
@@ -13,6 +13,8 @@ put_together(descriptive.tab, test.tab, digits = 3, save = FALSE,
 \item{test.tab}{a data frame of class "p_value".}
 
 \item{digits}{a numeric value specifying the number of digits for the p values.}
+
+\item{alpha}{a numeric value specifying the significance level to indicate statistically significant multiple comparisons.}
 
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 

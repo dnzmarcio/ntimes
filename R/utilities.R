@@ -148,6 +148,7 @@ qt_var <- function(var, label = NULL, unit = NULL){
 #'@param descriptive.tab a data frame of class "descriptive".
 #'@param test.tab a data frame of class "p_value".
 #'@param digits a numeric value specifying the number of digits for the p values.
+#'@param alpha a numeric value specifying the significance level to indicate statistically significant multiple comparisons.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character value indicating the name of output file in csv format to be saved.
 #'@examples
@@ -167,16 +168,18 @@ qt_var <- function(var, label = NULL, unit = NULL){
 #'
 #'@export
 put_together <- function(descriptive.tab, test.tab, digits = 3,
+                         alpha = 0.05,
                          save = FALSE,
                          file = "table"){
 
   if (!any(names(descriptive.tab) == "Variable"))
     stop("'descriptive.tab' does not have any column 'Variable'.")
 
-  if (!any(names(test.tab) == "p value"))
-    stop("'test.tab' does not have any column 'p value'.")
+  if (any(class(test.tab) == "two_groups") | any(class(test.tab) == "multiple_groups")){
 
-  if (class(test.tab) == "two_groups" | class(test.tab) == "multiple_groups"){
+    if (!any(names(test.tab) == "p value"))
+      stop("'test.tab' does not have any column 'p value'.")
+
     test.tab <- test.tab %>% mutate(Variable = as.character(.data$Variable)) %>%
       select(.data$Variable, .data$`p value`)
     descriptive.tab <- descriptive.tab %>%
@@ -192,8 +195,12 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
       write.csv(tab, file = paste0(file, ".csv"))
   }
 
-  if (class(test.tab) == "multiple_comparisons"){
-    test.tab <- test.tab$omnibus %>%
+  if (any(class(test.tab$mc) == "multiple_comparisons")){
+
+    if (!any(names(test.tab$omnibus) == "p value") & !any(names(test.tab$mc) == "p value"))
+      stop("'test.tab' does not have any column 'p value'.")
+
+    aux <- test.tab$omnibus %>%
       mutate(Variable = as.character(.data$Variable)) %>%
       select(.data$Variable, .data$`p value`)
 
@@ -204,10 +211,12 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
       temp[, i] <- ifelse(temp[, i] < alpha, letters[i-1], "")
     }
 
-    aux <- temp %>% unite(col = "Comparisons", -Variable, sep = "")
+    mc <- temp %>% unite(col = "Comparisons", -Variable, sep = "")
 
-    test.tab <- left_join(test.tab, aux, by = "Variable")
-    tab <- left_join(descriptive.tab, test.tab, by = "Variable")
+    test.tab <- left_join(aux, mc, by = "Variable")
+    tab <- left_join(descriptive.tab, test.tab, by = "Variable") %>%
+      replace_na(list(`p value` = "", Comparisons = ""))
+    comparisons <- setNames(names(temp[-1]), letters[1:(ncol(temp)-1)])
 
     out <- list(tab = tab, comparisons = comparisons)
 
