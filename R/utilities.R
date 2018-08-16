@@ -225,7 +225,7 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
 
     if (save){
       write.csv(tab, file = paste0(file, ".csv"))
-      write.csv(comparisons, file = paste0(file, ".csv"))
+      write.csv(comparisons, file = paste0(file, "_legend.csv"))
     }
   }
   return(out)
