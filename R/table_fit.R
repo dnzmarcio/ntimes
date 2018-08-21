@@ -30,9 +30,7 @@ reference_df <- function(fit){
     if (is.numeric(data[, i])){
       df[, i] <- median(data[, i], na.rm = TRUE)
     } else if (is.factor(data[, i])){
-      tab <- table(data[, i])
-      df[, i] <- names(tab[which.max(tab)])
-      df[, i] <- factor(df[, i], levels = levels(data[, i]))
+      df[, i] <- levels(data[, i])[1]
     }
   }
 
@@ -101,10 +99,10 @@ contrast_df <- function(data, var, ref, interaction = NULL){
     new.data <- contrast
   }
 
-  
-  
-  
-  
+
+
+
+
   rownames(new.data) <- NULL
   out <- list(new.data = new.data, label = label)
   return(out)
