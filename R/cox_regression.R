@@ -32,7 +32,12 @@
 #'                                           label = "Age"))
 #'ovarian_nt %>% nt_simple_cox(time = futime, status = fustat)
 #'
+#'@importFrom rlang enquo quos quo_get_expr
+#'@importFrom dplyr mutate select mutate transmute rename
+#'@importFrom tidyr replace_na
 #'@importFrom rlang quo_get_expr
+#'@importFrom purrr map2
+#'@importFrom utils write.csv
 #'
 #'@export
 nt_simple_cox <- function(data, time, status, ...,
@@ -107,14 +112,17 @@ nt_simple_cox <- function(data, time, status, ...,
                                round(.data$conf.high, digits), ")"),
               p.value = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
                                as.character(round(.data$p.value, digits.p))),
-              n, n.event, concordance, r.squared, AIC, ph.assumption) %>%
-    rename(`HR (95% CI)` = HR.95CI, `p value` = p.value) %>%
-    mutate(Variable = ifelse(duplicated(Variable), "", Variable))
+              n = .data$n, n.event = .data$n.event,
+              concordance = .data$concordance, r.squared = .data$r.squared,
+              AIC = .data$AIC, ph.assumption  = .data$ph.assumption) %>%
+    mutate(Variable = ifelse(duplicated(.data$Variable), "", .data$Variable)) %>%
+    replace_na(list(p.value = "")) %>%
+    rename(`HR (95% CI)` = .data$HR.95CI, `p value` = .data$p.value)
   }
 
   if (save){
-    utils::write.csv(cox, file = paste0(file, "_regression.csv"))
-    utils::write.csv(survival, file = paste0(file, "_survival.csv"))
+    write.csv(cox, file = paste0(file, "_regression.csv"))
+    write.csv(survival, file = paste0(file, "_survival.csv"))
   }
 
   out <- list(survival = survival, cox = cox)
@@ -171,8 +179,8 @@ aux_simple_cox <- function(var, var.name, time, status,
 #'@importFrom survival coxph Surv cox.zph
 #'@importFrom broom tidy glance
 #'@importFrom tidyr separate replace_na
-#'@importFrom dplyr select transmute mutate bind_cols
-#'@importFrom tibble data_frame
+#'@importFrom dplyr select mutate
+#'@importFrom stats na.exclude update.formula anova
 fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 
   if (any(is.na(data)))
@@ -184,14 +192,14 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
     temp <- tidy(fit, exponentiate = TRUE) %>%
       mutate(term = str_replace_all(.data$term, unlist(tab.labels))) %>%
       select(-.data$std.error, -.data$statistic) %>%
-      separate(term, into = c("term", "group"), sep = ":", fill = "right") %>%
+      separate(.data$term, into = c("term", "group"), sep = ":", fill = "right") %>%
       mutate(group = tab.levels)
   } else {
     fit <- coxph(Surv(time, status) ~ strata(strata.var) + ., data = data)
     temp <- tidy(fit, exponentiate = TRUE) %>%
       mutate(term = str_replace_all(.data$term, unlist(tab.labels))) %>%
       select(-.data$std.error, -.data$statistic) %>%
-      separate(term, into = c("term", "group"), sep = ":", fill = "right") %>%
+      separate(.data$term, into = c("term", "group"), sep = ":", fill = "right") %>%
       mutate(group = tab.levels)
   }
 
@@ -254,6 +262,8 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'
 #'@importFrom purrr map map2
 #'@importFrom utils write.csv
+#'@importFrom dplyr transmute
+#'@importFrom tidyr replace_na
 #'@export
 nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
                             format = FALSE, digits = 2, digits.p = 3,
@@ -296,9 +306,8 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
 }
 
 #'@importFrom stringr str_replace_all
-#'@importFrom dplyr select
+#'@importFrom dplyr mutate select ungroup rename
 #'@importFrom tidyr separate
-#'@importFrom broom tidy
 aux_multiple_cox <- function(fit, model.label, format, type){
 
   aux <- extract_data(fit)
