@@ -122,29 +122,35 @@ nt_simple_cox <- function(data, time, status, ...,
   return(out)
 }
 
+#'@importFrom purrr map
+#'@importFrom magrittr %>%
+#'@importFrom stats setNames
+#'@importFrom dplyr mutate bind_cols
 aux_simple_cox <- function(var, var.name, time, status,
                            add, add.name, add.label,
                            strata.var, digits, digits.p){
 
   var.label <- extract_label(var, var.name)
   aux <- cbind(add, var)
+  aux.label <- c(add.label, var.label)
+
   if(ncol(aux) > 1) {
     var.class <- unlist(map(cbind(add, var), is.numeric))
   } else {
     var.class <- list(var = is.numeric(var))
   }
 
-  for (i in 1:length(var.class)){
-    tab.labels <- list()
-    tab.levels <- list()
+  tab.labels <- list()
+  tab.levels <- list()
 
+  for (i in 1:length(var.class)){
     if (var.class[[i]]){
-      tab.labels <- c(add.label, var.label)
-      tab.levels <- ""
+      tab.labels[[colnames(aux)[i]]] <- aux.label[[i]]
+      tab.levels[[colnames(aux)[i]]] <- ""
     } else {
-      tab.labels <- paste0(c(add.label, var.label), ": ")
+      tab.labels[[colnames(aux)[i]]] <- paste0(aux.label[[i]], ":")
       lv <- levels(var)
-      tab.levels <- paste0(lv[2:length(lv)], "/", lv[1])
+      tab.levels[[colnames(aux)[i]]] <- paste0(lv[2:length(lv)], "/", lv[1])
     }
   }
 

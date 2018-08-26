@@ -112,19 +112,30 @@ aux_simple_logistic <- function(var, var.name, response, response.label,
 
   var.label <- extract_label(var, var.name)
   aux <- cbind(add, var)
+  aux.label <- c(add.label, var.label)
+
   if(ncol(aux) > 1) {
     var.class <- unlist(map(cbind(add, var), is.numeric))
   } else {
     var.class <- list(var = is.numeric(var))
   }
-  fit.labels <- ifelse(var.class,
-                       c(add.label, var.label),
-                       paste0(c(add.label, var.label), ": "))
-  if (!is.list(fit.labels))
-    fit.labels <- setNames(as.list(fit.labels), "var")
 
-  data.model <- bind_cols(response = response, add = add, var = var)
-  out <- fit_logistic(data.model, fit.labels)
+  tab.labels <- list()
+  tab.levels <- list()
+
+  for (i in 1:length(var.class)){
+    if (var.class[[i]]){
+      tab.labels[[colnames(aux)[i]]] <- aux.label[[i]]
+      tab.levels[[colnames(aux)[i]]] <- ""
+    } else {
+      tab.labels[[colnames(aux)[i]]] <- paste0(aux.label[[i]], ":")
+      lv <- levels(var)
+      tab.levels[[colnames(aux)[i]]] <- paste0(lv[2:length(lv)], "/", lv[1])
+    }
+  }
+
+  if (!is.list(tab.labels))
+    tab.labels <- setNames(as.list(tab.labels), "var")
 
   return(out)
 }
