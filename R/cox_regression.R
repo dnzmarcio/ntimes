@@ -206,7 +206,7 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
   fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - var")),
                 data = data)
 
-  p.value.lh <- anova(fit0, fit)$`P(>|Chi|)`[2]
+  p.value.lh <- anova(fit0, fit, test = "Chisq")$`P(>|Chi|)`[2]
 
   zph.table <- cox.zph(fit)$table
 

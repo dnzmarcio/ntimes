@@ -32,7 +32,7 @@ reference_df <- function(fit){
     if (is.numeric(data[, i])){
       df[, i] <- median(data[, i], na.rm = TRUE)
     } else if (is.factor(data[, i])){
-      df[, i] <- levels(data[, i])[1]
+      df[, i] <- factor(levels(data[, i])[1], levels = levels(data[, i]))
     }
   }
 
@@ -161,7 +161,7 @@ effect.coxph <- function(fit){
 
     if (all(!cond.interaction)){
       temp <- contrast_df(aux$data, aux$var[i], ref)
-      design.matrix <- model.matrix(fit, temp$new.data)
+      design.matrix <- model.matrix(formula(fit), temp$new.data)
 
       drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
       fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
