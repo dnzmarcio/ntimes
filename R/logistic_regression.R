@@ -16,7 +16,7 @@
 #'library(dplyr)
 #'
 #'data(titanic_train)
-#'titanic_train <- titanic_train %>%
+#'titanic_nt <- titanic_train %>%
 #'  mutate(Sex = ql_var(Sex,
 #'                      from = c("male", "female"),
 #'                      to = c("Male", "Female")),
@@ -28,7 +28,7 @@
 #'                           from = c("C", "Q", "S"),
 #'                           to = c("Cherbourg", "Queenstown", "Southampton")))
 #'
-#'titanic_train %>% select(Survived, Sex, Age, Pclass, Embarked) %>%
+#'titanic_nt %>% select(Survived, Sex, Age, Pclass, Embarked) %>%
 #'  nt_simple_logistic(response = Survived, Age)
 #'
 #'@import titanic
