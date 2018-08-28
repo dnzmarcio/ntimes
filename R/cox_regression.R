@@ -212,7 +212,7 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 
   aux <- glance(fit) %>% select(.data$n, n.event = .data$nevent,
                                 .data$concordance, .data$r.squared, .data$AIC) %>%
-    mutate(p.value.lh = .data$p.value.lh, ph.assumption = zph.table[nrow(zph.table), 3])
+    mutate(p.value.lh = p.value.lh, ph.assumption = zph.table[nrow(zph.table), 3])
 
   out <- merge(data.frame(temp, row.names=NULL), data.frame(aux, row.names=NULL),
                by = 0, all = TRUE)[-1]
