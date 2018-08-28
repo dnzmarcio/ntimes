@@ -136,6 +136,9 @@ aux_simple_logistic <- function(var, var.name, response, response.label,
   if (!is.list(tab.labels))
     tab.labels <- setNames(as.list(tab.labels), "var")
 
+  data.model <- bind_cols(response = response, add = add, var = var)
+  out <- fit_logistic(data.model, tab.labels, tab.levels, var.label) %>%
+    mutate(term = ifelse(duplicated(.data$term), "", .data$term))
   return(out)
 }
 
@@ -146,24 +149,28 @@ aux_simple_logistic <- function(var, var.name, response, response.label,
 #'@importFrom stats na.exclude glm anova
 fit_logistic <- function(data, tab.labels, tab.levels, var.label){
 
-  data.model <- na.exclude(data)
+  data <- na.exclude(data)
 
-  fit <- glm(response ~ ., data = data.model, family = "binomial")
-
-  null.fit <- glm(response ~ 1, data = data.model, family = "binomial")
-  p.value.F <- anova(null.fit, fit)$"p.value"
+  fit <- glm(response ~ ., data = data, family = "binomial")
 
   temp <- tidy(fit, exponentiate = TRUE, conf.int = TRUE) %>%
-    mutate(term = str_replace_all(.data$term, unlist(fit.labels))) %>%
+    mutate(term = str_replace_all(.data$term, unlist(tab.labels))) %>%
     select(-.data$std.error, -.data$statistic) %>%
-    mutate(estimate = replace(.data$estimate, 1, 1),
-           conf.low = replace(.data$conf.low, 1, NA),
-           conf.high = replace(.data$conf.high, 1, NA),
-           p.value = replace(.data$p.value, 1, NA))
+    filter(.data$term != "(Intercept)") %>%
+    separate(.data$term, into = c("term", "group"), sep = ":", fill = "right") %>%
+    mutate(group = unlist(tab.levels))
 
-  aux <- bind_cols(n = nrow(na.exclude(data.model)), glance(fit))
+  fit0 <- glm(response ~ . - var, data = data, family = "binomial")
+  p.value.lh <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
 
-  out <- merge(data.frame(temp, row.names=NULL), data.frame(aux, row.names=NULL),
+  if (length(tab.levels[["var"]]) > 1)
+    temp[temp$term == var.label, ]$p.value <-
+    c(p.value.lh, rep(NA, (length(tab.levels[["var"]]) - 1)))
+
+  aux <- bind_cols(n = nrow(na.exclude(data)), glance(fit))
+
+  out <- merge(data.frame(temp, row.names=NULL),
+               data.frame(aux, row.names=NULL),
                by = 0, all = TRUE)[-1]
 
   return(out)
@@ -208,17 +215,42 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label){
 #'@importFrom purrr map
 #'@importFrom utils write.csv
 #'@export
-nt_multiple_logistic <- function(fit.list, data,
+nt_multiple_logistic <- function(fit.list, fit.labels = NULL, type = "or",
                                  format = TRUE, digits = 2, digits.p = 3,
                                  save = FALSE, file = "nt_multiple_logistic"){
 
-  temp <- map(fit.list, aux_multiple_logistic,
-              format, digits, digits.p, data = data)
+  if (class(fit.list) != "list")
+    fit.list <- list(fit.list)
+  if (is.null(fit.labels))
+    fit.labels <- 1:length(fit.list)
 
-  out <- Reduce(rbind, temp)
+  if (type == "or"){
+    temp <- map2(fit.list, fit.labels, aux_multiple_logistic,
+                 format = format, type = "or")
+    tab <- Reduce(rbind, temp)
+  } else {
+    temp <- map2(fit.list, fit.labels, aux_multiple_logistic,
+                 format = format, type = "coef")
+    tab <- Reduce(rbind, temp)
+  }
+
+  ref <- map(fit.list, ~ reference_df(.x)$ref)
+
+  if (format)
+    tab <-  tab %>%
+    transmute(Model = .data$model,
+              Variable = .data$variable, OR = .data$or,
+              'Estimate (95% CI)' = paste0(round(.data$estimate, digits), " (",
+                                           round(.data$conf.low, digits), " ; ",
+                                           round(.data$conf.high, digits), ")"),
+              'p value' = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+                                 as.character(round(.data$p.value, digits.p)))) %>%
+    replace_na(list('p value' = ""))
 
   if (save)
-    write.csv(out, file = paste0(file, ".csv"))
+    write.csv(tab, file = paste0(file, ".csv"))
+
+  out <- list(tab = tab, ref = ref)
 
   return(out)
 }
@@ -229,48 +261,27 @@ nt_multiple_logistic <- function(fit.list, data,
 #'@importFrom tidyr separate unite
 #'@importFrom tibble data_frame
 #'@importFrom gsubfn gsubfn
-aux_multiple_logistic <- function(fit, format, digits, digits.p, data){
+aux_multiple_logistic <- function(fit, model.label, format, type){
 
-  var.name <- names(data)
-  var.label <- extract_label(var, var.name)
-  var.class <- unlist(map(cbind(add, var), is.numeric))
-  fit.labels <- ifelse(var.class,
-                       c(add.label, var.label),
-                       paste0(c(add.label, var.label), ": "))
+  aux <- extract_data(fit)
 
-  temp <- tidy(fit, exponentiate=TRUE, conf.int=TRUE) %>%
-    mutate(term = str_replace_all(term, unlist(fit.labels))) %>%
-    select(-.data$std.error, -.data$statistic) %>%
-    mutate(estimate = replace(.data$estimate, 1, 1),
-           conf.low = replace(.data$conf.low, 1, NA),
-           conf.high = replace(.data$conf.high, 1, NA),
-           p.value = replace(.data$p.value, 1, NA))
+  if (type == "or"){
+    temp <- table_fit(fit, exponentiate = TRUE)
+    out <- temp %>%
+      mutate(model = model.label,
+             term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
+      separate(.data$term, into = c("variable", "or"), sep = ":")
 
-  aux <- glance(fit)
+    if (format)
+      out <- out %>% group_by(.data$variable) %>%
+      mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
+             p.value = ifelse(duplicated(.data$p.value), NA, .data$p.value)) %>%
+      ungroup(.data$variable) %>% select(-.data$variable) %>%
+      rename(variable = .data$aux_variable)
 
-  if (format){
-    temp <- temp %>%
-      transmute(Variable = .data$term,
-                OR.95CI = paste0(round(.data$estimate, digits), " (",
-                                 round(.data$conf.low, digits), " ; ",
-                                 round(.data$conf.high, digits), ")"),
-                p.value = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, digits.p))))
-
-    aux <- aux %>%
-      mutate(null.deviance = round(.data$null.deviance, digits),
-             logLik = round(.data$logLik, digits),
-             AIC = round(.data$AIC, digits),
-             BIC = round(.data$BIC, digits),
-             deviance = round(.data$deviance, digits))
+  } else {
+    out <- tidy(fit)
   }
-
-  out <- merge(data.frame(temp, row.names=NULL), data.frame(aux, row.names=NULL),
-               by = 0, all = TRUE)[-1] %>%
-    replace_na(list(null.deviance = "", df.null = "",
-                    logLik = "", AIC = "", BIC = "",
-                    deviance = "", df.residual = ""))
-
   return(out)
 }
 

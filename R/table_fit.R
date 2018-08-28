@@ -102,15 +102,10 @@ contrast_df <- function(data, var, ref, interaction = NULL){
     new.data <- contrast
   }
 
-
-
-
-
   rownames(new.data) <- NULL
   out <- list(new.data = new.data, label = label)
   return(out)
 }
-
 
 contrast_calc <- function(design.matrix, beta, beta.var,  p.value){
 
@@ -224,49 +219,75 @@ table_fit <- function(fit, exponentiate = FALSE){
 #'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
 effect.glm <- function(fit){
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-effect.glm <- function(fit){
-
   aux <- extract_data(fit)
-  ref <- reference_df(aux$data)$df
+  ref <- reference_df(fit)$df
   beta <- as.numeric(fit$coefficients)
   beta.var <- as.matrix(vcov(fit))
+  term.labels <- attr(fit$terms, "term.labels")
 
-  effect <- list()
+  interaction <- colnames(attr(fit$terms, "factors"))[attr(fit$terms, "order") > 1]
+
+  L <- list()
 
   for (i in 1:length(aux$var)){
-    temp <- contrast_df(aux$data, aux$var[i], ref)
-    design.matrix <- model.matrix(terms(fit), temp$newdata)
-    pred <- design.matrix%*%beta
 
-    for (j in 2:nrow(design.matrix)){
-      estimate <- as.numeric(pred[j] - pred[1])
-      diff <- design.matrix[j, ] - design.matrix[1, ]
-      pred.se <- sqrt(t(diff)%*%beta.var%*%diff)
+    if (length(interaction) > 0){
+      cond.interaction <- grepl(aux$var[i], x = interaction, fixed = TRUE)
+    } else {
+      cond.interaction <- FALSE
+    }
 
-      lower <- estimate - 1.96*pred.se
-      upper <- estimate + 1.96*pred.se
-      effect[[temp$label[j-1]]] <- exp(cbind(estimate, lower, upper))
+    if (all(!cond.interaction)){
+      temp <- contrast_df(aux$data, aux$var[i], ref)
+      design.matrix <- model.matrix(formula(fit), temp$new.data)
+
+      drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
+      fit0 <- glm(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
+                    data = aux$data, family = "binomial")
+      p.value <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
+
+      contrast <- contrast_calc(design.matrix, beta = beta, beta.var = beta.var,
+                                p.value = p.value)
+
+      temp <- setNames(contrast, temp$label)
+
+      if (i > 1)
+        temp <- c(L, temp)
+
+      L <- temp
+
+    } else {
+      for (k in which(cond.interaction)){
+        interaction.vars <- aux$var[sapply(aux$var, grepl, x = as.character(interaction[k]), fixed = TRUE)]
+        others <- interaction.vars[interaction.vars != aux$var[i]]
+        temp <- contrast_df(aux$data, aux$var[i], ref, others)
+        design.matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
+
+        drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
+        fit0 <- glm(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
+                      data = aux$data, family = "binomial")
+        p.value <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
+
+        contrast <- sapply(design.matrix, contrast_calc,
+                           beta = beta, beta.var = beta.var, p.value = p.value, simplify = FALSE)
+        contrast <- flattenlist(contrast)
+        temp <- setNames(contrast, temp$label)
+
+        if (i > 1)
+          temp <- c(L, temp)
+
+        L <- temp
+
+      }
     }
   }
 
-  Variable <- names(effect)
-  effect <- Reduce(rbind, effect)
-  colnames(effect) <- c("Effect", "Lower", "Upper")
-  out <- data.frame(Variable, effect)
+  term <- names(L)
+  L <- Reduce(rbind, L)
+  colnames(L) <- c("estimate", "conf.low", "conf.high", "p.value")
+  out <- data.frame(term, L)
 
   return(out)
+
 }
 
