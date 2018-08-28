@@ -37,6 +37,17 @@ keep_levels <- function(x, y){
   return(x)
 }
 
+#https://stackoverflow.com/questions/19410108/cleaning-up-factor-levels-collapsing-multiple-levels-labels
+recode_labels <- function(x, code, labels) {
+
+  levels <- levels(x)
+  for (i in 1:length(code))
+    levels[which(code[i] == levels)] <- labels[i]
+  levels(x) <- levels
+
+  return(x)
+}
+
 #'@importFrom stats median quantile na.omit
 median_iqr <- function (x, limit = "both", type = 7) {
   x <- na.omit(x)
@@ -91,7 +102,7 @@ ql_var <- function(var, from = NULL, to = NULL, order = NULL, label = NULL){
   var <- as.factor(var)
 
   if (!is.null(from) & !is.null(to))
-    var <- factor(var, levels = from, labels = to)
+    var <- recode_labels(var, code = from, labels = to)
 
   if (!is.null(order))
     var <- factor(var, levels = order)
