@@ -332,6 +332,7 @@ nt_dist_qt_mg <-  function(var, group, test,
 
 #'@importFrom multcomp glht mcp
 #'@importFrom nparcomp nparcomp
+#'@importFrom stats confint aov
 nt_dist_qt_mc <-  function(var, otest, group, alternative, contrast,
                            format, digits.p, digits.ci, var.label, group.label) {
 

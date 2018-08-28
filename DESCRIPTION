@@ -24,6 +24,7 @@ Imports:
     utils (>= 3.3.0),
     tidyr (>= 0.6.0),
     purrr (>= 0.2.2),
+    stringr (>= 1.2.0),
     nparcomp (>= 2.6),
     car (>= 2.1-4),
     nortest (>= 1.0-4), 

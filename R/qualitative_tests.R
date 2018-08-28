@@ -122,6 +122,7 @@ nt_dist_ql_mg <-  function(var, group,
 }
 
 #'@importFrom multcomp glht mcp
+#'@importFrom stats confint
 #'@export
 nt_dist_ql_mc <-  function(var, group, alternative, contrast,
                            format, digits.p, digits.ci, var.label, group.label) {

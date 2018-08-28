@@ -1,3 +1,4 @@
+#'@importFrom stats terms get_all_vars
 extract_data <- function(fit){
 
   data <- eval(fit$call$data)
@@ -19,6 +20,7 @@ extract_data <- function(fit){
   return(out)
 }
 
+#'@importFrom stats setNames median
 reference_df <- function(fit){
 
   aux <- extract_data(fit)
@@ -43,6 +45,7 @@ reference_df <- function(fit){
   return(out)
 }
 
+#'@importFrom stats quantile
 contrast_df <- function(data, var, ref, interaction = NULL){
 
   contrast <- ref
@@ -134,6 +137,8 @@ contrast_calc <- function(design.matrix, beta, beta.var,  p.value){
   return(out)
 }
 
+#'@importFrom stats model.matrix formula setNames anova vcov update.formula
+#'@importFrom survival coxph
 effect.coxph <- function(fit){
 
   aux <- extract_data(fit)
@@ -216,6 +221,8 @@ table_fit <- function(fit, exponentiate = FALSE){
   return(out)
 }
 
+#'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
+effect.glm <- function(fit){
 
 
 
