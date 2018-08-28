@@ -102,10 +102,20 @@ ql_var <- function(var, from = NULL, to = NULL, order = NULL, label = NULL){
   var <- as.factor(var)
 
   if (!is.null(from) & !is.null(to))
-    var <- recode_labels(var, code = from, labels = to)
+    if (all(var %in% from)){
+      var <- recode_labels(var, code = from, labels = to)
+    } else {
+      var[which(!(var %in% from))] <- NA
+      var <- recode_labels(var, code = from, labels = to)
+    }
 
   if (!is.null(order))
-    var <- factor(var, levels = order)
+    if (all(var %in% order)){
+      var <- factor(var, levels = order)
+    } else {
+      var[which(!(var %in% order))] <- NA
+      var <- factor(var, levels = order)
+    }
 
   if (!is.null(label))
     attributes(var)$label <- label
