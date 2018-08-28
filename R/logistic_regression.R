@@ -204,7 +204,7 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label){
 #'fit.list[[2]] <- glm(Survived ~ Age + Sex, data = dt)
 #'fit.list[[3]] <- glm(Survived ~ Age + Sex + Pclass, data = dt)
 #'
-#'nt_multiple_logistic(fit.list, data = dt)
+#'nt_multiple_logistic(fit.list)
 #'
 #'@importFrom purrr map
 #'@importFrom utils write.csv
