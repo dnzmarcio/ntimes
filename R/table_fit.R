@@ -55,14 +55,14 @@ contrast_df <- function(data, var, ref, interaction = NULL){
     lv <- levels(data[[var]])
     contrast <- contrast[rep(1, each = length(lv)), ]
     contrast[[var]] <- lv
-    label <- paste0(var, ": ", contrast[[var]][2:length(lv)], "/", contrast[[var]][1])
+    label <- paste0(var, ":", contrast[[var]][2:length(lv)], "/", contrast[[var]][1])
 
   } else if (class(data[[var]]) == "numeric" |
              class(data[[var]]) == "integer") {
     quantiles <- quantile(data[[var]], probs = c(0.25, 0.75))
     contrast <- contrast[c(1, 1), ]
     contrast[[var]] <- round(quantiles, 2)
-    label <- paste0(var, ": ", contrast[[var]][2], "/", contrast[[var]][1])
+    label <- paste0(var, ":", contrast[[var]][2], "/", contrast[[var]][1])
   }
 
   if (!is.null(interaction)){

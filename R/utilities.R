@@ -186,7 +186,8 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
   if (!any(names(descriptive.tab) == "Variable"))
     stop("'descriptive.tab' does not have any column 'Variable'.")
 
-  if (any(class(test.tab) == "two_groups") | any(class(test.tab) == "multiple_groups")){
+  if (any(class(test.tab) == "two_groups") |
+      any(class(test.tab) == "multiple_groups")){
 
     if (!any(names(test.tab) == "p value"))
       stop("'test.tab' does not have any column 'p value'.")
@@ -208,7 +209,8 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
 
   if (any(class(test.tab$mc) == "multiple_comparisons")){
 
-    if (!any(names(test.tab$omnibus) == "p value") & !any(names(test.tab$mc) == "p value"))
+    if (!any(names(test.tab$omnibus) == "p value") &
+        !any(names(test.tab$mc) == "p value"))
       stop("'test.tab' does not have any column 'p value'.")
 
     aux <- test.tab$omnibus %>%

@@ -271,14 +271,14 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
   if (class(fit.list) != "list")
     fit.list <- list(fit.list)
   if (is.null(fit.labels))
-    model.labels <- 1:length(fit.list)
+    fit.labels <- 1:length(fit.list)
 
   if (type == "hr"){
-    temp <- map2(fit.list, model.labels, aux_multiple_cox,
+    temp <- map2(fit.list, fit.labels, aux_multiple_cox,
                  format = format, type = "hr")
     tab <- Reduce(rbind, temp)
   } else {
-    temp <- map2(fit.list, model.labels, aux_multiple_cox,
+    temp <- map2(fit.list, fit.labels, aux_multiple_cox,
                  format = format, type = "coef")
     tab <- Reduce(rbind, temp)
   }
@@ -286,20 +286,22 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
   ref <- map(fit.list, ~ reference_df(.x)$ref)
 
   if (format)
-    tab <-  tab %>% transmute(Model = .data$model,
-                               Variable = .data$variable, Group = .data$group,
-                               'HR (95% CI)' = paste0(round(.data$estimate, digits), " (",
-                                                      round(.data$conf.low, digits), " ; ",
-                                                      round(.data$conf.high, digits), ")"),
-                               'p value' = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                                as.character(round(.data$p.value, digits.p))))
+    tab <-  tab %>%
+    transmute(Model = .data$model,
+              Variable = .data$variable, HR = .data$hr,
+              'Estimate (95% CI)' = paste0(round(.data$estimate, digits), " (",
+                                           round(.data$conf.low, digits), " ; ",
+                                           round(.data$conf.high, digits), ")"),
+              'p value' = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+                                 as.character(round(.data$p.value, digits.p)))) %>%
+    replace_na(list('p value' = ""))
 
 
 
   if (save)
     write.csv(tab, file = paste0(file, ".csv"))
 
-  out <- list(tab.hr = tab, ref = ref)
+  out <- list(tab = tab, ref = ref)
 
   return(out)
 }
@@ -316,7 +318,7 @@ aux_multiple_cox <- function(fit, model.label, format, type){
     out <- temp %>%
       mutate(model = model.label,
              term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
-      separate(.data$term, into = c("variable", "group"), sep = ":")
+      separate(.data$term, into = c("variable", "hr"), sep = ":")
 
     if (format)
       out <- out %>% group_by(.data$variable) %>%
