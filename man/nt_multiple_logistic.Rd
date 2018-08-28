@@ -4,13 +4,12 @@
 \alias{nt_multiple_logistic}
 \title{Logistic regression table}
 \usage{
-nt_multiple_logistic(fit.list, data, format = TRUE, digits = 2,
-  digits.p = 3, save = FALSE, file = "nt_multiple_logistic")
+nt_multiple_logistic(fit.list, fit.labels = NULL, type = "or",
+  format = TRUE, digits = 2, digits.p = 3, save = FALSE,
+  file = "nt_multiple_logistic")
 }
 \arguments{
 \item{fit.list}{a list of fitted models.}
-
-\item{data}{a data frame containing the variables used to fit the models listed in fit.list.}
 
 \item{format}{a logical value indicating whether the output should be formatted.}
 
@@ -21,6 +20,8 @@ nt_multiple_logistic(fit.list, data, format = TRUE, digits = 2,
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character indicating the name of output file in csv format to be saved.}
+
+\item{data}{a data frame containing the variables used to fit the models listed in fit.list.}
 }
 \description{
 Tabulating results from Logistic models.
@@ -45,6 +46,6 @@ fit.list[[1]] <- glm(Survived ~ Sex, data = dt)
 fit.list[[2]] <- glm(Survived ~ Age + Sex, data = dt)
 fit.list[[3]] <- glm(Survived ~ Age + Sex + Pclass, data = dt)
 
-nt_multiple_logistic(fit.list, data = dt)
+nt_multiple_logistic(fit.list)
 
 }

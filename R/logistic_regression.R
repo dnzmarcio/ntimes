@@ -16,20 +16,20 @@
 #'library(dplyr)
 #'
 #'data(titanic_train)
-#'titanic_train <- titanic_train %>% mutate(Sex = ql_var(Sex,
-#'                                                       from = c("male", "female"),
-#'                                                       to = c("Male", "Female")),
-#'                                          Pclass = ql_var(Pclass,
-#'                                                          from = 1:3,
-#'                                                          to = c("I", "II", "III"),
-#'                                                          label = "Passenger Class"),
-#'                                          Embarked = ql_var(Embarked,
-#'                                                            from = c("C", "Q", "S"),
-#'                                                            to = c("Cherbourg", "Queenstown", "Southampton"))                )
+#'titanic_train <- titanic_train %>%
+#'  mutate(Sex = ql_var(Sex,
+#'                      from = c("male", "female"),
+#'                      to = c("Male", "Female")),
+#'         Pclass = ql_var(Pclass,
+#'                         from = 1:3,
+#'                         to = c("I", "II", "III"),
+#'                         label = "Passenger Class"),
+#'         Embarked = ql_var(Embarked,
+#'                           from = c("C", "Q", "S"),
+#'                           to = c("Cherbourg", "Queenstown", "Southampton")))
 #'
-#'dt <- titanic_train %>% select(Survived, Sex, Age, Pclass, Embarked)
-#'
-#'dt %>% nt_simple_logistic(response = Survived, Age)
+#'titanic_train %>% select(Survived, Sex, Age, Pclass, Embarked) %>%
+#'  nt_simple_logistic(response = Survived, Age)
 #'
 #'@import titanic
 #'@importFrom purrr map2

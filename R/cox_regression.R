@@ -5,6 +5,7 @@
 #'@param data a data frame with the variables.
 #'@param time a numeric vector with the follow-up time.
 #'@param status a numeric vector indicating status, 0 = censored, 1 = event at time.
+#'@param ...  character values indicating confounding variables.
 #'@param strata a character vector containing the strata.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.

@@ -15,6 +15,8 @@ nt_simple_cox(data, time, status, ..., cluster = FALSE, strata = NULL,
 
 \item{status}{a numeric vector indicating status, 0 = censored, 1 = event at time.}
 
+\item{...}{character values indicating confounding variables.}
+
 \item{strata}{a character vector containing the strata.}
 
 \item{digits}{a numerical value defining of digits to present the results.}
