@@ -141,10 +141,11 @@ aux_simple_logistic <- function(var, var.name, response, response.label,
 }
 
 #'@importFrom broom tidy glance
-#'@importFrom tidyr replace_na
-#'@importFrom dplyr select transmute mutate
+#'@importFrom tidyr separate replace_na
+#'@importFrom dplyr select transmute mutate bind_cols
 #'@importFrom stringr str_replace_all
-fit_logistic <- function(data, fit.labels){
+#'@importFrom stats na.exclude glm anova
+fit_logistic <- function(data, tab.labels, tab.levels, var.label){
 
   data.model <- na.exclude(data)
 
