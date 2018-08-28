@@ -171,8 +171,7 @@ aux_simple_cox <- function(var, var.name, time, status,
 
   if (is.factor(var))
     if (length(levels(var)) > 2)
-      out <- out %>%
-    mutate(p.value = p.value.lh)
+      out <- out %>% mutate(p.value = .data$p.value.lh)
 
   return(out)
 }
@@ -213,8 +212,7 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 
   aux <- glance(fit) %>% select(.data$n, n.event = .data$nevent,
                                 .data$concordance, .data$r.squared, .data$AIC) %>%
-    mutate(p.value.lh = p.value.lh,
-           ph.assumption = zph.table[nrow(zph.table), 3])
+    mutate(p.value.lh = .data$p.value.lh, ph.assumption = zph.table[nrow(zph.table), 3])
 
   out <- merge(data.frame(temp, row.names=NULL), data.frame(aux, row.names=NULL),
                by = 0, all = TRUE)[-1]
@@ -324,7 +322,8 @@ aux_multiple_cox <- function(fit, model.label, format, type){
       out <- out %>% group_by(.data$variable) %>%
       mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
              p.value = ifelse(duplicated(.data$p.value), NA, .data$p.value)) %>%
-      ungroup(.data$variable) %>% select(-variable) %>% rename(variable = aux_variable)
+      ungroup(.data$variable) %>% select(-.data$variable) %>%
+      rename(variable = .data$aux_variable)
 
   } else {
     out <- tidy(fit)

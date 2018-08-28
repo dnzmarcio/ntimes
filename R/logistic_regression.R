@@ -80,22 +80,21 @@ nt_simple_logistic <- function(data, response, ...,
                           logLik = round(.data$logLik, digits),
                           AIC = round(.data$AIC, digits),
                           BIC = round(.data$BIC, digits),
-                          deviance = round(deviance, digits)) %>%
-      replace_na(list(null.deviance = "", df.null = "",
+                          deviance = round(.data$deviance, digits)) %>%
+      replace_na(list(n = "", null.deviance = "", df.null = "",
                       logLik = "", AIC = "", BIC = "",
                       deviance = "", df.residual = "")) %>%
-      transmute(Variable = .data$term,
+      transmute(Variable = .data$term, Group = .data$group,
                 OR.95CI = paste0(round(.data$estimate, digits), " (",
                                  round(.data$conf.low, digits), " ; ",
                                  round(.data$conf.high, digits), ")"),
                 p.value = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
                                  as.character(round(.data$p.value, digits.p))),
-                n, null.deviance, logLik, AIC, BIC, deviance) %>%
-      rename(`OR (95% CI)` = OR.95CI, `p value` = p.value) %>%
-      mutate(`OR (95% CI)` = ifelse(Variable == "(Intercept)",
-                                  "1", `OR (95% CI)`),
-             `p value` = ifelse(Variable == "(Intercept)",
-                                "", `p value`))
+                n = .data$n, null.deviance = .data$null.deviance,
+                logLik = .data$logLik, AIC = .data$AIC, BIC = .data$BIC,
+                deviance = .data$deviance) %>%
+      replace_na(list(p.value = "")) %>%
+      rename(`OR (95% CI)` = .data$OR.95CI, `p value` = .data$p.value)
   }
 
   if (save){
