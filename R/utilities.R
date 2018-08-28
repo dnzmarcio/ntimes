@@ -217,14 +217,14 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
       mutate(Variable = as.character(.data$Variable)) %>%
       select(.data$Variable, .data$`p value`)
 
-    temp <- test.tab$mc %>% select(- `95% CI`, - Test, - Group) %>%
-      spread(key = Hypothesis, value = "p value", drop = TRUE)
+    temp <- test.tab$mc %>% select(-.data$`95% CI`, -.data$Test, -.data$Group) %>%
+      spread(key = .data$Hypothesis, value = "p value", drop = TRUE)
 
     for(i in 2:ncol(temp)){
       temp[, i] <- ifelse(temp[, i] < alpha, letters[i-1], "")
     }
 
-    mc <- temp %>% unite(col = "Comparisons", -Variable, sep = "")
+    mc <- temp %>% unite(col = "Comparisons", -.data$Variable, sep = "")
 
     test.tab <- left_join(aux, mc, by = "Variable")
     tab <- left_join(descriptive.tab, test.tab, by = "Variable") %>%
