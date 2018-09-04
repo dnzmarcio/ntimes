@@ -4,8 +4,9 @@
 \alias{nt_dotplot}
 \title{Dotplot}
 \usage{
-nt_dotplot(data, group = NULL, binwidth, save = FALSE, fig.height = 5,
-  fig.width = 5, std_fun = std_dotplot, std_fun_group = std_dotplot_group)
+nt_dotplot(data, group = NULL, binwidth = 1, save = FALSE,
+  fig.height = 5, fig.width = 5, std_fun = std_dotplot,
+  std_fun_group = std_dotplot_group)
 }
 \arguments{
 \item{data}{a data frame with the variables.}
@@ -46,6 +47,6 @@ See \code{\link[ggplot2]{geom_dotplot}}, \code{\link{std_dotplot}} and
 library(magrittr)
 data(iris)
 
-iris \%>\% nt_dotplot(group = Species)
+iris \%>\% nt_dotplot(group = Species, binwidth = 0.1)
 
 }

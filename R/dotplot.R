@@ -28,7 +28,7 @@
 #'library(magrittr)
 #'data(iris)
 #'
-#'iris %>% nt_dotplot(group = Species)
+#'iris %>% nt_dotplot(group = Species, binwidth = 0.1)
 #'
 #'@import ggplot2 dplyr
 #'@importFrom rlang enquo quo_is_null
@@ -36,12 +36,11 @@
 #'@importFrom purrr pmap
 #'
 #'@export
-nt_dotplot <-  function(data, group = NULL, binwidth,
+nt_dotplot <-  function(data, group = NULL, binwidth = 1,
                         save = FALSE, fig.height = 5, fig.width = 5,
                         std_fun = std_dotplot,
                         std_fun_group = std_dotplot_group) {
 
-  data <- as_data_frame(data)
   group <- enquo(group)
 
   if (!quo_is_null(group)){
@@ -55,9 +54,12 @@ nt_dotplot <-  function(data, group = NULL, binwidth,
   }
   vars.name <- names(vars)
 
+  if (length(binwidth) < length(vars.name))
+    binwidth[(length(binwidth)+1):length(vars.name)] <- binwidth[length(binwidth)]
+
   L <- list(vars, vars.name, binwidth)
 
-  out <- map2(.l = L, .f = aux_dotplot,
+  out <- pmap(.l = L, .f = aux_dotplot,
               group = group, group.name = group.name,
               fig.height = fig.height, fig.width = fig.width, save = save,
               std_fun = std_fun, std_fun_group = std_fun_group)
@@ -123,7 +125,7 @@ aux_dotplot <- function(var, var.name, binwidth, group, group.name,
 std_dotplot <- function(var, binwidth, var.label){
 
   ### Data
-  data_plot <- data_frame(var = var)
+  data_plot <- data.frame(var = var)
 
   ### Basic Plot
   out <- ggplot(data_plot, aes(y = "var", x = NA)) +
@@ -140,8 +142,7 @@ std_dotplot <- function(var, binwidth, var.label){
     labs(y = var.label)
 
   ### Adding summary
-  out <- out + stat_summary(fun.y = median, geom = "crossbar", width = 0.5) +
-    stat_summary(fun.data = median_iqr, geom = "error_bar", width = 0.5)
+  out <- out + stat_summary(fun.y = stats::median, geom = "crossbar", width = 0.5)
 
   return(out)
 }
@@ -168,7 +169,7 @@ std_dotplot <- function(var, binwidth, var.label){
 std_dotplot_group <- function(var, group, binwidth, var.label, group.label){
 
   ### Data
-  data_plot <- data_frame(var = var, group = group)
+  data_plot <- data.frame(var = var, group = group)
 
   ### Basic Plot
   out <- ggplot(data_plot,
@@ -185,7 +186,8 @@ std_dotplot_group <- function(var, group, binwidth, var.label, group.label){
 
   ### Adding summary
   out <- out + stat_summary(aes_string(ymax = "..y..", ymin = "..y.."),
-                            fun.y = median, geom = "errorbar", width = 0.5, size = 2)
+                            fun.y = stats::median,
+                            geom = "errorbar", width = 0.5, size = 2)
 
   return(out)
 }

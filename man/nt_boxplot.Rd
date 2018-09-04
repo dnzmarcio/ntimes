@@ -5,7 +5,8 @@
 \title{Boxplot}
 \usage{
 nt_boxplot(data, group = NULL, save = FALSE, fig.height = 5,
-  fig.width = 5, std_fun = std_boxplot, std_fun_group = std_boxplot_group)
+  fig.width = 5, std_fun = std_boxplot,
+  std_fun_group = std_boxplot_group)
 }
 \arguments{
 \item{data}{a data frame with the variables.}

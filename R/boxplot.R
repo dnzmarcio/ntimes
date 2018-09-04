@@ -41,7 +41,6 @@ nt_boxplot <-  function(data, group = NULL,
                         std_fun = std_boxplot,
                         std_fun_group = std_boxplot_group){
 
-  data <- as_data_frame(data)
   group <- enquo(group)
 
   if (!quo_is_null(group)){
@@ -152,7 +151,7 @@ std_boxplot <- function(var, var.label){
 std_boxplot_group <- function(var, group, var.label, group.label){
 
   ### Data
-  data_plot <- data_frame(var = var, group = group)
+  data_plot <- data.frame(var = var, group = group)
 
   ### Basic plot
   out <- ggplot(data_plot, aes_string(y = "var", x = "group")) +

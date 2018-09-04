@@ -128,8 +128,9 @@ aux_barplot <- function(var, var.name, group, group.name, ylab,
 std_barplot <- function(var, var.label, ylab){
 
   ### Data
-  data_plot <- data_frame(var = var)
-  data_plot <- na.omit(data_plot) %>% count(var = factor(.data$var)) %>%
+  data_plot <- data.frame(var = var)
+  data_plot <- stats::na.omit(data_plot) %>%
+    count(var = factor(.data$var)) %>%
     mutate(perc = round(prop.table(.data$n) * 100, 2),
            label = paste0(round(.data$perc, 2), '%', " (", .data$n, ")"))
 
@@ -173,8 +174,8 @@ std_barplot <- function(var, var.label, ylab){
 std_barplot_group <- function(var, group, var.label, group.label, ylab){
 
   ### Data
-  data_plot <- data_frame(var = var, group = group)
-  data_plot <- na.omit(data_plot) %>%
+  data_plot <- data.frame(var = var, group = group)
+  data_plot <- stats::na.omit(data_plot) %>%
     count(group = factor(.data$group), var = factor(.data$var)) %>%
     group_by(.data$group) %>%
     mutate(perc = round(prop.table(.data$n) * 100, 2),
