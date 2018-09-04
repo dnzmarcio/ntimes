@@ -207,7 +207,6 @@ effect.coxph <- function(fit){
   return(out)
 }
 
-#'@export
 table_fit <- function(fit, exponentiate = FALSE){
 
   out <- effect(fit)

@@ -37,11 +37,9 @@
 #'vars %>% nt_barplot(group = Species)
 #'
 #'@import ggplot2 dplyr
-#'@importFrom stats na.omit
-#'@importFrom dplyr select count group_by mutate
-#'@importFrom tibble as_data_frame
-#'@importFrom magrittr %>%
-#'@importFrom rlang .data quo_is_null enquo
+#'@importFrom rlang enquo quo_is_null
+#'@importFrom dplyr select
+#'@importFrom purrr map2
 #'
 #'@export
 nt_barplot <-  function(data, group = NULL, ylab = "Percent (%)",
@@ -49,7 +47,6 @@ nt_barplot <-  function(data, group = NULL, ylab = "Percent (%)",
                         std_fun = std_barplot,
                         std_fun_group = std_barplot_group) {
 
-  data <- as_data_frame(data)
   group <- enquo(group)
 
   if (!quo_is_null(group)){
@@ -124,6 +121,10 @@ aux_barplot <- function(var, var.name, group, group.name, ylab,
 #'
 #'@return a ggplot object.
 #'
+#'@importFrom stats na.omit
+#'@importFrom dplyr count mutate
+#'
+#'@export
 std_barplot <- function(var, var.label, ylab){
 
   ### Data
@@ -165,6 +166,10 @@ std_barplot <- function(var, var.label, ylab){
 #'
 #'@return a ggplot object.
 #'
+#'@importFrom stats na.omit
+#'@importFrom dplyr count group_by mutate
+#'
+#'@export
 std_barplot_group <- function(var, group, var.label, group.label, ylab){
 
   ### Data

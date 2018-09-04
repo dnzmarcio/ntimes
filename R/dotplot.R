@@ -31,9 +31,9 @@
 #'iris %>% nt_dotplot(group = Species)
 #'
 #'@import ggplot2 dplyr
-#'@importFrom stats median
-#'@importFrom tibble as_data_frame
-#'@importFrom rlang .data quo_is_null enquo
+#'@importFrom rlang enquo quo_is_null
+#'@importFrom dplyr select
+#'@importFrom purrr pmap
 #'
 #'@export
 nt_dotplot <-  function(data, group = NULL, binwidth,
@@ -117,6 +117,8 @@ aux_dotplot <- function(var, var.name, binwidth, group, group.name,
 #'
 #'@return a ggplot object.
 #'
+#'@importFrom stats median
+#'
 #'@export
 std_dotplot <- function(var, binwidth, var.label){
 
@@ -159,6 +161,8 @@ std_dotplot <- function(var, binwidth, var.label){
 #'the user. See more details in \code{\link[ggplot2]{geom_dotplot}}.
 #'
 #'@return a ggplot object.
+#'
+#'@importFrom stats median
 #'
 #'@export
 std_dotplot_group <- function(var, group, binwidth, var.label, group.label){

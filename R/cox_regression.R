@@ -6,7 +6,9 @@
 #'@param time a numeric vector with the follow-up time.
 #'@param status a numeric vector indicating status, 0 = censored, 1 = event at time.
 #'@param ...  character values indicating confounding variables.
-#'@param strata a character vector containing the strata.
+#'@param cluster a character vector containing the cluster variable.
+#'@param strata a character vector containing the strata variable.
+#'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
@@ -33,11 +35,12 @@
 #'                                           label = "Age"))
 #'ovarian_nt %>% nt_simple_cox(time = futime, status = fustat)
 #'
-#'@importFrom rlang enquo quos quo_get_expr
-#'@importFrom dplyr mutate select mutate transmute rename
-#'@importFrom tidyr replace_na
-#'@importFrom rlang quo_get_expr
+#'@importFrom rlang enquo quos quo_get_expr .data
+#'@importFrom dplyr select mutate transmute rename
 #'@importFrom purrr map2
+#'@importFrom survival survfit
+#'@importFrom broom tidy
+#'@importFrom tidyr replace_na
 #'@importFrom utils write.csv
 #'
 #'@export
@@ -135,6 +138,7 @@ nt_simple_cox <- function(data, time, status, ...,
 #'@importFrom magrittr %>%
 #'@importFrom stats setNames
 #'@importFrom dplyr mutate bind_cols
+#'@importFrom rlang .data
 aux_simple_cox <- function(var, var.name, time, status,
                            add, add.name, add.label,
                            strata.var, digits, digits.p){
@@ -181,6 +185,7 @@ aux_simple_cox <- function(var, var.name, time, status,
 #'@importFrom tidyr separate replace_na
 #'@importFrom dplyr select mutate
 #'@importFrom stats na.exclude update.formula anova
+#'@importFrom stringr str_replace_all
 fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 
   if (any(is.na(data)))
@@ -227,7 +232,11 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'@description Tabulating results from fitted Proportional Hazards Cox models.
 #'
 #'@param fit.list a list of fitted models.
-#'@param data a data frame containing the variables used to fit the models listed in fit.list.
+#'@param fit.labels a character vector lanelling the models in \code{fit.list}
+#'@param type a character value indicating either hazard ratio (\code{hr}) or coefficients (\code{coef}) will be shown in the output.
+#'@param format a logical value indicating whether the output should be formatted.
+#'@param digits a numerical value defining of digits to present the results.
+#'@param digits.p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character indicating the name of output file in csv format to be saved.
 #'
@@ -259,13 +268,13 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'
 #'nt_multiple_cox(fit.list)
 #'
-#'@importFrom purrr map map2
+#'@importFrom purrr map2 map
 #'@importFrom utils write.csv
-#'@importFrom dplyr transmute
+#'@importFrom dplyr transmute bind_rows
 #'@importFrom tidyr replace_na
 #'@export
 nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
-                            format = FALSE, digits = 2, digits.p = 3,
+                            format = TRUE, digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 
   if (class(fit.list) != "list")
@@ -306,9 +315,10 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
   return(out)
 }
 
+#'@importFrom dplyr mutate group_by ungroup rename
 #'@importFrom stringr str_replace_all
-#'@importFrom dplyr mutate select ungroup rename
 #'@importFrom tidyr separate
+#'@importFrom broom tidy
 aux_multiple_cox <- function(fit, model.label, format, type){
 
   aux <- extract_data(fit)

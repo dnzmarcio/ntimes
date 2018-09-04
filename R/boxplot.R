@@ -31,10 +31,9 @@
 #'iris %>% nt_boxplot(group = Species)
 #'
 #'@import ggplot2 dplyr
+#'@importFrom rlang enquo quo_is_null
+#'@importFrom dplyr select
 #'@importFrom purrr map2
-#'@importFrom magrittr %>%
-#'@importFrom rlang .data quo_is_null enquo
-#'@importFrom tibble as_data_frame
 #'
 #'@export
 nt_boxplot <-  function(data, group = NULL,

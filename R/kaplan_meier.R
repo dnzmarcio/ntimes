@@ -36,18 +36,12 @@
 #'                                     label = "Sex"),
 #'                        ph.ecog = ql_var(ph.ecog, label = "ECOG"))
 #'
-#'data_model <- lung %>% dplyr::select(sex, ph.ecog, time, status)
-#'data_model %>% nt_km(time = time, status = status)
-#'
-#'@import ggplot2 dplyr
-#'@importFrom broom tidy
-#'@importFrom tidyr separate
-#'@importFrom cowplot plot_grid
-#'@importFrom scales percent
-#'@importFrom tibble as_data_frame
-#'@importFrom survival survfit Surv survdiff
-#'@importFrom stats pchisq
-#'@importFrom rlang .data quo_is_null enquo
+#'@import ggplot2
+#'@importFrom rlang enquo .data
+#'@importFrom dplyr select mutate
+#'@importFrom utils write.csv
+#'@importFrom purrr map2
+#'@importFrom magrittr %>%
 #'
 #'@export
 nt_km <-  function(data, time, status,
@@ -136,6 +130,12 @@ aux_km <- function(var, var.name, time, status, xlab, ylab,
 #'
 #'@return a ggplot object.
 #'
+#'@importFrom survival survfit summary.survfit
+#'@importFrom broom tidy
+#'@importFrom dplyr bind_rows
+#'@importFrom cowplot plot_grid
+#'@importFrom magrittr %>%
+#'
 #'@export
 std_km <- function(time, status, xlab, ylab){
 
@@ -220,6 +220,14 @@ std_km <- function(time, status, xlab, ylab){
 #'It can be modified by the user.
 #'
 #'@return a ggplot object.
+#'
+#'@importFrom survival survfit summary.survfit
+#'@importFrom broom tidy
+#'@importFrom tidy separate
+#'@importFrom dplyr select bind_rows mutate filter
+#'@importFrom scales percent
+#'@importFrom cowplot plot_grid
+#'@importFrom magrittr %>%
 #'
 #'@export
 std_km_group <- function(time, status, var, var.label,
