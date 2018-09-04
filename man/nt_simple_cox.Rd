@@ -5,8 +5,8 @@
 \title{Simple Cox Regression}
 \usage{
 nt_simple_cox(data, time, status, ..., cluster = FALSE, strata = NULL,
-  digits = 2, digits.p = 3, save = FALSE, file = "simple_cox",
-  format = TRUE)
+  format = TRUE, digits = 2, digits.p = 3, save = FALSE,
+  file = "simple_cox")
 }
 \arguments{
 \item{data}{a data frame with the variables.}
@@ -17,7 +17,11 @@ nt_simple_cox(data, time, status, ..., cluster = FALSE, strata = NULL,
 
 \item{...}{character values indicating confounding variables.}
 
-\item{strata}{a character vector containing the strata.}
+\item{cluster}{a character vector containing the cluster variable.}
+
+\item{strata}{a character vector containing the strata variable.}
+
+\item{format}{a logical value indicating whether the output should be formatted.}
 
 \item{digits}{a numerical value defining of digits to present the results.}
 

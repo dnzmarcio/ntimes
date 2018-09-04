@@ -45,9 +45,9 @@
 #'
 #'@export
 nt_simple_cox <- function(data, time, status, ...,
-                          cluster = FALSE, strata = NULL,
+                          cluster = FALSE, strata = NULL, format = TRUE,
                           digits = 2, digits.p = 3, save = FALSE,
-                          file = "simple_cox", format = TRUE){
+                          file = "simple_cox"){
 
   data <- as_data_frame(data)
   time <- enquo(time)
@@ -99,10 +99,9 @@ nt_simple_cox <- function(data, time, status, ...,
   temp <- map2(.x = vars, .y = vars.name, .f = aux_simple_cox,
                time = time, status = status,
                add = add, add.name = add.name, add.label = add.label,
-               strata.var = strata.var, digits = digits,
-               digits.p = digits.p)
+               strata.var = strata.var, format = format)
 
-  cox <- Reduce(rbind, temp)
+  cox <- bind_rows(temp)
 
   if (format) {
 
@@ -119,7 +118,6 @@ nt_simple_cox <- function(data, time, status, ...,
               n = .data$n, n.event = .data$n.event,
               concordance = .data$concordance, r.squared = .data$r.squared,
               AIC = .data$AIC, ph.assumption  = .data$ph.assumption) %>%
-    mutate(Variable = ifelse(duplicated(.data$Variable), "", .data$Variable)) %>%
     replace_na(list(p.value = "")) %>%
     rename(`HR (95% CI)` = .data$HR.95CI, `p value` = .data$p.value)
   }
@@ -141,7 +139,7 @@ nt_simple_cox <- function(data, time, status, ...,
 #'@importFrom rlang .data
 aux_simple_cox <- function(var, var.name, time, status,
                            add, add.name, add.label,
-                           strata.var, digits, digits.p){
+                           strata.var, format){
 
   var.label <- extract_label(var, var.name)
   aux <- cbind(add, var)
@@ -173,9 +171,12 @@ aux_simple_cox <- function(var, var.name, time, status,
   data.model <- bind_cols(time = time, status = status, var = var, add = add)
   out <- fit_cox(data.model, tab.labels, tab.levels, strata.var)
 
-  if (is.factor(var))
-    if (length(levels(var)) > 2)
-      out <- out %>% mutate(p.value = .data$p.value.lh)
+  if (format){
+    out <- out %>% mutate(term = ifelse(duplicated(.data$term), "", .data$term))
+    if (is.factor(var))
+      if (length(levels(var)) > 2)
+        out <- out %>% mutate(p.value = .data$p.value.lh)
+  }
 
   return(out)
 }
@@ -198,14 +199,14 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
       mutate(term = str_replace_all(.data$term, unlist(tab.labels))) %>%
       select(-.data$std.error, -.data$statistic) %>%
       separate(.data$term, into = c("term", "group"), sep = ":", fill = "right") %>%
-      mutate(group = tab.levels)
+      mutate(group = unlist(tab.levels))
   } else {
     fit <- coxph(Surv(time, status) ~ strata(strata.var) + ., data = data)
     temp <- tidy(fit, exponentiate = TRUE) %>%
       mutate(term = str_replace_all(.data$term, unlist(tab.labels))) %>%
       select(-.data$std.error, -.data$statistic) %>%
       separate(.data$term, into = c("term", "group"), sep = ":", fill = "right") %>%
-      mutate(group = tab.levels)
+      mutate(group = unlist(tab.levels))
   }
 
   fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - var")),
@@ -232,7 +233,7 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'@description Tabulating results from fitted Proportional Hazards Cox models.
 #'
 #'@param fit.list a list of fitted models.
-#'@param fit.labels a character vector lanelling the models in \code{fit.list}
+#'@param fit.labels a character vector labelling the models in \code{fit.list}
 #'@param type a character value indicating either hazard ratio (\code{hr}) or coefficients (\code{coef}) will be shown in the output.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
@@ -285,11 +286,11 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
   if (type == "hr"){
     temp <- map2(fit.list, fit.labels, aux_multiple_cox,
                  format = format, type = "hr")
-    tab <- Reduce(rbind, temp)
+    tab <- bind_rows(temp)
   } else {
     temp <- map2(fit.list, fit.labels, aux_multiple_cox,
                  format = format, type = "coef")
-    tab <- Reduce(rbind, temp)
+    tab <- bind_rows(temp)
   }
 
   ref <- map(fit.list, ~ reference_df(.x)$ref)

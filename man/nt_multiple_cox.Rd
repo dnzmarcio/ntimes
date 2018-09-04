@@ -4,17 +4,26 @@
 \alias{nt_multiple_cox}
 \title{Proportional Hazards Cox regression table}
 \usage{
-nt_multiple_cox(fit.list, fit.labels = NULL, type = "hr", format = FALSE,
-  digits = 2, digits.p = 3, save = FALSE, file = "nt_multiple_cox")
+nt_multiple_cox(fit.list, fit.labels = NULL, type = "hr",
+  format = TRUE, digits = 2, digits.p = 3, save = FALSE,
+  file = "nt_multiple_cox")
 }
 \arguments{
 \item{fit.list}{a list of fitted models.}
 
+\item{fit.labels}{a character vector labelling the models in \code{fit.list}}
+
+\item{type}{a character value indicating either hazard ratio (\code{hr}) or coefficients (\code{coef}) will be shown in the output.}
+
+\item{format}{a logical value indicating whether the output should be formatted.}
+
+\item{digits}{a numerical value defining of digits to present the results.}
+
+\item{digits.p}{a numerical value defining number of digits to present the p-values.}
+
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character indicating the name of output file in csv format to be saved.}
-
-\item{data}{a data frame containing the variables used to fit the models listed in fit.list.}
 }
 \description{
 Tabulating results from fitted Proportional Hazards Cox models.
