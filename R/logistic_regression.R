@@ -71,7 +71,7 @@ nt_simple_logistic <- function(data, response, ...,
   temp <- map2(.x = vars, .y = vars.name, .f = aux_simple_logistic,
                response = response, response.label = response.label,
                add = add, add.name = add.name, add.label = add.label,
-               digits = digits, digits.p = digits.p, format = format)
+               format = format)
 
   out <- Reduce(rbind, temp)
 
@@ -107,7 +107,7 @@ nt_simple_logistic <- function(data, response, ...,
 #'@importFrom dplyr bind_cols rename
 aux_simple_logistic <- function(var, var.name, response, response.label,
                                 add, add.name, add.label,
-                                digits, digits.p, format){
+                                format){
 
   var.label <- extract_label(var, var.name)
   aux <- cbind(add, var)
@@ -137,8 +137,15 @@ aux_simple_logistic <- function(var, var.name, response, response.label,
     tab.labels <- setNames(as.list(tab.labels), "var")
 
   data.model <- bind_cols(response = response, add = add, var = var)
-  out <- fit_logistic(data.model, tab.labels, tab.levels, var.label) %>%
-    mutate(term = ifelse(duplicated(.data$term), "", .data$term))
+  out <- fit_logistic(data.model, tab.labels, tab.levels, var.label)
+
+  if (format){
+    out <- out %>% mutate(term = ifelse(duplicated(.data$term), "", .data$term))
+    if (is.factor(var))
+      if (length(levels(var)) > 2)
+        out <- out %>% mutate(p.value = .data$p.value.lh)
+  }
+
   return(out)
 }
 
@@ -163,11 +170,7 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label){
   fit0 <- glm(response ~ . - var, data = data, family = "binomial")
   p.value.lh <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
 
-  if (length(tab.levels[["var"]]) > 1)
-    temp[temp$term == var.label, ]$p.value <-
-    c(p.value.lh, rep(NA, (length(tab.levels[["var"]]) - 1)))
-
-  aux <- bind_cols(n = nrow(na.exclude(data)), glance(fit))
+  aux <- bind_cols(p.value.lh = p.value.lh, n = nrow(na.exclude(data)), glance(fit))
 
   out <- merge(data.frame(temp, row.names=NULL),
                data.frame(aux, row.names=NULL),
@@ -183,7 +186,8 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label){
 #'@description Tabulating results from Logistic models.
 #'
 #'@param fit.list a list of fitted models.
-#'@param data a data frame containing the variables used to fit the models listed in fit.list.
+#'@param fit.labels a character vector labelling the models in \code{fit.list}
+#'@param type a character value indicating either odds ratio (\code{or}) or coefficients (\code{coef}) will be shown in the output.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.

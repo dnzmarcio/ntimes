@@ -11,6 +11,10 @@ nt_multiple_logistic(fit.list, fit.labels = NULL, type = "or",
 \arguments{
 \item{fit.list}{a list of fitted models.}
 
+\item{fit.labels}{a character vector labelling the models in \code{fit.list}}
+
+\item{type}{a character value indicating either odds ratio (\code{or}) or coefficients (\code{coef}) will be shown in the output.}
+
 \item{format}{a logical value indicating whether the output should be formatted.}
 
 \item{digits}{a numerical value defining of digits to present the results.}
@@ -20,8 +24,6 @@ nt_multiple_logistic(fit.list, fit.labels = NULL, type = "or",
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character indicating the name of output file in csv format to be saved.}
-
-\item{data}{a data frame containing the variables used to fit the models listed in fit.list.}
 }
 \description{
 Tabulating results from Logistic models.
