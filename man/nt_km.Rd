@@ -4,9 +4,10 @@
 \alias{nt_km}
 \title{Kaplan-Meier plot}
 \usage{
-nt_km(data, time, status, xlab = "Time", ylab = "Survival", save = FALSE,
-  fig.height = 5, fig.width = 5, std_fun = std_km,
-  std_fun_group = std_km_group)
+nt_km(data, time, status, xlab = "Time", ylab = "Survival",
+  save = FALSE, fig.height = 5, fig.width = 5, std_fun = std_km,
+  std_fun_group = std_km_group, time.points = NULL, format = TRUE,
+  digits = 2, file = "survival")
 }
 \arguments{
 \item{data}{a data frame with the variables.}
@@ -32,6 +33,14 @@ It must follow the same structure of \code{\link{std_barplot}}.}
 \item{std_fun_group}{a function to plot a dotplot when \code{group}
 is provided. It must follow the same structure of
 \code{\link{std_barplot_group}}.}
+
+\item{time.points}{a numeric vector of time points to evaluate the survival curves.}
+
+\item{format}{a logical value indicating whether the output should be formatted.}
+
+\item{digits}{a numerical value defining of digits to present the results.}
+
+\item{file}{a character indicating the name of output file in csv format to be saved.}
 }
 \value{
 a list of ggplot objects with each item named by the column names from
@@ -49,15 +58,13 @@ See \code{\link{std_km}} and \code{\link{std_km_group}}.
 }
 \examples{
 library(survival)
-library(dplyr)
 data(lung)
 
-lung <- lung \%>\% mutate(sex = ql_var(sex, from = 1:2,
+lung_nt <- lung \%>\% mutate(sex = ql_var(sex, from = 1:2,
                                     to = c("Female", "Male"),
                                     label = "Sex"),
-                       ph.ecog = ql_var(ph.ecog, label = "ECOG"))
-
-data_model <- lung \%>\% dplyr::select(sex, ph.ecog, time, status)
-data_model \%>\% nt_km(time = time, status = status)
+                       ph.ecog = ql_var(ph.ecog, label = "ECOG")) \%>\%
+                       select(sex, ph.ecog, time, status)
+lung_nt \%>\% nt_km(time = time, status = status)
 
 }

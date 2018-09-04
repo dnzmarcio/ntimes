@@ -16,6 +16,10 @@
 #'@param std_fun_group a function to plot a dotplot when \code{group}
 #'is provided. It must follow the same structure of
 #'\code{\link{std_barplot_group}}.
+#'@param time.points a numeric vector of time points to evaluate the survival curves.
+#'@param format a logical value indicating whether the output should be formatted.
+#'@param digits a numerical value defining of digits to present the results.
+#'@param file a character indicating the name of output file in csv format to be saved.
 #'
 #'@details The functions \code{\link{std_km}} and
 #'\code{\link{std_km_group}} are standard functions that can be
@@ -28,13 +32,14 @@
 #'
 #'@examples
 #'library(survival)
-#'library(dplyr)
 #'data(lung)
 #'
-#'lung <- lung %>% mutate(sex = ql_var(sex, from = 1:2,
+#'lung_nt <- lung %>% mutate(sex = ql_var(sex, from = 1:2,
 #'                                     to = c("Female", "Male"),
 #'                                     label = "Sex"),
-#'                        ph.ecog = ql_var(ph.ecog, label = "ECOG"))
+#'                        ph.ecog = ql_var(ph.ecog, label = "ECOG")) %>%
+#'                        select(sex, ph.ecog, time, status)
+#'lung_nt %>% nt_km(time = time, status = status)
 #'
 #'@import ggplot2
 #'@importFrom rlang enquo .data
@@ -48,9 +53,10 @@ nt_km <-  function(data, time, status,
                    xlab = "Time", ylab = "Survival",
                    save = FALSE, fig.height = 5, fig.width = 5,
                    std_fun = std_km,
-                   std_fun_group = std_km_group) {
+                   std_fun_group = std_km_group,
+                   time.points = NULL, format = TRUE, digits = 2,
+                   file = "survival") {
 
-  data <- as_data_frame(data)
   time <- enquo(time)
   status <- enquo(status)
 
@@ -65,9 +71,11 @@ nt_km <-  function(data, time, status,
   status <- select(.data = data, !!status)
   status <- as.numeric(as.factor(status[[1]]))
 
-  out <- list()
+  plot <- list()
 
   gp <- std_fun(time, status, xlab = xlab, ylab = ylab)
+  if (!is.null(time.points))
+    aux <- tab_km(time, status, time.points, digits = digits)
 
   if(save)
     gp <- gp + ggsave(filename = "km_overall.jpeg",
@@ -75,17 +83,77 @@ nt_km <-  function(data, time, status,
 
 
   if(ncol(data) > 2){
-    out <- map2(.x = vars, .y = vars.name, .f = aux_km,
-                time = time, status = status,
-                xlab = xlab, ylab = ylab,
-                fig.height = fig.height, fig.width = fig.width,
-                save = save, std_fun_group = std_fun_group)
+    plot <- map2(.x = vars, .y = vars.name, .f = aux_km,
+                 time = time, status = status,
+                 xlab = xlab, ylab = ylab,
+                 fig.height = fig.height, fig.width = fig.width,
+                 save = save, std_fun_group = std_fun_group)
+    if (!is.null(time.points))
+      tab <- map2(.x = vars, .y = vars.name, .f = tab_km_group,
+                  time = time, status = status,
+                  time.points = time.points, digits = digits)
   }
 
-  out$overall <- gp
+  if (!is.null(time.points)){
+
+    tab <- bind_rows(aux, Reduce(rbind, tab))
+    if (format){
+      tab <-  tab  %>%
+        mutate(Variable = ifelse(duplicated(.data$Variable), "", .data$Variable)) %>%
+        mutate(`Survival (CI 95%)` =
+                 paste0(round(.data$survival, digits),
+                        " (", round(.data$lower, digits),
+                        " - ", round(.data$upper, digits), ")")) %>%
+        select(-.data$survival, -.data$lower, -.data$upper) %>%
+        select(.data$Time, .data$Variable, .data$Group, .data$`Survival (CI 95%)`)
+    }
+
+    if (save)
+      write.csv(tab, file = paste0(file, ".csv"))
+
+    out <- list(tab = tab, plot = plot)
+  } else {
+    plot$overall <- gp
+    out <- plot
+  }
 
   return(out)
 }
+
+#'@importFrom survival survfit
+tab_km <- function(time, status, time.points, digits){
+
+  data.model <- data.frame(time, status)
+  fit <- survfit(Surv(time, status) ~ 1, data = data.model)
+  temp <- summary(fit, times = time.points)
+
+  out <- data.frame(Time = temp$time, Variable = "Overall",
+                    Group = NA, survival = temp$surv,
+                    lower = temp$lower, upper = temp$upper)
+
+  return(out)
+}
+
+#'@importFrom survival survfit
+#'@importFrom tidyr separate
+#'@importFrom dplyr mutate
+#'@importFrom rlang .data
+#'@importFrom magrittr %>%
+tab_km_group <- function(var, var.name, time, status, time.points, digits){
+
+  var.label <- extract_label(var, var.name)
+  data.model <- data.frame(time, status)
+  fit <- survfit(Surv(time, status) ~ var, data = data.model)
+  temp <- summary(fit, times = time.points)
+
+  out <- data.frame(Time = temp$time, strata = temp$strata, survival = temp$surv,
+                    lower = temp$lower, upper = temp$upper) %>%
+    separate(.data$strata, into = c("variable", "Group"), sep = "=") %>%
+    mutate(Variable = var.label) %>% select(-.data$variable)
+
+  return(out)
+}
+
 
 aux_km <- function(var, var.name, time, status, xlab, ylab,
                    fig.height, fig.width, save, std_fun_group){
@@ -93,7 +161,7 @@ aux_km <- function(var, var.name, time, status, xlab, ylab,
   if (is.character(var))
     var <- as.factor(var)
   if (is.numeric(var))
-    stop(paste0(var.name, "is numeric!"))
+    stop(paste0(var.name, " is numeric!"))
 
   if (nlevels(droplevels(var)) >= 2){
     var.label <- extract_label(var, var.name)
@@ -116,6 +184,7 @@ aux_km <- function(var, var.name, time, status, xlab, ylab,
   return(out)
 }
 
+
 #'Standard Kaplan-Meier curve
 #'
 #'@description A function to plot a Kaplan-Meier curve without groups.
@@ -130,7 +199,7 @@ aux_km <- function(var, var.name, time, status, xlab, ylab,
 #'
 #'@return a ggplot object.
 #'
-#'@importFrom survival survfit summary.survfit
+#'@importFrom survival survfit
 #'@importFrom broom tidy
 #'@importFrom dplyr bind_rows
 #'@importFrom cowplot plot_grid
@@ -181,7 +250,7 @@ std_km <- function(time, status, xlab, ylab){
   ### Adding risk table
 
   ## Data
-  x.ticks <- ggplot_build(surv.plot)$layout$panel_ranges[[1]]$x.major_source
+  x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x.major_source
   table <- summary(fit, times = x.ticks)
   data.table <- data.frame(time = table$time, n.risk = table$n.risk)
 
@@ -221,11 +290,12 @@ std_km <- function(time, status, xlab, ylab){
 #'
 #'@return a ggplot object.
 #'
-#'@importFrom survival survfit summary.survfit
+#'@importFrom survival survfit survdiff
 #'@importFrom broom tidy
-#'@importFrom tidy separate
+#'@importFrom tidyr separate
 #'@importFrom dplyr select bind_rows mutate filter
 #'@importFrom scales percent
+#'@importFrom stats pchisq
 #'@importFrom cowplot plot_grid
 #'@importFrom magrittr %>%
 #'
@@ -244,9 +314,9 @@ std_km_group <- function(time, status, var, var.label,
                           group = levels(var))
 
   data.plot <- broom::tidy(fit) %>%
-    separate(.data$strata, into = c("var", "group"), sep = "r=") %>%
+    tidyr::separate(.data$strata, into = c("var", "group"), sep = "r=") %>%
     select(-var)
-  data.plot <- rbind(first.row, data.plot) %>%
+  data.plot <- bind_rows(first.row, data.plot) %>%
     mutate(conf.high =
              ifelse(is.na(.data$conf.high), .data$estimate, .data$conf.high),
            conf.low =
@@ -300,12 +370,13 @@ std_km_group <- function(time, status, var, var.label,
   ### Adding risk table
 
   ## Data
-  x.ticks <- ggplot_build(surv.plot)$layout$panel_ranges[[1]]$x.major_source
+  x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x.major_source
   table <- summary(fit, times = x.ticks)
   data.table <- data.frame(time = table$time,
                            n.risk = table$n.risk,
                            group = table$strata) %>%
-    separate(.data$group, into = c("var", "group"), sep = "r=") %>% select(-var) %>%
+    tidyr::separate(.data$group, into = c("var", "group"), sep = "r=") %>%
+    select(-var) %>%
     mutate(group = factor(.data$group, levels = rev(levels(as.factor(.data$group)))))
 
   ## Basic plot
