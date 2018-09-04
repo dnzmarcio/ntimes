@@ -40,6 +40,7 @@ keep_levels <- function(x, y){
 #https://stackoverflow.com/questions/19410108/cleaning-up-factor-levels-collapsing-multiple-levels-labels
 recode_labels <- function(x, code, labels) {
 
+  x <- as.factor(x)
   levels <- levels(x)
   for (i in 1:length(code))
     levels[which(code[i] == levels)] <- labels[i]
@@ -99,8 +100,6 @@ ql_var <- function(var, from = NULL, to = NULL, order = NULL, label = NULL){
   if (!is.null(attributes(var)$label) & is.null(label))
     label <- attributes(var)$label
 
-  var <- as.factor(var)
-
   if (!is.null(from) & !is.null(to))
     if (all(var %in% from)){
       var <- recode_labels(var, code = from, labels = to)
@@ -117,9 +116,10 @@ ql_var <- function(var, from = NULL, to = NULL, order = NULL, label = NULL){
       var <- factor(var, levels = order)
     }
 
-  if (!is.null(label))
+  if (!is.null(label)){
+    var <- as.factor(var)
     attributes(var)$label <- label
-
+  }
   out <- var
   return(out)
 }
