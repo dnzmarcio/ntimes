@@ -233,8 +233,9 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'@description Tabulating results from fitted Proportional Hazards Cox models.
 #'
 #'@param fit.list a list of fitted models.
+#'@param tab.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
 #'@param fit.labels a character vector labelling the models in \code{fit.list}
-#'@param type a character value indicating either hazard ratio (\code{hr}) or coefficients (\code{coef}) will be shown in the output.
+#'@param tab.type a character value indicating either hazard ratio (\code{hr}) or coefficients (\code{coef}) will be shown in the output.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
@@ -274,7 +275,8 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'@importFrom dplyr transmute bind_rows
 #'@importFrom tidyr replace_na
 #'@export
-nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
+nt_multiple_cox <- function(fit.list, fit.labels = NULL, ci.type = "lr",
+                            tab.type = "hr",
                             format = TRUE, digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 
@@ -283,15 +285,10 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
   if (is.null(fit.labels))
     fit.labels <- 1:length(fit.list)
 
-  if (type == "hr"){
     temp <- map2(fit.list, fit.labels, aux_multiple_cox,
-                 format = format, type = "hr")
+                 ci.type = ci.type,
+                 format = format, tab.type = tab.type)
     tab <- bind_rows(temp)
-  } else {
-    temp <- map2(fit.list, fit.labels, aux_multiple_cox,
-                 format = format, type = "coef")
-    tab <- bind_rows(temp)
-  }
 
   ref <- map(fit.list, ~ reference_df(.x)$ref)
 
@@ -320,12 +317,12 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, type = "hr",
 #'@importFrom stringr str_replace_all
 #'@importFrom tidyr separate
 #'@importFrom broom tidy
-aux_multiple_cox <- function(fit, model.label, format, type){
+aux_multiple_cox <- function(fit, ci.type, model.label, format, tab.type){
 
   aux <- extract_data(fit)
 
-  if (type == "hr"){
-    temp <- table_fit(fit, exponentiate = TRUE)
+  if (tab.type == "hr"){
+    temp <- table_fit(fit, ci.type, exponentiate = TRUE)
     out <- temp %>%
       mutate(model = model.label,
              term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%

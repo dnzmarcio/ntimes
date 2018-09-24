@@ -1,3 +1,11 @@
+table_fit <- function(fit, type, exponentiate = FALSE){
+
+  out <- effect(fit, type)
+  if (exponentiate)
+    out[, apply(out, 2, is.numeric)] <- exp(out[, apply(out, 2, is.numeric)])
+  return(out)
+}
+
 #'@importFrom stats terms get_all_vars
 extract_data <- function(fit){
 
@@ -107,26 +115,48 @@ contrast_df <- function(data, var, ref, interaction = NULL){
   return(out)
 }
 
-contrast_calc <- function(design.matrix, beta, beta.var,  p.value){
+#'@importFrom multcomp glht
+#'@importFrom stats confint
+contrast_calc <- function(fit, design.matrix, beta, beta.var,  p.value,
+                          type){
 
-  out <- list()
+  est_aux <- function(design.matrix, beta){
+    temp <- design.matrix%*%beta
+    out <- sweep(temp, 2, temp[1, ])
+    out <- out[-1, ]
+  }
 
-  pred <- design.matrix%*%beta
+  contrast_aux <- function(design.matrix){
+    out <- sweep(design.matrix, 2, design.matrix[1, ])
+    out <- out[-1, ]
+  }
 
-  for (j in 2:nrow(design.matrix)){
-    estimate <- as.numeric(pred[j] - pred[1])
-    diff <- design.matrix[j, ] - design.matrix[1, ]
+  if (!is.list(design.matrix))
+    design.matrix <- list(design.matrix)
+
+  if (type == "wald"){
+    estimate <- sapply(design.matrix, FUN = est_aux, beta = beta, simplify = TRUE)
+    diff <- sapply(design.matrix, FUN = contrast_aux, simplify = FALSE)
+    diff <- Reduce(rbind, diff)
     pred.se <- sqrt(t(diff)%*%beta.var%*%diff)
 
     lower <- exp(estimate - 1.96*pred.se)
     upper <- exp(estimate + 1.96*pred.se)
     estimate <- exp(estimate)
+    p.value <- c(p.value, rep(NA, (length(estimate) - 1)))
 
-    if (j == 2){
-      out[[j-1]] <- data.frame(estimate, lower, upper, p.value)
-    } else {
-      out[[j-1]] <- data.frame(estimate, lower, upper, p.value = NA)
-    }
+    out <- data.frame(estimate, lower, upper, p.value)
+
+  } else {
+    K <- sapply(design.matrix, FUN = contrast_aux, simplify = FALSE)
+    K <- Reduce(rbind, K)
+    if (!is.matrix(K))
+      K <- matrix(K, nrow = 1)
+    test <- glht(fit, linfct = K)
+    ci <- exp(confint(test)$confint)
+    p.value <- c(p.value, rep(NA, (nrow(ci) - 1)))
+
+    out <- data.frame(estimate = ci[, 1], lower = ci[, 2], upper = ci[, 3], p.value)
   }
 
   return(out)
@@ -134,7 +164,8 @@ contrast_calc <- function(design.matrix, beta, beta.var,  p.value){
 
 #'@importFrom stats model.matrix formula setNames anova vcov update.formula
 #'@importFrom survival coxph
-effect.coxph <- function(fit){
+#'@importFrom stringr str_split
+effect.coxph <- function(fit, type){
 
   aux <- extract_data(fit)
   ref <- reference_df(fit)$df
@@ -143,8 +174,15 @@ effect.coxph <- function(fit){
   term.labels <- attr(fit$terms, "term.labels")
 
   interaction <- colnames(attr(fit$terms, "factors"))[attr(fit$terms, "order") > 1]
-
-  L <- list()
+  if (any(attr(fit$terms, "order") > 2)){
+    temp <- str_split(interaction, ":")
+    temp <- sapply(temp, FUN =
+                     function(x) sapply(temp, FUN = function(y) x %in% y))
+    index <- unique(sapply(temp, FUN =
+                            function(x) max(which(apply(x, FUN =
+                                                          function(x) all(x), 2)))))
+    interaction <- interaction[index]
+  }
 
   for (i in 1:length(aux$var)){
 
@@ -163,15 +201,16 @@ effect.coxph <- function(fit){
                     data = aux$data)
       p.value <- anova(fit0, fit)$`P(>|Chi|)`[2]
 
-      contrast <- contrast_calc(design.matrix, beta = beta, beta.var = beta.var,
-                                p.value = p.value)
+      contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
+                                beta = beta, beta.var = beta.var,
+                                p.value = p.value, type = type)
 
-      temp <- setNames(contrast, temp$label)
+      temp <- data.frame(term = temp$label, contrast)
 
       if (i > 1)
-        temp <- c(L, temp)
+        temp <- rbind(out, temp)
 
-      L <- temp
+      out <- temp
 
     } else {
       for (k in which(cond.interaction)){
@@ -181,37 +220,28 @@ effect.coxph <- function(fit){
         design.matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
 
         drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
-        fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
+        fit0 <- coxph(update.formula(fit$formula,
+                                     paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
                       data = aux$data)
         p.value <- anova(fit0, fit)$`P(>|Chi|)`[2]
 
-        contrast <- sapply(design.matrix, contrast_calc,
-                           beta = beta, beta.var = beta.var, p.value = p.value, simplify = FALSE)
-        contrast <- flattenlist(contrast)
-        temp <- setNames(contrast, temp$label)
+        contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
+                                  beta = beta, beta.var = beta.var,
+                                  p.value = p.value, type = type)
+
+        temp <- data.frame(term = temp$label, contrast)
 
         if (i > 1)
-          temp <- c(L, temp)
+          temp <- rbind(out, temp)
 
-        L <- temp
+        out <- temp
 
       }
     }
   }
 
-  term <- names(L)
-  L <- Reduce(rbind, L)
-  colnames(L) <- c("estimate", "conf.low", "conf.high", "p.value")
-  out <- data.frame(term, L)
+  colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
 
-  return(out)
-}
-
-table_fit <- function(fit, exponentiate = FALSE){
-
-  out <- effect(fit)
-  if (exponentiate)
-    out[, apply(out, 2, is.numeric)] <- exp(out[, apply(out, 2, is.numeric)])
   return(out)
 }
 

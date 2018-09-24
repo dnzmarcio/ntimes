@@ -1,4 +1,4 @@
-effect <- function(fit) {
+effect <- function(fit, type) {
   UseMethod("effect")
 }
 
