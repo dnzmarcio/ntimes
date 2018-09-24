@@ -194,7 +194,7 @@ effect.coxph <- function(fit, type){
 
     if (all(!cond.interaction)){
       temp <- contrast_df(aux$data, aux$var[i], ref)
-      design.matrix <- model.matrix(formula(fit), temp$new.data)[, -1, drop = FALSE]
+      design.matrix <- model.matrix(fit, temp$new.data)
 
       drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
       fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
