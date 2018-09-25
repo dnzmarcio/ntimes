@@ -128,11 +128,12 @@ contrast_calc <- function(fit, design.matrix, beta, beta.var,  p.value,
 
   contrast_aux <- function(design.matrix){
     out <- sweep(design.matrix, 2, design.matrix[1, ])
-    out <- out[-1, ]
+    out <- out[-1, , drop = FALSE]
   }
 
   se <- function(diff, beta.var){
-    out <- sqrt(t(diff)%*%beta.var%*%diff)
+
+    out <- sqrt(diff%*%beta.var%*%t(diff))
     if (is.matrix(out))
       out <- diag(out)
   }
