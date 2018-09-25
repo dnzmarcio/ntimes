@@ -131,14 +131,21 @@ contrast_calc <- function(fit, design.matrix, beta, beta.var,  p.value,
     out <- out[-1, ]
   }
 
+  se <- function(diff, beta.var){
+    out <- sqrt(diff%*%beta.var%*%t(diff))
+    if (is.matrix(out))
+      out <- diag(out)
+  }
+
   if (!is.list(design.matrix))
     design.matrix <- list(design.matrix)
 
   if (type == "wald"){
-    estimate <- sapply(design.matrix, FUN = est_aux, beta = beta, simplify = TRUE)
+    estimate <- as.numeric(sapply(design.matrix,
+                                  FUN = est_aux, beta = beta, simplify = TRUE))
     diff <- sapply(design.matrix, FUN = contrast_aux, simplify = FALSE)
-    diff <- Reduce(rbind, diff)
-    pred.se <- sqrt(t(diff)%*%beta.var%*%diff)
+    pred.se <- as.numeric(sapply(diff,
+                                 FUN = se, beta.var = beta.var, simplify = TRUE))
 
     lower <- exp(estimate - 1.96*pred.se)
     upper <- exp(estimate + 1.96*pred.se)
