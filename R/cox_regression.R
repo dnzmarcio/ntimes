@@ -342,3 +342,87 @@ aux_multiple_cox <- function(fit, ci.type, model.label, format, tab.type){
 }
 
 
+#'@importFrom stats model.matrix formula setNames anova vcov update.formula
+#'@importFrom survival coxph
+#'@importFrom stringr str_split
+effect.coxph <- function(fit, type){
+
+  aux <- extract_data(fit)
+  ref <- reference_df(fit)$df
+  beta <- as.numeric(fit$coefficients)
+  beta.var <- as.matrix(vcov(fit))
+  term.labels <- attr(fit$terms, "term.labels")
+
+  interaction <- colnames(attr(fit$terms, "factors"))[attr(fit$terms, "order") > 1]
+  if (any(attr(fit$terms, "order") > 2)){
+    temp <- str_split(interaction, ":")
+    temp <- sapply(temp, FUN =
+                     function(x) sapply(temp, FUN = function(y) x %in% y))
+    index <- unique(sapply(temp, FUN =
+                             function(x) max(which(apply(x, FUN =
+                                                           function(x) all(x), 2)))))
+    interaction <- interaction[index]
+  }
+
+  for (i in 1:length(aux$var)){
+
+    if (length(interaction) > 0){
+      cond.interaction <- grepl(aux$var[i], x = interaction, fixed = TRUE)
+    } else {
+      cond.interaction <- FALSE
+    }
+
+    if (all(!cond.interaction)){
+      temp <- contrast_df(aux$data, aux$var[i], ref)
+      design.matrix <- model.matrix(fit, temp$new.data)
+
+      drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
+      fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
+                    data = aux$data)
+      p.value <- anova(fit0, fit)$`P(>|Chi|)`[2]
+
+      contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
+                                beta = beta, beta.var = beta.var,
+                                p.value = p.value, type = type)
+
+      temp <- data.frame(term = temp$label, contrast)
+
+      if (i > 1)
+        temp <- rbind(out, temp)
+
+      out <- temp
+
+    } else {
+      for (k in which(cond.interaction)){
+        interaction.vars <- aux$var[sapply(aux$var, grepl, x = as.character(interaction[k]), fixed = TRUE)]
+        others <- interaction.vars[interaction.vars != aux$var[i]]
+        temp <- contrast_df(aux$data, aux$var[i], ref, others)
+        design.matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
+
+        drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
+        fit0 <- coxph(update.formula(fit$formula,
+                                     paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
+                      data = aux$data)
+        p.value <- anova(fit0, fit)$`P(>|Chi|)`[2]
+
+        contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
+                                  beta = beta, beta.var = beta.var,
+                                  p.value = p.value, type = type)
+
+        temp <- data.frame(term = temp$label, contrast)
+
+        if (i > 1)
+          temp <- rbind(out, temp)
+
+        out <- temp
+
+      }
+    }
+  }
+
+  colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
+
+  return(out)
+}
+
+
