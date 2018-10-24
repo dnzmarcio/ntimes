@@ -285,4 +285,77 @@ aux_multiple_logistic <- function(fit, model.label, format, ci.type, tab.type){
   return(out)
 }
 
+#'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
+effect.glm <- function(fit, type){
+
+  aux <- extract_data(fit)
+  ref <- reference_df(fit)$df
+  beta <- as.numeric(fit$coefficients)
+  beta.var <- as.matrix(vcov(fit))
+  term.labels <- attr(fit$terms, "term.labels")
+
+  interaction <- colnames(attr(fit$terms, "factors"))[attr(fit$terms, "order") > 1]
+
+  for (i in 1:length(aux$var)){
+
+    if (length(interaction) > 0){
+      cond.interaction <- grepl(aux$var[i], x = interaction, fixed = TRUE)
+    } else {
+      cond.interaction <- FALSE
+    }
+
+    if (all(!cond.interaction)){
+      temp <- contrast_df(aux$data, aux$var[i], ref)
+      design.matrix <- model.matrix(formula(fit), data = temp$new.data)
+
+      drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
+      fit0 <- glm(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
+                  data = aux$data, family = "binomial")
+      p.value <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
+
+      contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
+                                beta = beta, beta.var = beta.var,
+                                p.value = p.value, type = type)
+
+      temp <- data.frame(term = temp$label, contrast)
+
+      if (i > 1)
+        temp <- rbind(out, temp)
+
+      out <- temp
+
+    } else {
+      for (k in which(cond.interaction)){
+        interaction.vars <- aux$var[sapply(aux$var, grepl, x = as.character(interaction[k]), fixed = TRUE)]
+        others <- interaction.vars[interaction.vars != aux$var[i]]
+        temp <- contrast_df(aux$data, aux$var[i], ref, others)
+        design.matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
+
+        drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
+        fit0 <- glm(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
+                    data = aux$data, family = "binomial")
+        p.value <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
+
+        contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
+                                  beta = beta, beta.var = beta.var,
+                                  p.value = p.value, type = type)
+
+        temp <- data.frame(term = temp$label, contrast)
+
+        if (i > 1)
+          temp <- rbind(out, temp)
+
+        out <- temp
+
+      }
+    }
+  }
+
+  colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
+
+  return(out)
+
+}
+
+
 
