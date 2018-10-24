@@ -219,7 +219,8 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label){
 #'@importFrom purrr map
 #'@importFrom utils write.csv
 #'@export
-nt_multiple_logistic <- function(fit.list, fit.labels = NULL, type = "or",
+nt_multiple_logistic <- function(fit.list, fit.labels = NULL, ci.type = "lr",
+                                 tab.type = "or",
                                  format = TRUE, digits = 2, digits.p = 3,
                                  save = FALSE, file = "nt_multiple_logistic"){
 
@@ -228,15 +229,10 @@ nt_multiple_logistic <- function(fit.list, fit.labels = NULL, type = "or",
   if (is.null(fit.labels))
     fit.labels <- 1:length(fit.list)
 
-  if (type == "or"){
-    temp <- map2(fit.list, fit.labels, aux_multiple_logistic,
-                 format = format, type = "or")
-    tab <- Reduce(rbind, temp)
-  } else {
-    temp <- map2(fit.list, fit.labels, aux_multiple_logistic,
-                 format = format, type = "coef")
-    tab <- Reduce(rbind, temp)
-  }
+  temp <- map2(fit.list, fit.labels, aux_multiple_logistic,
+                 format = format, ci.type = ci.type, tab.type = tab.type)
+   tab <- Reduce(rbind, temp)
+
 
   ref <- map(fit.list, ~ reference_df(.x)$ref)
 
@@ -265,12 +261,12 @@ nt_multiple_logistic <- function(fit.list, fit.labels = NULL, type = "or",
 #'@importFrom tidyr separate unite
 #'@importFrom tibble data_frame
 #'@importFrom gsubfn gsubfn
-aux_multiple_logistic <- function(fit, model.label, format, type){
+aux_multiple_logistic <- function(fit, model.label, format, ci.type, tab.type){
 
   aux <- extract_data(fit)
 
-  if (type == "or"){
-    temp <- table_fit(fit, exponentiate = TRUE)
+  if (tab.type == "or"){
+    temp <- table_fit(fit, type = ci.type, exponentiate = TRUE)
     out <- temp %>%
       mutate(model = model.label,
              term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
