@@ -67,6 +67,10 @@ aux_boxplot <- function(var, var.name, group, group.name,
 
   out <- list()
   var.label <- extract_label(var, var.name)
+  var.unit <- extract_unit(var)
+
+  if (var.unit != "")
+    var.label <- paste(var.label, paste0("(", var.unit, ")"))
 
   if (is.null(group)) {
     gp <- std_fun(var = var,
@@ -119,7 +123,7 @@ std_boxplot <- function(var, var.label){
   data_plot <- data.frame(var = var)
 
   ### Basic Plot
-  out <- ggplot(data_plot, aes_string(y = "var")) +
+  out <- ggplot(data_plot, aes_string(x = NA, y = "var")) +
     stat_boxplot(geom = "errorbar", width = 0.5) +
     geom_boxplot(fill = "grey80", outlier.shape = NA)  +
     geom_jitter(shape = 16, size = 1.5,
@@ -127,6 +131,9 @@ std_boxplot <- function(var, var.label){
 
   ### Formatting
   out <- out + labs(y = var.label) +
+    theme(axis.ticks.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank()) +
     theme_classic()
 
   return(out)

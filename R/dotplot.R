@@ -72,6 +72,10 @@ aux_dotplot <- function(var, var.name, binwidth, group, group.name,
 
   out <- list()
   var.label <- extract_label(var, var.name)
+  var.unit <- extract_unit(var)
+
+  if (var.unit != "")
+    var.label <- paste(var.label, paste0("(", var.unit, ")"))
 
   if (is.null(group)) {
     gp <- std_fun(var = var,
