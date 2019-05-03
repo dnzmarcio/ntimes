@@ -233,8 +233,8 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'@description Tabulating results from fitted Proportional Hazards Cox models.
 #'
 #'@param fit.list a list of fitted models.
-#'@param tab.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
 #'@param fit.labels a character vector labelling the models in \code{fit.list}
+#'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
 #'@param tab.type a character value indicating either hazard ratio (\code{hr}) or coefficients (\code{coef}) will be shown in the output.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
@@ -262,53 +262,42 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'                              age = qt_var(age,
 #'                                           label = "Age"))
 #'
-#'fit.list <- list()
 #'
-#'fit.list[[1]] <- coxph(Surv(futime, fustat) ~ ecog.ps, data = ovarian_nt)
-#'fit.list[[2]] <- coxph(Surv(futime, fustat) ~ resid.ds + rx, data = ovarian_nt)
-#'fit.list[[3]] <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = ovarian_nt)
+#'fit <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = ovarian_nt)
 #'
-#'nt_multiple_cox(fit.list)
+#'nt_multiple_cox(fit)
 #'
 #'@importFrom purrr map2 map
 #'@importFrom utils write.csv
 #'@importFrom dplyr transmute bind_rows
 #'@importFrom tidyr replace_na
 #'@export
-nt_multiple_cox <- function(fit.list, fit.labels = NULL, ci.type = "lr",
-                            tab.type = "hr",
+nt_multiple_cox <- function(fit, ci.type = "lr",
                             format = TRUE, digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 
-  if (class(fit.list) != "list")
-    fit.list <- list(fit.list)
-  if (is.null(fit.labels))
-    fit.labels <- 1:length(fit.list)
+  if (class(fit) != "coxph")
+    stop("fit object is not a coxph class")
 
-    temp <- map2(fit.list, fit.labels, aux_multiple_cox,
-                 ci.type = ci.type,
-                 format = format, tab.type = tab.type)
-    tab <- bind_rows(temp)
-
-  ref <- map(fit.list, ~ reference_df(.x)$ref)
+  out <- aux_multiple_cox(fit, ci.type, format)
+  ref <- reference_df(fit)$ref
 
   if (format)
-    tab <-  tab %>%
-    transmute(Model = .data$model,
-              Variable = .data$variable, HR = .data$hr,
+    out$hr <-  out$hr %>%
+    transmute(Variable = .data$variable, HR = .data$hr,
               'Estimate (95% CI)' = paste0(round(.data$estimate, digits), " (",
                                            round(.data$conf.low, digits), " ; ",
                                            round(.data$conf.high, digits), ")"),
-              'p value' = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, digits.p)))) %>%
-    replace_na(list('p value' = ""))
+              'p value LR' = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
+                                 as.character(round(.data$p.value.lr, digits.p)))) %>%
+    replace_na(list('p value LR' = ""))
 
 
 
   if (save)
-    write.csv(tab, file = paste0(file, ".csv"))
+    write.csv(out$hr, file = paste0(file, ".csv"))
 
-  out <- list(tab = tab, ref = ref)
+  out <- list(hr = out$hr, coef = out$coef, ref = ref)
 
   return(out)
 }
@@ -317,27 +306,24 @@ nt_multiple_cox <- function(fit.list, fit.labels = NULL, ci.type = "lr",
 #'@importFrom stringr str_replace_all
 #'@importFrom tidyr separate
 #'@importFrom broom tidy
-aux_multiple_cox <- function(fit, ci.type, model.label, format, tab.type){
+aux_multiple_cox <- function(fit, ci.type, format){
 
   aux <- extract_data(fit)
 
-  if (tab.type == "hr"){
-    temp <- table_fit(fit, ci.type, exponentiate = TRUE)
-    out <- temp %>%
-      mutate(model = model.label,
-             term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
-      separate(.data$term, into = c("variable", "hr"), sep = ":")
+  temp <- effect.coxph(fit, ci.type, exponentiate = TRUE) %>%
+    mutate(term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
+    separate(.data$term, into = c("variable", "hr"), sep = ":")
 
-    if (format)
-      out <- out %>% group_by(.data$variable) %>%
-      mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
-             p.value = ifelse(duplicated(.data$p.value), NA, .data$p.value)) %>%
-      ungroup(.data$variable) %>% select(-.data$variable) %>%
-      rename(variable = .data$aux_variable)
+  if (format)
+    hr <- temp %>% group_by(.data$variable) %>%
+    mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
+           p.value.lr = ifelse(duplicated(.data$p.value.lr), NA, .data$p.value.lr)) %>%
+    ungroup(.data$variable) %>% select(-.data$variable) %>%
+    rename(variable = .data$aux_variable)
 
-  } else {
-    out <- tidy(fit)
-  }
+  coef <- tidy(fit)
+
+  out <- list(hr = hr, coef = coef)
   return(out)
 }
 
@@ -345,7 +331,7 @@ aux_multiple_cox <- function(fit, ci.type, model.label, format, tab.type){
 #'@importFrom stats model.matrix formula setNames anova vcov update.formula
 #'@importFrom survival coxph
 #'@importFrom stringr str_split
-effect.coxph <- function(fit, type){
+effect.coxph <- function(fit, type, exponentiate){
 
   aux <- extract_data(fit)
   ref <- reference_df(fit)$df
@@ -379,11 +365,12 @@ effect.coxph <- function(fit, type){
       drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
       fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
                     data = aux$data)
-      p.value <- anova(fit0, fit)$`P(>|Chi|)`[2]
+      p.value.lr <- anova(fit0, fit)$`P(>|Chi|)`[2]
+
 
       contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
                                 beta = beta, beta.var = beta.var,
-                                p.value = p.value, type = type)
+                                p.value = p.value.lr, type = type)
 
       temp <- data.frame(term = temp$label, contrast)
 
@@ -420,7 +407,11 @@ effect.coxph <- function(fit, type){
     }
   }
 
-  colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
+  if (exponentiate)
+    out[, apply(out, 2, is.numeric)] <- exp(out[, apply(out, 2, is.numeric)])
+
+  colnames(out) <- c("term", "estimate", "conf.low", "conf.high",
+                     "p.value.lr")
 
   return(out)
 }
