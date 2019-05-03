@@ -310,20 +310,26 @@ aux_multiple_cox <- function(fit, ci.type, format){
 
   aux <- extract_data(fit)
 
-  temp <- effect.coxph(fit, ci.type, exponentiate = TRUE) %>%
+  hr <- effect.coxph(fit, ci.type, exponentiate = TRUE) %>%
     mutate(term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
     separate(.data$term, into = c("variable", "hr"), sep = ":")
 
   if (format)
-    hr <- temp %>% group_by(.data$variable) %>%
+    hr <- hr %>% group_by(.data$variable) %>%
     mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
            p.value.lr = ifelse(duplicated(.data$p.value.lr), NA, .data$p.value.lr)) %>%
     ungroup(.data$variable) %>% select(-.data$variable) %>%
     rename(variable = .data$aux_variable)
 
-  coef <- tidy(fit)
+  temp <- unlist(aux$var.labels)
+  labels <- paste0(temp, " ")
+  names(labels) <- names(temp)
+  coef <- tidy(fit) %>%
+    mutate(term = str_replace_all(.data$term, labels),
+           term = sub(" $", "", x = term))
 
   out <- list(hr = hr, coef = coef)
+
   return(out)
 }
 
