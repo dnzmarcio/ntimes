@@ -1,6 +1,4 @@
-effect <- function(fit, type) {
-  UseMethod("effect")
-}
+
 
 flattenlist <- function(x){
   morelists <- sapply(x, function(xprime) class(xprime)[1]=="list")
