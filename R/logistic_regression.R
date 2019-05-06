@@ -271,7 +271,7 @@ aux_multiple_logistic <- function(fit, format, ci.type){
 }
 
 #'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
-effectglm <- function(fit, type){
+effect.glm <- function(fit, type, exponentiate){
 
   aux <- extract_data(fit)
   ref <- reference_df(fit)$df
