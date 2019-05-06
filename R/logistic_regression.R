@@ -254,7 +254,7 @@ aux_multiple_logistic <- function(fit, format, ci.type){
   if (format)
     effect <- effect %>% group_by(.data$variable) %>%
     mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
-           p.value = ifelse(duplicated(.data$p.value.lr), NA, .data$p.value.lr)) %>%
+           p.value.lr = ifelse(duplicated(.data$p.value.lr), NA, .data$p.value.lr)) %>%
     ungroup(.data$variable) %>% select(-.data$variable) %>%
     rename(variable = .data$aux_variable)
 
