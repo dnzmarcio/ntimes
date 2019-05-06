@@ -4,16 +4,13 @@
 \alias{nt_multiple_logistic}
 \title{Logistic regression table}
 \usage{
-nt_multiple_logistic(fit.list, fit.labels = NULL, type = "or",
-  format = TRUE, digits = 2, digits.p = 3, save = FALSE,
-  file = "nt_multiple_logistic")
+nt_multiple_logistic(fit, ci.type = "lr", format = TRUE, digits = 2,
+  digits.p = 3, save = FALSE, file = "nt_multiple_logistic")
 }
 \arguments{
-\item{fit.list}{a list of fitted models.}
+\item{fit}{a fitted model.}
 
-\item{fit.labels}{a character vector labelling the models in \code{fit.list}}
-
-\item{type}{a character value indicating either odds ratio (\code{or}) or coefficients (\code{coef}) will be shown in the output.}
+\item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).}
 
 \item{format}{a logical value indicating whether the output should be formatted.}
 
@@ -42,12 +39,8 @@ dt <- titanic_train \%>\% mutate(Sex = ql_var(Sex,
                                               to = c("I", "II", "III"),
                                               label = "Passenger Class"))
 
-fit.list <- list()
+fit <- glm(Survived ~ Age + Sex + Pclass, data = dt)
 
-fit.list[[1]] <- glm(Survived ~ Sex, data = dt)
-fit.list[[2]] <- glm(Survived ~ Age + Sex, data = dt)
-fit.list[[3]] <- glm(Survived ~ Age + Sex + Pclass, data = dt)
-
-nt_multiple_logistic(fit.list)
+nt_multiple_logistic(fit)
 
 }

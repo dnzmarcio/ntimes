@@ -185,9 +185,8 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label){
 #'
 #'@description Tabulating results from Logistic models.
 #'
-#'@param fit.list a list of fitted models.
-#'@param fit.labels a character vector labelling the models in \code{fit.list}
-#'@param type a character value indicating either odds ratio (\code{or}) or coefficients (\code{coef}) will be shown in the output.
+#'@param fit a fitted model.
+#'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
@@ -208,85 +207,71 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label){
 #'                                               to = c("I", "II", "III"),
 #'                                               label = "Passenger Class"))
 #'
-#'fit.list <- list()
+#'fit <- glm(Survived ~ Age + Sex + Pclass, data = dt)
 #'
-#'fit.list[[1]] <- glm(Survived ~ Sex, data = dt)
-#'fit.list[[2]] <- glm(Survived ~ Age + Sex, data = dt)
-#'fit.list[[3]] <- glm(Survived ~ Age + Sex + Pclass, data = dt)
-#'
-#'nt_multiple_logistic(fit.list)
+#'nt_multiple_logistic(fit)
 #'
 #'@importFrom purrr map
 #'@importFrom utils write.csv
 #'@export
-nt_multiple_logistic <- function(fit.list, fit.labels = NULL, ci.type = "lr",
-                                 tab.type = "or",
+nt_multiple_logistic <- function(fit, ci.type = "lr",
                                  format = TRUE, digits = 2, digits.p = 3,
                                  save = FALSE, file = "nt_multiple_logistic"){
 
-  if (class(fit.list) != "list")
-    fit.list <- list(fit.list)
-  if (is.null(fit.labels))
-    fit.labels <- 1:length(fit.list)
-
-  temp <- map2(fit.list, fit.labels, aux_multiple_logistic,
-                 format = format, ci.type = ci.type, tab.type = tab.type)
-   tab <- Reduce(rbind, temp)
-
-
-  ref <- map(fit.list, ~ reference_df(.x)$ref)
+  out <- aux_multiple_logistic(fit, format, ci.type)
+  ref <- reference_df(fit)$ref
 
   if (format)
-    tab <-  tab %>%
-    transmute(Model = .data$model,
-              Variable = .data$variable, OR = .data$or,
+    out$effect <- out$effect %>%
+    transmute(Variable = .data$variable, OR = .data$or,
               'Estimate (95% CI)' = paste0(round(.data$estimate, digits), " (",
                                            round(.data$conf.low, digits), " ; ",
                                            round(.data$conf.high, digits), ")"),
-              'p value' = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, digits.p)))) %>%
-    replace_na(list('p value' = ""))
+              'p value LR' = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
+                                    as.character(round(.data$p.value.lr, digits.p)))) %>%
+    replace_na(list('p value LR' = ""))
 
   if (save)
-    write.csv(tab, file = paste0(file, ".csv"))
+    write.csv(out$effect, file = paste0(file, ".csv"))
 
-  out <- list(tab = tab, ref = ref)
+  out <- list(effect = out$effect, coef = out$coef, ref = ref)
 
   return(out)
 }
 
-#'@importFrom dplyr select mutate transmute bind_cols full_join
-#'@importFrom purrr map map2
-#'@importFrom broom tidy glance
-#'@importFrom tidyr separate unite
-#'@importFrom tibble data_frame
-#'@importFrom gsubfn gsubfn
-aux_multiple_logistic <- function(fit, model.label, format, ci.type, tab.type){
+#'@importFrom dplyr mutate group_by ungroup rename
+#'@importFrom stringr str_replace_all
+#'@importFrom tidyr separate
+#'@importFrom broom tidy
+aux_multiple_logistic <- function(fit, format, ci.type){
 
   aux <- extract_data(fit)
 
-  if (tab.type == "or"){
-    temp <- table_fit(fit, type = ci.type, exponentiate = TRUE)
-    out <- temp %>%
-      mutate(model = model.label,
-             term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
-      separate(.data$term, into = c("variable", "or"), sep = ":")
+  effect <- effect.glm(fit, type = ci.type, exponentiate = TRUE) %>%
+    mutate(term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
+    separate(.data$term, into = c("variable", "or"), sep = ":")
 
-    if (format)
-      out <- out %>% group_by(.data$variable) %>%
-      mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
-             p.value = ifelse(duplicated(.data$p.value), NA, .data$p.value)) %>%
-      ungroup(.data$variable) %>% select(-.data$variable) %>%
-      rename(variable = .data$aux_variable)
+  if (format)
+    effect <- effect %>% group_by(.data$variable) %>%
+    mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
+           p.value = ifelse(duplicated(.data$p.value), NA, .data$p.value)) %>%
+    ungroup(.data$variable) %>% select(-.data$variable) %>%
+    rename(variable = .data$aux_variable)
 
-  } else {
-    out <- tidy(fit)
-  }
+  temp <- unlist(aux$var.labels)
+  labels <- paste0(temp, " ")
+  names(labels) <- names(temp)
+  coef <- tidy(fit) %>%
+    mutate(term = str_replace_all(.data$term, labels),
+           term = sub(" $", "", x = term))
+
+  out <- list(effect = effect, coef = coef)
+
   return(out)
 }
 
 #'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
-effect.glm <- function(fit, type){
+effectglm <- function(fit, type){
 
   aux <- extract_data(fit)
   ref <- reference_df(fit)$df
@@ -351,7 +336,10 @@ effect.glm <- function(fit, type){
     }
   }
 
-  colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
+  if (exponentiate)
+    out[, apply(out, 2, is.numeric)] <- exp(out[, apply(out, 2, is.numeric)])
+
+  colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value.lr")
 
   return(out)
 

@@ -8,6 +8,8 @@ nt_multiple_cox(fit, ci.type = "lr", format = TRUE, digits = 2,
   digits.p = 3, save = FALSE, file = "nt_multiple_cox")
 }
 \arguments{
+\item{fit}{a fitted model.}
+
 \item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).}
 
 \item{format}{a logical value indicating whether the output should be formatted.}
@@ -19,12 +21,6 @@ nt_multiple_cox(fit, ci.type = "lr", format = TRUE, digits = 2,
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character indicating the name of output file in csv format to be saved.}
-
-\item{fit.list}{a list of fitted models.}
-
-\item{fit.labels}{a character vector labelling the models in \code{fit.list}}
-
-\item{tab.type}{a character value indicating either hazard ratio (\code{hr}) or coefficients (\code{coef}) will be shown in the output.}
 }
 \description{
 Tabulating results from fitted Proportional Hazards Cox models.

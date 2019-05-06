@@ -232,10 +232,8 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'
 #'@description Tabulating results from fitted Proportional Hazards Cox models.
 #'
-#'@param fit.list a list of fitted models.
-#'@param fit.labels a character vector labelling the models in \code{fit.list}
+#'@param fit a fitted model.
 #'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
-#'@param tab.type a character value indicating either hazard ratio (\code{hr}) or coefficients (\code{coef}) will be shown in the output.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
@@ -283,7 +281,7 @@ nt_multiple_cox <- function(fit, ci.type = "lr",
   ref <- reference_df(fit)$ref
 
   if (format)
-    out$hr <-  out$hr %>%
+    out$effect <-  out$effect %>%
     transmute(Variable = .data$variable, HR = .data$hr,
               'Estimate (95% CI)' = paste0(round(.data$estimate, digits), " (",
                                            round(.data$conf.low, digits), " ; ",
@@ -295,9 +293,9 @@ nt_multiple_cox <- function(fit, ci.type = "lr",
 
 
   if (save)
-    write.csv(out$hr, file = paste0(file, ".csv"))
+    write.csv(out$effect, file = paste0(file, ".csv"))
 
-  out <- list(hr = out$hr, coef = out$coef, ref = ref)
+  out <- list(effect = out$effect, coef = out$coef, ref = ref)
 
   return(out)
 }
@@ -310,12 +308,12 @@ aux_multiple_cox <- function(fit, ci.type, format){
 
   aux <- extract_data(fit)
 
-  hr <- effect.coxph(fit, ci.type, exponentiate = TRUE) %>%
+  effect <- effect.coxph(fit, ci.type, exponentiate = TRUE) %>%
     mutate(term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
     separate(.data$term, into = c("variable", "hr"), sep = ":")
 
   if (format)
-    hr <- hr %>% group_by(.data$variable) %>%
+    effect <- effect %>% group_by(.data$variable) %>%
     mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
            p.value.lr = ifelse(duplicated(.data$p.value.lr), NA, .data$p.value.lr)) %>%
     ungroup(.data$variable) %>% select(-.data$variable) %>%
@@ -328,7 +326,7 @@ aux_multiple_cox <- function(fit, ci.type, format){
     mutate(term = str_replace_all(.data$term, labels),
            term = sub(" $", "", x = term))
 
-  out <- list(hr = hr, coef = coef)
+  out <- list(effect = effect, coef = coef)
 
   return(out)
 }
