@@ -3,6 +3,7 @@ table_fit <- function(fit, type, exponentiate = FALSE){
   out <- effect(fit, type)
   if (exponentiate)
     out[, apply(out, 2, is.numeric)] <- exp(out[, apply(out, 2, is.numeric)])
+
   return(out)
 }
 
@@ -22,6 +23,9 @@ extract_data <- function(fit){
 
   if (!is.null(attr(terms(fit),"specials")$strata))
     var <- var[-(attr(terms(fit),"specials")$strata - 1)]
+
+  if (!is.null(attr(terms(fit),"specials")$random))
+    var <- var[-(attr(terms(fit),"specials")$random - 1)]
 
   out <- list(data = droplevels(temp), var = var, var.labels = var.labels)
 
@@ -117,7 +121,7 @@ contrast_df <- function(data, var, ref, interaction = NULL){
 
 #'@importFrom multcomp glht
 #'@importFrom stats confint
-contrast_calc <- function(fit, design.matrix, beta, beta.var,  p.value,
+contrast_calc <- function(fit, design.matrix, beta, beta.var, p.value,
                           type){
 
   est_aux <- function(design.matrix, beta){

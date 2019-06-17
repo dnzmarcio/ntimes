@@ -34,7 +34,7 @@ nt_dist_qt_tg <-  function(var, group, test,
                            alternative = alternative,
                            paired = paired,
                            conf.level = conf.level)
-          test <- ifelse(paired, "Paired t", "t")
+          test <- ifelse(paired, "Paired t-Student", "t-Student")
         } else {
           result <- t.test(data.test$x ~ data.test$g,
                            var.equal = TRUE,
