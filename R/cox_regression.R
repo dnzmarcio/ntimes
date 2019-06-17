@@ -283,12 +283,12 @@ nt_multiple_cox <- function(fit, ci.type = "lr",
   if (format)
     out$effect <-  out$effect %>%
     transmute(Variable = .data$variable, HR = .data$hr,
-              'Estimate (95% CI)' = paste0(round(.data$estimate, digits), " (",
+              `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
                                            round(.data$conf.low, digits), " ; ",
                                            round(.data$conf.high, digits), ")"),
-              'p value LR' = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
+              `p value` = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
                                  as.character(round(.data$p.value.lr, digits.p)))) %>%
-    replace_na(list('p value LR' = ""))
+    replace_na(list(`p value` = ""))
 
 
 

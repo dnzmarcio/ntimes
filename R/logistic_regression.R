@@ -84,17 +84,16 @@ nt_simple_logistic <- function(data, response, ...,
       replace_na(list(n = "", null.deviance = "", df.null = "",
                       logLik = "", AIC = "", BIC = "",
                       deviance = "", df.residual = "")) %>%
-      transmute(Variable = .data$term, Group = .data$group,
-                OR.95CI = paste0(round(.data$estimate, digits), " (",
+      transmute(Variable = .data$term, OR = .data$group,
+                `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
                                  round(.data$conf.low, digits), " ; ",
                                  round(.data$conf.high, digits), ")"),
-                p.value = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+                `p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
                                  as.character(round(.data$p.value, digits.p))),
                 n = .data$n, null.deviance = .data$null.deviance,
                 logLik = .data$logLik, AIC = .data$AIC, BIC = .data$BIC,
                 deviance = .data$deviance) %>%
-      replace_na(list(p.value = "")) %>%
-      rename(`OR (95% CI)` = .data$OR.95CI, `p value` = .data$p.value)
+      replace_na(list(`p value` = ""))
   }
 
   if (save){
@@ -227,9 +226,9 @@ nt_multiple_logistic <- function(fit, ci.type = "lr",
               'Estimate (95% CI)' = paste0(round(.data$estimate, digits), " (",
                                            round(.data$conf.low, digits), " ; ",
                                            round(.data$conf.high, digits), ")"),
-              'p value LR' = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
+              'p value' = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
                                     as.character(round(.data$p.value.lr, digits.p)))) %>%
-    replace_na(list('p value LR' = ""))
+    replace_na(list('p value' = ""))
 
   if (save)
     write.csv(out$effect, file = paste0(file, ".csv"))
