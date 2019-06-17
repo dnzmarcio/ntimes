@@ -65,6 +65,24 @@ median_iqr <- function (x, limit = "both", type = 7) {
   return(out)
 }
 
+#'@importFrom stringr str_replace_all
+#'@importFrom dplyr bind_cols
+#'@importFrom purrr map2
+data_labeller <- function(data, labels){
+
+  aux_label <- function(x, y){
+    attributes(x)$label <- y
+    return(x)
+  }
+
+  var.names <- colnames(data)
+  names(labels) <- paste0("^",  names(labels), "$")
+  labels <- str_replace_all(var.names, unlist(labels))
+
+  out <- bind_cols(map2(.x = data, .y = labels, .f = aux_label))
+  return(out)
+}
+
 #'Format qualitative variables
 #'
 #'@description Recode factors, change the order of levels and
