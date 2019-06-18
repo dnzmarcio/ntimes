@@ -68,6 +68,7 @@ median_iqr <- function (x, limit = "both", type = 7) {
 #'@importFrom stringr str_replace_all
 #'@importFrom dplyr bind_cols
 #'@importFrom purrr map2
+#'@export
 data_labeller <- function(data, labels){
 
   aux_label <- function(x, y){
