@@ -109,8 +109,8 @@ nt_simple_cox <- function(data, time, status, ...,
                         r.squared = round(.data$r.squared, digits),
                         AIC = round(.data$AIC, digits),
                         ph.assumption = round(.data$ph.assumption, digits.p)) %>%
-    transmute(Variable = .data$term,  Group = .data$group,
-              HR.95CI = paste0(round(.data$estimate, digits), " (",
+    transmute(Variable = .data$term,  HR = .data$group,
+              Estimate.95CI = paste0(round(.data$estimate, digits), " (",
                                round(.data$conf.low, digits), " ; ",
                                round(.data$conf.high, digits), ")"),
               p.value = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
@@ -119,7 +119,7 @@ nt_simple_cox <- function(data, time, status, ...,
               concordance = .data$concordance, r.squared = .data$r.squared,
               AIC = .data$AIC, ph.assumption  = .data$ph.assumption) %>%
     replace_na(list(p.value = "")) %>%
-    rename(`HR (95% CI)` = .data$HR.95CI, `p value` = .data$p.value)
+    rename(`Estimate (95% CI)` = .data$Estimate.95CI, `p value` = .data$p.value)
   }
 
   if (save){
