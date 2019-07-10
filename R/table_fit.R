@@ -141,10 +141,10 @@ contrast_calc <- function(fit, fit0, design.matrix, beta, beta.var, type){
     estimate <- summary(test)$test$coefficients
     pred.se <- summary(test)$test$sigma
 
-    lower <- exp(estimate - 1.96*pred.se)
-    upper <- exp(estimate + 1.96*pred.se)
-    estimate <- exp(estimate)
-    p.value <- c(p.value, rep(NA, (length(estimate) - 1)))
+    lower <- estimate - 1.96*pred.se
+    upper <- estimate + 1.96*pred.se
+    estimate <- estimate
+    p.value <- summary(test)$test$pvalues
 
     out <- data.frame(estimate, lower, upper, p.value)
 
