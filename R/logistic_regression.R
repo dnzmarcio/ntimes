@@ -217,7 +217,7 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label){
 #'                                               to = c("I", "II", "III"),
 #'                                               label = "Passenger Class"))
 #'
-#'fit <- glm(Survived ~ Age + Sex + Pclass, data = dt)
+#'fit <- glm(Survived ~ Age + Sex + Pclass, data = dt, family = "binomial")
 #'
 #'nt_multiple_logistic(fit)
 #'
