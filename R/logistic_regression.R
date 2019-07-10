@@ -88,12 +88,14 @@ nt_simple_logistic <- function(data, response, ...,
                 `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
                                  round(.data$conf.low, digits), " ; ",
                                  round(.data$conf.high, digits), ")"),
-                `p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+                `Wald p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
                                  as.character(round(.data$p.value, digits.p))),
+                `LR p value` = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
+                                        as.character(round(.data$p.value.lr, digits.p))),
                 n = .data$n, null.deviance = .data$null.deviance,
                 logLik = .data$logLik, AIC = .data$AIC, BIC = .data$BIC,
                 deviance = .data$deviance) %>%
-      replace_na(list(`p value` = ""))
+      replace_na(list(`Wald p value` = "", `LR p value` = ""))
   }
 
   if (save){
@@ -138,12 +140,10 @@ aux_simple_logistic <- function(var, var.name, response, response.label,
   data.model <- bind_cols(response = response, add = add, var = var)
   out <- fit_logistic(data.model, tab.labels, tab.levels, var.label)
 
-  if (format){
-    out <- out %>% mutate(term = ifelse(duplicated(.data$term), "", .data$term))
-    if (is.factor(var))
-      if (length(levels(var)) > 2)
-        out <- out %>% mutate(p.value = .data$p.value.lh)
-  }
+  if (format)
+    out <- out %>%
+    mutate(p.value.lr = ifelse(duplicated(.data$term), NA, .data$p.value.lr),
+           term = ifelse(duplicated(.data$term), "", .data$term))
 
   return(out)
 }
@@ -166,14 +166,25 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label){
     separate(.data$term, into = c("term", "group"), sep = ":", fill = "right") %>%
     mutate(group = unlist(tab.levels))
 
-  fit0 <- glm(response ~ . - var, data = data, family = "binomial")
-  p.value.lh <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
 
-  aux <- bind_cols(p.value.lh = p.value.lh, n = nrow(na.exclude(data)), glance(fit))
+  p.value.lr <- rep(NA, length(unique(temp$term)))
+  for (i in 2:ncol(data)){
 
-  out <- merge(data.frame(temp, row.names=NULL),
-               data.frame(aux, row.names=NULL),
-               by = 0, all = TRUE)[-1]
+    if (ncol(data) > 2){
+      fit0 <- glm(response ~ ., data = data[, -i], family = "binomial")
+      p.value.lr[(i-1)] <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
+    } else {
+      fit0 <- glm(response ~ 1, data = data[, -i], family = "binomial")
+      p.value.lr[(i-1)] <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
+    }
+  }
+
+  aux01 <- bind_cols(term = unique(temp$term), p.value.lr = p.value.lr)
+  aux02 <- bind_cols(n = nrow(na.exclude(data)), glance(fit))
+
+  aux <- merge(aux01, aux02, by = 0, all = TRUE)[-1]
+
+  out <- merge(temp, aux, by = "term", all = TRUE)
 
   return(out)
 }
@@ -226,8 +237,8 @@ nt_multiple_logistic <- function(fit, ci.type = "lr",
               'Estimate (95% CI)' = paste0(round(.data$estimate, digits), " (",
                                            round(.data$conf.low, digits), " ; ",
                                            round(.data$conf.high, digits), ")"),
-              'p value' = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
-                                    as.character(round(.data$p.value.lr, digits.p)))) %>%
+              'p value' = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+                                    as.character(round(.data$p.value, digits.p)))) %>%
     replace_na(list('p value' = ""))
 
   if (save)
@@ -252,8 +263,8 @@ aux_multiple_logistic <- function(fit, format, ci.type){
 
   if (format)
     effect <- effect %>% group_by(.data$variable) %>%
-    mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
-           p.value.lr = ifelse(duplicated(.data$p.value.lr), NA, .data$p.value.lr)) %>%
+    mutate(p.value. = ifelse(duplicated(.data$variable), NA, .data$p.value),
+           aux_variable = ifelse(duplicated(.data$variable), "", .data$variable)) %>%
     ungroup(.data$variable) %>% select(-.data$variable) %>%
     rename(variable = .data$aux_variable)
 
@@ -293,13 +304,15 @@ effect.glm <- function(fit, type, exponentiate){
       design.matrix <- model.matrix(formula(fit), data = temp$new.data)
 
       drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
-      fit0 <- glm(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
+      fit0 <- glm(update.formula(fit$formula,
+                                 paste0(" ~ . - ", paste(term.labels[drop],
+                                                         collapse = " - "))),
                   data = aux$data, family = "binomial")
-      p.value <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
 
-      contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
+      contrast <- contrast_calc(fit = fit, fit0 = fit0,
+                                design.matrix = design.matrix,
                                 beta = beta, beta.var = beta.var,
-                                p.value = p.value, type = type)
+                                type = type)
 
       temp <- data.frame(term = temp$label, contrast)
 
@@ -318,11 +331,10 @@ effect.glm <- function(fit, type, exponentiate){
         drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
         fit0 <- glm(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
                     data = aux$data, family = "binomial")
-        p.value <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
 
-        contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
+        contrast <- contrast_calc(fit = fit, fit0 = fit0, design.matrix = design.matrix,
                                   beta = beta, beta.var = beta.var,
-                                  p.value = p.value, type = type)
+                                  type = type)
 
         temp <- data.frame(term = temp$label, contrast)
 
@@ -336,10 +348,9 @@ effect.glm <- function(fit, type, exponentiate){
   }
 
   if (exponentiate)
-    out[, apply(out, 2, is.numeric)] <- exp(out[, apply(out, 2, is.numeric)])
+    out[, 2:4] <- exp(out[, 2:4])
 
-  colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value.lr")
-
+  colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
   return(out)
 
 }

@@ -110,16 +110,17 @@ nt_simple_cox <- function(data, time, status, ...,
                         AIC = round(.data$AIC, digits),
                         ph.assumption = round(.data$ph.assumption, digits.p)) %>%
     transmute(Variable = .data$term,  HR = .data$group,
-              Estimate.95CI = paste0(round(.data$estimate, digits), " (",
+              `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
                                round(.data$conf.low, digits), " ; ",
                                round(.data$conf.high, digits), ")"),
-              p.value = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+              `Wald p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
                                as.character(round(.data$p.value, digits.p))),
+              `LR p value` = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
+                               as.character(round(.data$p.value.lr, digits.p))),
               n = .data$n, n.event = .data$n.event,
               concordance = .data$concordance, r.squared = .data$r.squared,
               AIC = .data$AIC, ph.assumption  = .data$ph.assumption) %>%
-    replace_na(list(p.value = "")) %>%
-    rename(`Estimate (95% CI)` = .data$Estimate.95CI, `p value` = .data$p.value)
+    replace_na(list(`Wald p value` = "", `LR p value` = ""))
   }
 
   if (save){
@@ -171,12 +172,10 @@ aux_simple_cox <- function(var, var.name, time, status,
   data.model <- bind_cols(time = time, status = status, var = var, add = add)
   out <- fit_cox(data.model, tab.labels, tab.levels, strata.var)
 
-  if (format){
-    out <- out %>% mutate(term = ifelse(duplicated(.data$term), "", .data$term))
-    if (is.factor(var))
-      if (length(levels(var)) > 2)
-        out <- out %>% mutate(p.value = .data$p.value.lh)
-  }
+  if (format)
+    out <- out %>%
+    mutate(p.value.lr = ifelse(duplicated(.data$term), NA, .data$p.value.lr),
+           term = ifelse(duplicated(.data$term), "", .data$term))
 
   return(out)
 }
@@ -200,6 +199,18 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
       select(-.data$std.error, -.data$statistic) %>%
       separate(.data$term, into = c("term", "group"), sep = ":", fill = "right") %>%
       mutate(group = unlist(tab.levels))
+
+    p.value.lr <- rep(NA, length(unique(temp$term)))
+    for (i in 3:ncol(data)){
+
+      if (ncol(data) > 3){
+        fit0 <- coxph(Surv(time, status) ~ ., data = data[, -i])
+      } else {
+        fit0 <- coxph(Surv(time, status) ~ 1, data = data[, -i])
+      }
+      p.value.lr[(i-2)] <- anova(fit0, fit, test = "Chisq")$`P(>|Chi|)`[2]
+    }
+
   } else {
     fit <- coxph(Surv(time, status) ~ strata(strata.var) + ., data = data)
     temp <- tidy(fit, exponentiate = TRUE) %>%
@@ -207,21 +218,30 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
       select(-.data$std.error, -.data$statistic) %>%
       separate(.data$term, into = c("term", "group"), sep = ":", fill = "right") %>%
       mutate(group = unlist(tab.levels))
+
+    p.value.lr <- rep(NA, length(unique(temp$term)))
+    for (i in 3:ncol(data)){
+      if (ncol(data) > 3){
+        fit0 <- coxph(Surv(time, status) ~ strata(strata.var) + ., data = data[, -i])
+      } else {
+        fit0 <- coxph(Surv(time, status) ~ strata(strata.var) + 1, data = data[, -i])
+      }
+      p.value.lr[(i-2)] <- anova(fit0, fit, test = "Chisq")$`P(>|Chi|)`[2]
+    }
+
   }
 
-  fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - var")),
-                data = data)
 
-  p.value.lh <- anova(fit0, fit, test = "Chisq")$`P(>|Chi|)`[2]
+  aux01 <- bind_cols(term = unique(temp$term), p.value.lr = p.value.lr)
 
   zph.table <- cox.zph(fit)$table
 
-  aux <- glance(fit) %>% select(.data$n, n.event = .data$nevent,
+  aux02 <- glance(fit) %>% select(.data$n, n.event = .data$nevent,
                                 .data$concordance, .data$r.squared, .data$AIC) %>%
-    mutate(p.value.lh = p.value.lh, ph.assumption = zph.table[nrow(zph.table), 3])
+    mutate(ph.assumption = zph.table[nrow(zph.table), 3])
 
-  out <- merge(data.frame(temp, row.names=NULL), data.frame(aux, row.names=NULL),
-               by = 0, all = TRUE)[-1]
+  aux <- merge(aux01, aux02, by = 0, all = TRUE)[-1]
+  out <- merge(temp, aux, by = "term", all = TRUE)
 
   return(out)
 }
@@ -286,8 +306,8 @@ nt_multiple_cox <- function(fit, ci.type = "lr",
               `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
                                            round(.data$conf.low, digits), " ; ",
                                            round(.data$conf.high, digits), ")"),
-              `p value` = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value.lr, digits.p)))) %>%
+              `p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+                                 as.character(round(.data$p.value, digits.p)))) %>%
     replace_na(list(`p value` = ""))
 
 
@@ -314,8 +334,8 @@ aux_multiple_cox <- function(fit, ci.type, format){
 
   if (format)
     effect <- effect %>% group_by(.data$variable) %>%
-    mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable),
-           p.value.lr = ifelse(duplicated(.data$p.value.lr), NA, .data$p.value.lr)) %>%
+    mutate(p.value. = ifelse(duplicated(.data$variable), NA, .data$p.value),
+           aux_variable = ifelse(duplicated(.data$variable), "", .data$variable)) %>%
     ungroup(.data$variable) %>% select(-.data$variable) %>%
     rename(variable = .data$aux_variable)
 
@@ -369,12 +389,9 @@ effect.coxph <- function(fit, type, exponentiate){
       drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
       fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
                     data = aux$data)
-      p.value.lr <- anova(fit0, fit)$`P(>|Chi|)`[2]
 
-
-      contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
-                                beta = beta, beta.var = beta.var,
-                                p.value = p.value.lr, type = type)
+      contrast <- contrast_calc(fit = fit, fit0 = fit0, design.matrix = design.matrix,
+                                beta = beta, beta.var = beta.var, type = type)
 
       temp <- data.frame(term = temp$label, contrast)
 
@@ -394,11 +411,11 @@ effect.coxph <- function(fit, type, exponentiate){
         fit0 <- coxph(update.formula(fit$formula,
                                      paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
                       data = aux$data)
-        p.value <- anova(fit0, fit)$`P(>|Chi|)`[2]
 
-        contrast <- contrast_calc(fit = fit, design.matrix = design.matrix,
+        contrast <- contrast_calc(fit = fit, fit0 = fit0,
+                                  design.matrix = design.matrix,
                                   beta = beta, beta.var = beta.var,
-                                  p.value = p.value, type = type)
+                                  type = type)
 
         temp <- data.frame(term = temp$label, contrast)
 
@@ -412,10 +429,9 @@ effect.coxph <- function(fit, type, exponentiate){
   }
 
   if (exponentiate)
-    out[, apply(out, 2, is.numeric)] <- exp(out[, apply(out, 2, is.numeric)])
+    out[, 2:4] <- exp(out[, 2:4])
 
-  colnames(out) <- c("term", "estimate", "conf.low", "conf.high",
-                     "p.value.lr")
+  colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
 
   return(out)
 }

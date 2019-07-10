@@ -121,35 +121,25 @@ contrast_df <- function(data, var, ref, interaction = NULL){
 
 #'@importFrom multcomp glht
 #'@importFrom stats confint
-contrast_calc <- function(fit, design.matrix, beta, beta.var, p.value,
-                          type){
-
-  est_aux <- function(design.matrix, beta){
-    temp <- design.matrix%*%beta
-    out <- sweep(temp, 2, temp[1, ])
-    out <- out[-1, ]
-  }
+contrast_calc <- function(fit, fit0, design.matrix, beta, beta.var, type){
 
   contrast_aux <- function(design.matrix){
     out <- sweep(design.matrix, 2, design.matrix[1, ])
     out <- out[-1, , drop = FALSE]
   }
 
-  se <- function(diff, beta.var){
-    out <- sqrt(diff%*%beta.var%*%t(diff))
-    if (is.matrix(out))
-      out <- diag(out)
-  }
-
   if (!is.list(design.matrix))
     design.matrix <- list(design.matrix)
 
+  K <- sapply(design.matrix, FUN = contrast_aux, simplify = FALSE)
+  K <- Reduce(rbind, K)
+  if (!is.matrix(K))
+    K <- matrix(K, nrow = 1)
+  test <- glht(fit, linfct = K)
+
   if (type == "wald"){
-    estimate <- as.numeric(sapply(design.matrix,
-                                  FUN = est_aux, beta = beta, simplify = TRUE))
-    diff <- sapply(design.matrix, FUN = contrast_aux, simplify = FALSE)
-    pred.se <- as.numeric(sapply(diff,
-                                 FUN = se, beta.var = beta.var, simplify = TRUE))
+    estimate <- summary(test)$test$coefficients
+    pred.se <- summary(test)$test$sigma
 
     lower <- exp(estimate - 1.96*pred.se)
     upper <- exp(estimate + 1.96*pred.se)
@@ -159,13 +149,10 @@ contrast_calc <- function(fit, design.matrix, beta, beta.var, p.value,
     out <- data.frame(estimate, lower, upper, p.value)
 
   } else {
-    K <- sapply(design.matrix, FUN = contrast_aux, simplify = FALSE)
-    K <- Reduce(rbind, K)
-    if (!is.matrix(K))
-      K <- matrix(K, nrow = 1)
-    test <- glht(fit, linfct = K)
-    ci <- exp(confint(test)$confint)
-    p.value <- c(p.value, rep(NA, (nrow(ci) - 1)))
+    ci <- confint(test)$confint
+    p.value.lr <- 1 - pchisq(-2*(logLik(fit0)[[1]] - logLik(fit)[[1]]),
+                             anova(fit0, fit)$Df[2])
+    p.value <- c(p.value.lr, rep(NA, (nrow(ci) - 1)))
 
     out <- data.frame(estimate = ci[, 1], lower = ci[, 2], upper = ci[, 3], p.value)
   }
