@@ -237,9 +237,9 @@ nt_multiple_logistic <- function(fit, ci.type = "lr",
               `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
                                            round(.data$conf.low, digits), " ; ",
                                            round(.data$conf.high, digits), ")"),
-              `LR p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+              `p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
                                     as.character(round(.data$p.value, digits.p)))) %>%
-    replace_na(list(`LR p value` = ""))
+    replace_na(list(`p value` = ""))
 
   if (save)
     write.csv(out$effect, file = paste0(file, ".csv"))
