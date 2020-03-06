@@ -296,7 +296,8 @@ qualitative_measures <- function(h, digits, levels){
       mutate(freq = .data$n, n = sum(.data$freq),
              missing = sum(.data$freq[.data$f == "Missing"])) %>%
       filter(.data$f != "Missing") %>%
-      mutate(perc = round(100*prop.table(.data$freq), digits)) %>%
+      mutate(perc = round(100*prop.table(.data$freq), digits),
+             perc = ifelse(!is.finite(perc), NA, perc)) %>%
       select(category = .data$f, .data$perc, .data$freq, .data$n, .data$missing)
 
   return(out)
