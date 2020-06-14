@@ -88,15 +88,18 @@ nt_km <-  function(data, time, status,
                  xlab = xlab, ylab = ylab,
                  fig.height = fig.height, fig.width = fig.width,
                  save = save, std_fun_group = std_fun_group)
-    if (!is.null(time.points))
+    if (!is.null(time.points)){
       tab <- map2(.x = vars, .y = vars.name, .f = tab_km_group,
                   time = time, status = status,
                   time.points = time.points, digits = digits)
+     tab <- bind_rows(aux, Reduce(rbind, tab))
+    }
+  } else {
+    if (!is.null(time.points))
+      tab <- aux
   }
 
   if (!is.null(time.points)){
-
-    tab <- bind_rows(aux, Reduce(rbind, tab))
     if (format){
       tab <-  tab  %>%
         mutate(Variable = ifelse(duplicated(.data$Variable), "", .data$Variable)) %>%
@@ -146,8 +149,11 @@ tab_km_group <- function(var, var.name, time, status, time.points, digits){
   fit <- survfit(Surv(time, status) ~ var, data = data.model)
   temp <- summary(fit, times = time.points)
 
-  out <- data.frame(Time = temp$time, strata = temp$strata, survival = temp$surv,
-                    lower = temp$lower, upper = temp$upper) %>%
+  out <- data.frame(Time = temp$time,
+                    strata = temp$strata,
+                    survival = temp$surv,
+                    lower = temp$lower,
+                    upper = temp$upper) %>%
     separate(.data$strata, into = c("variable", "Group"), sep = "=") %>%
     mutate(Variable = var.label) %>% select(-.data$variable)
 
@@ -210,7 +216,7 @@ std_km <- function(time, status, xlab, ylab){
 
   ### Data
   data.model <- data.frame(time, status)
-  fit <- survival::survfit(Surv(time, status) ~ 1, data = data.model)
+  fit <- survival::survfit(survival::Surv(time, status) ~ 1, data = data.model)
 
   first.row <- data.frame(time = 0, n.risk = nrow(data.model),
                           n.event = 0, n.censor = 0,
@@ -250,7 +256,7 @@ std_km <- function(time, status, xlab, ylab){
   ### Adding risk table
 
   ## Data
-  x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x.major_source
+  x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x$breaks
   table <- summary(fit, times = x.ticks)
   data.table <- data.frame(time = table$time, n.risk = table$n.risk)
 
@@ -305,7 +311,7 @@ std_km_group <- function(time, status, var, var.label,
 
   ### Data
   data.model <- data.frame(time, status, var)
-  fit <- survival::survfit(Surv(time, status) ~ var, data = data.model)
+  fit <- survival::survfit(survival::Surv(time, status) ~ var, data = data.model)
 
   first.row <- data.frame(time = 0, n.risk = as.numeric(table(var)),
                           n.event = 0, n.censor = 0,
@@ -320,7 +326,8 @@ std_km_group <- function(time, status, var, var.label,
     mutate(conf.high =
              ifelse(is.na(.data$conf.high), .data$estimate, .data$conf.high),
            conf.low =
-             ifelse(is.na(.data$conf.low), .data$estimate, .data$conf.low))
+             ifelse(is.na(.data$conf.low), .data$estimate, .data$conf.low)) %>%
+    mutate(group = factor(group, levels = levels(var)))
 
   ### Basic plot
   surv.plot <- ggplot(data.plot, aes_string(x = "time", y = "estimate",
@@ -357,7 +364,7 @@ std_km_group <- function(time, status, var, var.label,
 
 
   ### Adding p-values
-  test <- survival::survdiff(Surv(time, status) ~ var, data = data.model)
+  test <- survival::survdiff(survival::Surv(time, status) ~ var, data = data.model)
   p <- 1 - stats::pchisq(test$chisq, 1)
   p <- ifelse(round(p, 3) != 0,
               paste0("p = ", round(p, 3)),
@@ -370,7 +377,7 @@ std_km_group <- function(time, status, var, var.label,
   ### Adding risk table
 
   ## Data
-  x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x.major_source
+  x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x$breaks
   table <- summary(fit, times = x.ticks)
   data.table <- data.frame(time = table$time,
                            n.risk = table$n.risk,
