@@ -44,12 +44,11 @@
 #'@importFrom utils write.csv
 #'
 #'@export
-nt_simple_cox <- function(data, time, status, ...,
+nt_simple_cox <- function(data, time, status, ..., increment = NULL,
                           cluster = FALSE, strata = NULL, format = TRUE,
                           digits = 2, digits.p = 3, save = FALSE,
                           file = "simple_cox"){
 
-  data <- as_data_frame(data)
   time <- enquo(time)
   status <- enquo(status)
   strata <- enquo(strata)
@@ -99,28 +98,29 @@ nt_simple_cox <- function(data, time, status, ...,
   temp <- map2(.x = vars, .y = vars.name, .f = aux_simple_cox,
                time = time, status = status,
                add = add, add.name = add.name, add.label = add.label,
-               strata.var = strata.var, format = format)
+               strata.var = strata.var,
+               increment = increment,
+               format = format)
 
   cox <- bind_rows(temp)
 
   if (format) {
-
-  cox <- cox %>% mutate(concordance = round(.data$concordance, digits),
-                        r.squared = round(.data$r.squared, digits),
-                        AIC = round(.data$AIC, digits),
-                        ph.assumption = round(.data$ph.assumption, digits.p)) %>%
-    transmute(Variable = .data$term,  HR = .data$group,
-              `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
-                               round(.data$conf.low, digits), " ; ",
-                               round(.data$conf.high, digits), ")"),
-              `Wald p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                               as.character(round(.data$p.value, digits.p))),
-              `LR p value` = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
-                               as.character(round(.data$p.value.lr, digits.p))),
-              n = .data$n, n.event = .data$n.event,
-              concordance = .data$concordance, r.squared = .data$r.squared,
-              AIC = .data$AIC, ph.assumption  = .data$ph.assumption) %>%
-    replace_na(list(`Wald p value` = "", `LR p value` = ""))
+    cox <- cox %>% mutate(concordance = round(.data$concordance, digits),
+                          r.squared = round(.data$r.squared, digits),
+                          AIC = round(.data$AIC, digits),
+                          ph.assumption = round(.data$ph.assumption, digits.p)) %>%
+      transmute(Variable = .data$term,  HR = .data$group,
+                `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
+                                 round(.data$conf.low, digits), " ; ",
+                                 round(.data$conf.high, digits), ")"),
+                `Wald p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+                                 as.character(round(.data$p.value, digits.p))),
+                `LR p value` = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
+                                 as.character(round(.data$p.value.lr, digits.p))),
+                n = .data$n, n.event = .data$n.event,
+                concordance = .data$concordance, r.squared = .data$r.squared,
+                AIC = .data$AIC, ph.assumption  = .data$ph.assumption) %>%
+      replace_na(list(`Wald p value` = "", `LR p value` = ""))
   }
 
   if (save){
@@ -140,42 +140,46 @@ nt_simple_cox <- function(data, time, status, ...,
 #'@importFrom rlang .data
 aux_simple_cox <- function(var, var.name, time, status,
                            add, add.name, add.label,
-                           strata.var, format){
+                           strata.var, increment,
+                           format){
 
   var.label <- extract_label(var, var.name)
-  aux <- cbind(add, var)
-  aux.label <- c(add.label, var.label)
 
-  if(ncol(aux) > 1) {
-    var.class <- unlist(map(cbind(add, var), is.numeric))
+  if (!is.null(add)){
+    aux <- data.frame(add, var)
+    aux.labels <- c(add.label, var = var.label)
+    aux.names <- c(add.name, var.name)
   } else {
-    var.class <- list(var = is.numeric(var))
+    aux <- data.frame(var)
+    aux.labels <- c(var = var.label)
+    aux.names <- var.name
   }
 
   tab.labels <- list()
   tab.levels <- list()
 
-  for (i in 1:length(var.class)){
-    if (var.class[[i]]){
-      tab.labels[[colnames(aux)[i]]] <- aux.label[[i]]
-      tab.levels[[colnames(aux)[i]]] <- ""
+  for (i in 1:ncol(aux)){
+    if (is.numeric(aux[, i])){
+      tab.levels[[i]] <- ifelse(is.null(increment[[aux.names[[i]]]]),
+                                "every 1 unit of change",
+                                paste0("every ",
+                                       increment[[aux.names[i]]],
+                                       " unit of change"))
     } else {
-      tab.labels[[colnames(aux)[i]]] <- paste0(aux.label[[i]], ":")
       lv <- levels(var)
-      tab.levels[[colnames(aux)[i]]] <- paste0(lv[2:length(lv)], "/", lv[1])
+      tab.levels[[i]] <- paste0(lv[2:length(lv)], "/", lv[1])
     }
+
+    tab.labels[[names(aux.labels)[i]]] <- rep(aux.labels[[i]], length(tab.levels[[i]]))
   }
 
-  if (!is.list(tab.labels))
-    tab.labels <- setNames(as.list(tab.labels), "var")
-
   data.model <- bind_cols(time = time, status = status, var = var, add = add)
-  out <- fit_cox(data.model, tab.labels, tab.levels, strata.var)
+  out <- fit_cox(data.model, tab.labels, tab.levels, strata.var, increment)
 
-  if (format)
-    out <- out %>%
-    mutate(p.value.lr = ifelse(duplicated(.data$term), NA, .data$p.value.lr),
-           term = ifelse(duplicated(.data$term), "", .data$term))
+  if (format){
+    out$p.value.lr = ifelse(duplicated(out$term), NA, out$p.value.lr)
+    out$term = ifelse(duplicated(out$term), "", out$term)
+  }
 
   return(out)
 }
@@ -186,62 +190,73 @@ aux_simple_cox <- function(var, var.name, time, status,
 #'@importFrom dplyr select mutate
 #'@importFrom stats na.exclude update.formula anova
 #'@importFrom stringr str_replace_all
-fit_cox <- function(data, tab.labels, tab.levels, strata.var){
+fit_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 
   if (any(is.na(data)))
     strata.var <- strata.var[-which(is.na(data), arr.ind = TRUE)[, 1]]
   data <- na.exclude(data)
 
+  if (!is.null(increment))
+    for (i in 1:length(increment)){
+      data[[tab.labels[[i]]]] <- data[[tab.labels[[i]]]]/increment[[i]]
+    }
+
   if (is.null(strata.var)){
-    fit <- coxph(Surv(time, status) ~ ., data = data)
-    temp <- tidy(fit, exponentiate = TRUE) %>%
-      mutate(term = str_replace_all(.data$term, unlist(tab.labels))) %>%
-      select(-.data$std.error, -.data$statistic) %>%
-      separate(.data$term, into = c("term", "group"), sep = ":", fill = "right") %>%
-      mutate(group = unlist(tab.levels))
+    fit <- try(coxph(Surv(time, status) ~ ., data = data), silent = TRUE)
 
-    p.value.lr <- rep(NA, length(unique(temp$term)))
-    for (i in 3:ncol(data)){
+    if (class(fit) != "try-error"){
+      temp <- tidy(fit, exponentiate = TRUE, conf.int = TRUE)
+      temp$term <- c("(Intercept)", unlist(tab.labels))
+      temp$group <- c("", unlist(tab.levels))
+      temp <- temp[, c(1,2,6,7,5)]
 
-      if (ncol(data) > 3){
-        fit0 <- coxph(Surv(time, status) ~ ., data = data[, -i])
-      } else {
-        fit0 <- coxph(Surv(time, status) ~ 1, data = data[, -i])
+      p.value.lr <- rep(NA, length(unique(temp$term)))
+      for (i in 3:ncol(data)){
+        if (ncol(data) > 3){
+          fit0 <- coxph(Surv(time, status) ~ ., data = data[, -i])
+        } else {
+          fit0 <- coxph(Surv(time, status) ~ 1, data = data[, -i])
+        }
+        p.value.lr[(i-2)] <- anova(fit0, fit, test = "Chisq")$`P(>|Chi|)`[2]
       }
-      p.value.lr[(i-2)] <- anova(fit0, fit, test = "Chisq")$`P(>|Chi|)`[2]
     }
-
   } else {
-    fit <- coxph(Surv(time, status) ~ strata(strata.var) + ., data = data)
-    temp <- tidy(fit, exponentiate = TRUE) %>%
-      mutate(term = str_replace_all(.data$term, unlist(tab.labels))) %>%
-      select(-.data$std.error, -.data$statistic) %>%
-      separate(.data$term, into = c("term", "group"), sep = ":", fill = "right") %>%
-      mutate(group = unlist(tab.levels))
+    fit <- try(coxph(Surv(time, status) ~ strata(strata.var) + ., data = data), silent = TRUE)
 
-    p.value.lr <- rep(NA, length(unique(temp$term)))
-    for (i in 3:ncol(data)){
-      if (ncol(data) > 3){
-        fit0 <- coxph(Surv(time, status) ~ strata(strata.var) + ., data = data[, -i])
-      } else {
-        fit0 <- coxph(Surv(time, status) ~ strata(strata.var) + 1, data = data[, -i])
+    if (class(fit) != "try-error"){
+      temp <- tidy(fit, exponentiate = TRUE, conf.int = TRUE)
+      temp$term <- unlist(tab.labels)
+      temp$group <- unlist(tab.levels)
+      temp <- temp[, c(1,8,2,6,7,5)]
+
+      p.value.lr <- rep(NA, length(unique(temp$term)))
+      for (i in 3:ncol(data)){
+        if (ncol(data) > 3){
+          fit0 <- coxph(Surv(time, status) ~ strata(strata.var) + ., data = data[, -i])
+        } else {
+          fit0 <- coxph(Surv(time, status) ~ strata(strata.var) + 1, data = data[, -i])
+        }
+        p.value.lr[(i-2)] <- anova(fit0, fit, test = "Chisq")$`P(>|Chi|)`[2]
       }
-      p.value.lr[(i-2)] <- anova(fit0, fit, test = "Chisq")$`P(>|Chi|)`[2]
     }
-
   }
 
+  if (class(fit) != "try-error"){
+    aux01 <- data.frame(term = unique(temp$term), p.value.lr = p.value.lr)
+    zph.table <- cox.zph(fit)$table
 
-  aux01 <- bind_cols(term = unique(temp$term), p.value.lr = p.value.lr)
+    aux02 <- glance(fit) %>% select(.data$n, n.event = .data$nevent,
+                                  .data$concordance, .data$r.squared, .data$AIC) %>%
+      mutate(ph.assumption = zph.table[nrow(zph.table), 3])
 
-  zph.table <- cox.zph(fit)$table
-
-  aux02 <- glance(fit) %>% select(.data$n, n.event = .data$nevent,
-                                .data$concordance, .data$r.squared, .data$AIC) %>%
-    mutate(ph.assumption = zph.table[nrow(zph.table), 3])
-
-  aux <- merge(aux01, aux02, by = 0, all = TRUE)[-1]
-  out <- merge(temp, aux, by = "term", all = TRUE)
+    aux <- merge(aux01, aux02, by = 0, all = TRUE)[-1]
+    out <- merge(temp, aux, by = "term", all = TRUE)
+  } else {
+    out <- data.frame(term = tab.labels$var, group = NA, estimate = NA,
+                      conf.low = NA, conf.high = NA, p.value = NA,
+                      p.value.lr = NA, n = NA, n.event = NA,
+                      concordance = NA, r.squared = NA, AIC = NA, ph.assumption = NA)
+  }
 
   return(out)
 }
@@ -290,14 +305,17 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var){
 #'@importFrom dplyr transmute bind_rows
 #'@importFrom tidyr replace_na
 #'@export
-nt_multiple_cox <- function(fit, ci.type = "lr",
+nt_multiple_cox <- function(fit, ci.type = "lr", user.contrast = NULL, user.contrast.interaction = NULL,
                             format = TRUE, digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 
   if (class(fit) != "coxph")
     stop("fit object is not a coxph class")
 
-  out <- aux_multiple_cox(fit, ci.type, format)
+  out <- aux_multiple_cox(fit = fit, ci.type = ci.type,
+                          user.contrast = user.contrast,
+                          user.contrast.interaction = user.contrast.interaction,
+                          format = format)
   ref <- reference_df(fit)$ref
 
   if (format)
@@ -324,11 +342,13 @@ nt_multiple_cox <- function(fit, ci.type = "lr",
 #'@importFrom stringr str_replace_all
 #'@importFrom tidyr separate
 #'@importFrom broom tidy
-aux_multiple_cox <- function(fit, ci.type, format){
+aux_multiple_cox <- function(fit, ci.type, user.contrast, user.contrast.interaction, format){
 
   aux <- extract_data(fit)
 
-  effect <- effect.coxph(fit, ci.type, exponentiate = TRUE) %>%
+  effect <- effect.coxph(fit, fit.vars = aux, type = ci.type,
+                         user.contrast = user.contrast,
+                         user.contrast.interaction = user.contrast.interaction) %>%
     mutate(term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
     separate(.data$term, into = c("variable", "hr"), sep = ":")
 
@@ -355,15 +375,16 @@ aux_multiple_cox <- function(fit, ci.type, format){
 #'@importFrom stats model.matrix formula setNames anova vcov update.formula
 #'@importFrom survival coxph
 #'@importFrom stringr str_split
-effect.coxph <- function(fit, type, exponentiate){
+effect.coxph <- function(fit, fit.vars, type,
+                         user.contrast, user.contrast.interaction){
 
-  aux <- extract_data(fit)
   ref <- reference_df(fit)$df
   beta <- as.numeric(fit$coefficients)
   beta.var <- as.matrix(vcov(fit))
   term.labels <- attr(fit$terms, "term.labels")
 
   interaction <- colnames(attr(fit$terms, "factors"))[attr(fit$terms, "order") > 1]
+
   if (any(attr(fit$terms, "order") > 2)){
     temp <- str_split(interaction, ":")
     temp <- sapply(temp, FUN =
@@ -374,24 +395,27 @@ effect.coxph <- function(fit, type, exponentiate){
     interaction <- interaction[index]
   }
 
-  for (i in 1:length(aux$var)){
+  for (i in 1:length(fit.vars$var)){
 
     if (length(interaction) > 0){
-      cond.interaction <- grepl(aux$var[i], x = interaction, fixed = TRUE)
+      cond.interaction <- grepl(fit.vars$var[i], x = interaction, fixed = TRUE)
     } else {
       cond.interaction <- FALSE
     }
 
     if (all(!cond.interaction)){
-      temp <- contrast_df(aux$data, aux$var[i], ref)
+      temp <- contrast_df(data = fit.vars$data, var = fit.vars$var[i],
+                          ref = ref, user.contrast = user.contrast)
       design.matrix <- model.matrix(fit, temp$new.data)
 
-      drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
+      drop <- which(grepl(fit.vars$var[i], x = as.character(term.labels), fixed = TRUE))
       fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
-                    data = aux$data)
+                    data = na.exclude(fit.vars$data))
 
-      contrast <- contrast_calc(fit = fit, fit0 = fit0, design.matrix = design.matrix,
-                                beta = beta, beta.var = beta.var, type = type)
+      contrast <- contrast_calc(fit = fit, fit0 = fit0,
+                                design.matrix = design.matrix,
+                                beta = beta, beta.var = beta.var,
+                                type = type)
 
       temp <- data.frame(term = temp$label, contrast)
 
@@ -402,18 +426,21 @@ effect.coxph <- function(fit, type, exponentiate){
 
     } else {
       for (k in which(cond.interaction)){
-        interaction.vars <- aux$var[sapply(aux$var, grepl, x = as.character(interaction[k]), fixed = TRUE)]
-        others <- interaction.vars[interaction.vars != aux$var[i]]
-        temp <- contrast_df(aux$data, aux$var[i], ref, others)
+        interaction.vars <- fit.vars$var[sapply(fit.vars$var, grepl, x = as.character(interaction[k]), fixed = TRUE)]
+        others <- interaction.vars[interaction.vars != fit.vars$var[i]]
+        temp <- contrast_df(data = fit.vars$data, var = fit.vars$var[i],
+                            ref = ref, user.contrast = user.contrast,
+                            interaction = others,
+                            user.contrast.interaction = user.contrast.interaction)
+
         design.matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
 
-        drop <- which(grepl(aux$var[i], x = as.character(term.labels), fixed = TRUE))
+        drop <- which(grepl(fit.vars$var[i], x = as.character(term.labels), fixed = TRUE))
         fit0 <- coxph(update.formula(fit$formula,
                                      paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
-                      data = aux$data)
+                      data = fit.vars$data)
 
-        contrast <- contrast_calc(fit = fit, fit0 = fit0,
-                                  design.matrix = design.matrix,
+        contrast <- contrast_calc(fit = fit, fit0 = fit0, design.matrix = design.matrix,
                                   beta = beta, beta.var = beta.var,
                                   type = type)
 
@@ -428,9 +455,7 @@ effect.coxph <- function(fit, type, exponentiate){
     }
   }
 
-  if (exponentiate)
-    out[, 2:4] <- exp(out[, 2:4])
-
+  out[, 2:4] <- exp(out[, 2:4])
   colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
 
   return(out)
