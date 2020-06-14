@@ -4,8 +4,14 @@
 \alias{put_together}
 \title{Put Together}
 \usage{
-put_together(descriptive.tab, test.tab, digits = 3, alpha = 0.05,
-  save = FALSE, file = "table")
+put_together(
+  descriptive.tab,
+  test.tab,
+  digits = 3,
+  alpha = 0.05,
+  save = FALSE,
+  file = "table"
+)
 }
 \arguments{
 \item{descriptive.tab}{a data frame of class "descriptive".}

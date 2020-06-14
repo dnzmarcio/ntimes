@@ -4,9 +4,20 @@
 \alias{nt_simple_cox}
 \title{Simple Cox Regression}
 \usage{
-nt_simple_cox(data, time, status, ..., cluster = FALSE, strata = NULL,
-  format = TRUE, digits = 2, digits.p = 3, save = FALSE,
-  file = "simple_cox")
+nt_simple_cox(
+  data,
+  time,
+  status,
+  ...,
+  increment = NULL,
+  cluster = FALSE,
+  strata = NULL,
+  format = TRUE,
+  digits = 2,
+  digits.p = 3,
+  save = FALSE,
+  file = "simple_cox"
+)
 }
 \arguments{
 \item{data}{a data frame with the variables.}

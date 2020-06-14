@@ -4,16 +4,21 @@
 \alias{nt_describe}
 \title{Descriptive measures}
 \usage{
-nt_describe(data, group = NULL, measures = c("mean.sd", "median.iqr",
-  "median.range", "missing"), digits = 2, save = FALSE,
-  file = "descriptive_analysis")
+nt_describe(
+  data,
+  group = NULL,
+  measures = list(nt_mean_sd, nt_median_iqr, nt_median_range, nt_missing),
+  digits = 2,
+  save = FALSE,
+  file = "descriptive_analysis"
+)
 }
 \arguments{
 \item{data}{a data frame with the variables.}
 
 \item{group}{an optional  with the group variable.}
 
-\item{measures}{a character value indicating which measures should be presented: mean.sd, mean.iqr, median.range, and missing.}
+\item{measures}{a list of functions to summarise quantitative variables. See more in details.}
 
 \item{digits}{a numeric value specifying the number of digits to present the results.}
 
@@ -22,25 +27,15 @@ nt_describe(data, group = NULL, measures = c("mean.sd", "median.iqr",
 \item{file}{a character indicating the name of output file in csv format to be saved.}
 }
 \value{
-A data frame with mean, standard deviation, median, quantile 25\%,
-quantile 75\%, minimum, maximum, sample size and missing data for
-quantitative variables, and frequency, percentage, sample size and
-missing data for qualitative variables.
+a data frame with summary for all variables by group.
 }
 \description{
 Calculating a descriptive table for quantitative and
 qualitative variables in the usual format to present in scientific article.
 }
 \examples{
-library(dplyr)
-library(magrittr)
 data(iris)
 
-iris_nt <- iris \%>\%
- mutate(Species = ql_var(Species,
-                         from = c("setosa", "versicolor", "virginica"),
-                         to = c("Setosa", "Versicolor", "Virginica"),
-                         order = c("Virginica", "Setosa", "Versicolor")))
-iris_nt \%>\% nt_describe(group = Species)
+iris \%>\% nt_describe(group = Species)
 
 }

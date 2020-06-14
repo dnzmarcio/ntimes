@@ -4,8 +4,17 @@
 \alias{nt_multiple_logistic}
 \title{Logistic regression table}
 \usage{
-nt_multiple_logistic(fit, ci.type = "lr", format = TRUE, digits = 2,
-  digits.p = 3, save = FALSE, file = "nt_multiple_logistic")
+nt_multiple_logistic(
+  fit,
+  ci.type = "lr",
+  user.contrast = NULL,
+  user.contrast.interaction = NULL,
+  format = TRUE,
+  digits = 2,
+  digits.p = 3,
+  save = FALSE,
+  file = "nt_multiple_logistic"
+)
 }
 \arguments{
 \item{fit}{a fitted model.}

@@ -4,8 +4,7 @@
 \alias{nt_norm_test}
 \title{Normality tests}
 \usage{
-nt_norm_test(data, group = NULL, test = "sf", digits = 3,
-  pvalue.plot = TRUE)
+nt_norm_test(data, group = NULL, test = "sf", digits = 3, pvalue.plot = TRUE)
 }
 \arguments{
 \item{data}{a data frame with the variables.}

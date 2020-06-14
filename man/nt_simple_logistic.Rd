@@ -4,8 +4,17 @@
 \alias{nt_simple_logistic}
 \title{Simple Logistic Regression}
 \usage{
-nt_simple_logistic(data, response, ..., format = TRUE, digits = 2,
-  digits.p = 3, save = FALSE, file = "simple_logistic")
+nt_simple_logistic(
+  data,
+  response,
+  ...,
+  increment = NULL,
+  format = TRUE,
+  digits = 2,
+  digits.p = 3,
+  save = FALSE,
+  file = "simple_logistic"
+)
 }
 \arguments{
 \item{data}{a data frame with the variables.}
@@ -34,16 +43,16 @@ library(dplyr)
 
 data(titanic_train)
 titanic_nt <- titanic_train \%>\%
- mutate(Sex = ql_var(Sex,
-                     from = c("male", "female"),
-                     to = c("Male", "Female")),
-        Pclass = ql_var(Pclass,
+ mutate(Sex = factor(Sex,
+                     levels = c("male", "female"),
+                     labels = c("Male", "Female")),
+        Pclass = factor(Pclass,
                         from = 1:3,
-                        to = c("I", "II", "III"),
-                        label = "Passenger Class"),
-        Embarked = ql_var(Embarked,
-                          from = c("C", "Q", "S"),
-                          to = c("Cherbourg", "Queenstown", "Southampton")))
+                        levels = c("I", "II", "III"),
+                        labels = "Passenger Class"),
+        Embarked = factor(Embarked,
+                          levels = c("C", "Q", "S"),
+                          labels = c("Cherbourg", "Queenstown", "Southampton")))
 
 titanic_nt \%>\% select(Survived, Sex, Age, Pclass, Embarked) \%>\%
  nt_simple_logistic(response = Survived, Age)

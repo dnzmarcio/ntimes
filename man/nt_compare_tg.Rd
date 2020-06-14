@@ -4,10 +4,20 @@
 \alias{nt_compare_tg}
 \title{Compare two groups}
 \usage{
-nt_compare_tg(data, group, alternative = "two.sided", test = "auto",
-  conf.level = 0.95, paired = FALSE, norm.test = "sf",
-  format = TRUE, digits.ci = 3, digits.p = 5, save = FALSE,
-  file = "nt_compare_tg")
+nt_compare_tg(
+  data,
+  group,
+  alternative = "two.sided",
+  test = "auto",
+  conf.level = 0.95,
+  paired = FALSE,
+  norm.test = "sf",
+  format = TRUE,
+  digits.ci = 3,
+  digits.p = 5,
+  save = FALSE,
+  file = "nt_compare_tg"
+)
 }
 \arguments{
 \item{data}{a data frame with the variables.}

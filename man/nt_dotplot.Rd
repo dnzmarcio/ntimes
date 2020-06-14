@@ -4,9 +4,16 @@
 \alias{nt_dotplot}
 \title{Dotplot}
 \usage{
-nt_dotplot(data, group = NULL, binwidth = 1, save = FALSE,
-  fig.height = 5, fig.width = 5, std_fun = std_dotplot,
-  std_fun_group = std_dotplot_group)
+nt_dotplot(
+  data,
+  group = NULL,
+  binwidth = 1,
+  save = FALSE,
+  fig.height = 5,
+  fig.width = 5,
+  std_fun = std_dotplot,
+  std_fun_group = std_dotplot_group
+)
 }
 \arguments{
 \item{data}{a data frame with the variables.}
