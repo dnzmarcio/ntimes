@@ -10,16 +10,17 @@ table_fit <- function(fit, type, exponentiate = FALSE){
 #'@importFrom stats terms get_all_vars
 extract_data <- function(fit){
 
-  data <- eval(fit$call$data)
-  temp <- get_all_vars(formula(fit), data)
-  var.names <- colnames(temp)
-  var.labels <- map2(temp, var.names, ~ extract_label(.x, .y))
+  temp <- eval(fit$call$data)
+  data <- get_all_vars(formula(fit), temp)
+  var.names <- colnames(data)
+  var.labels <- mapply(extract_label, data, var.names, SIMPLIFY = FALSE)
 
-  suppressWarnings(temp <- temp[!apply(is.na(temp), 1, any), , drop = FALSE])
-  var <- sapply(names(temp), grepl,
+  # It is not clear the use of the code below.
+  #suppressWarnings(data <- data[!apply(is.na(data), 1, any), , drop = FALSE])
+  var <- lapply(setNames(as.list(names(data)), names(data)), grepl,
                 x = as.character(formula(fit)[3]),
                 fixed = TRUE)
-  var <- names(var[var])
+  var <- names(which(unlist(var)))
 
   if (!is.null(attr(terms(fit),"specials")$strata))
     var <- var[-(attr(terms(fit),"specials")$strata - 1)]
@@ -27,7 +28,7 @@ extract_data <- function(fit){
   if (!is.null(attr(terms(fit),"specials")$random))
     var <- var[-(attr(terms(fit),"specials")$random - 1)]
 
-  out <- list(data = droplevels(temp), var = var, var.labels = var.labels)
+  out <- list(data = droplevels(data), var = var, var.labels = var.labels)
 
   return(out)
 }
@@ -38,7 +39,7 @@ reference_df <- function(fit){
   aux <- extract_data(fit)
   data <- aux$data
 
-  df <- setNames(data.frame(matrix(ncol = ncol(data), nrow = 1)), names(data))
+  df <- setNames(data.frame(matrix(NA, ncol = ncol(data), nrow = 1)), names(data))
 
   for (i in 1:length(data)){
     if (is.numeric(data[, i])){
@@ -58,35 +59,72 @@ reference_df <- function(fit){
 }
 
 #'@importFrom stats quantile
-contrast_df <- function(data, var, ref, interaction = NULL){
+contrast_df <- function(data, var, ref, user.contrast = NULL,
+                        interaction = NULL, user.contrast.interaction = NULL){
 
   contrast <- ref
 
   if (class(data[[var]]) == "factor" | class(data[[var]]) == "character"){
-    data[[var]] <- as.factor(data[[var]])
-    lv <- levels(data[[var]])
-    contrast <- contrast[rep(1, each = length(lv)), ]
-    contrast[[var]] <- lv
-    label <- paste0(var, ":", contrast[[var]][2:length(lv)], "/", contrast[[var]][1])
+
+    if(class(data[[var]]) == "character")
+      data[[var]] <- as.factor(data[[var]])
+
+    if (is.null(user.contrast[[var]])) {
+      nc <- nlevels(data[[var]])
+      contrast <- contrast[rep(1, nc), ]
+      lv <- levels(data[[var]])
+      contrast[[var]] <- factor(lv, levels = lv)
+    } else {
+      nc <- length(user.contrast[[var]])
+      contrast <- contrast[rep(1, nc), ]
+      contrast[[var]] <- factor(user.contrast[[var]],
+                                levels = user.contrast[[var]])
+    }
+
+    label <- paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
 
   } else if (class(data[[var]]) == "numeric" |
              class(data[[var]]) == "integer") {
-    quantiles <- quantile(data[[var]], probs = c(0.25, 0.75))
-    contrast <- contrast[c(1, 1), ]
-    contrast[[var]] <- round(quantiles, 2)
-    label <- paste0(var, ":", contrast[[var]][2], "/", contrast[[var]][1])
+
+
+    if (is.null(user.contrast[[var]])) {
+      nc <- 2
+      contrast <- contrast[rep(1, nc), ]
+      quant <- quantile(data[[var]], probs = c(0.25, 0.75), na.rm = TRUE)
+      contrast[[var]] <- round(quant, 2)
+    } else {
+      nc <- length(user.contrast[[var]])
+      contrast <- contrast[rep(1, nc), ]
+      contrast[[var]] <- user.contrast[[var]]
+    }
+
+    label <- paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
   }
 
   if (!is.null(interaction)){
+
     for(k in 1:length(interaction)){
+
       if (class(data[[interaction[k]]]) == "factor" |
           class(data[[interaction[k]]]) == "character"){
-        data[[interaction[k]]] <- as.factor(data[[interaction[k]]])
-        lv <- levels(data[[interaction[k]]])
-        contrast <- contrast[rep(1:nrow(contrast), each = length(lv)), ]
-        contrast[[interaction[k]]] <- rep(lv, nrow(contrast)/length(lv))
-        contrast[[interaction[k]]] <-
-          factor(contrast[[interaction[k]]], levels = lv)
+
+        if(class(data[[var]]) == "character")
+          data[[interaction[k]]] <- as.factor(data[[interaction[k]]])
+
+        if (is.null(user.contrast.interaction[[interaction[k]]])) {
+          nc <- nlevels(data[[interaction[k]]])
+          lv <- levels(data[[interaction[k]]])
+          contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
+          contrast[[interaction[k]]] <- rep(lv, nrow(contrast)/nc)
+          contrast[[interaction[k]]] <- factor(contrast[[interaction[k]]], levels = lv)
+        } else {
+          nc <- length(user.contrast.interaction[[interaction[k]]])
+          lv <- user.contrast.interaction[[interaction[k]]]
+          contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
+          contrast[[interaction[k]]] <- rep(user.contrast.interaction[[interaction[k]]], nrow(contrast)/nc)
+          contrast[[interaction[k]]] <- factor(contrast[[interaction[k]]],
+                                               levels = user.contrast.interaction[[interaction[k]]])
+        }
 
         if (k == 1){
           label <- as.character(sapply(label, function(x) paste0(x, " at ", interaction[k], " = ", lv)))
@@ -96,14 +134,24 @@ contrast_df <- function(data, var, ref, interaction = NULL){
 
       } else if (class(data[[interaction[k]]]) == "numeric" |
                  class(data[[interaction[k]]]) == "integer") {
-        quantiles <- quantile(data[[interaction[k]]], probs = c(0.25, 0.75))
-        contrast <- contrast[rep(1:nrow(contrast), each = 2), ]
-        contrast[[interaction[k]]] <- rep(quantiles, nrow(contrast)/2)
+
+
+        if (is.null(user.contrast.interaction[[interaction[k]]])) {
+          nc <- 2
+          quant <- quantile(data[[interaction[k]]], probs = c(0.25, 0.75), na.rm = TRUE)
+          contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
+          contrast[[interaction[k]]] <- rep(quant, nrow(contrast)/nc)
+        } else {
+          nc <- length(user.contrast.interaction[[interaction[k]]])
+          quant <- user.contrast.interaction[[interaction[k]]]
+          contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
+          contrast[[interaction[k]]] <- rep(user.contrast.interaction[[interaction[k]]], nrow(contrast)/nc)
+        }
 
         if (k == 1){
-          label <- as.character(sapply(label, function(x) paste0(x, " at ", interaction[k], " = ", round(quantiles, 2))))
+          label <- as.character(sapply(label, function(x) paste0(x, " at ", interaction[k], " = ", round(quant, 2))))
         } else {
-          label <- as.character(sapply(label, function(x) paste0(x, ", ", interaction[k], " = ", round(quantiles, 2))))
+          label <- as.character(sapply(label, function(x) paste0(x, ", ", interaction[k], " = ", round(quant, 2))))
         }
 
       }
