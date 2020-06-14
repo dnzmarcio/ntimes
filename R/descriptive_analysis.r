@@ -12,32 +12,24 @@
 #'
 #'@param data a data frame with the variables.
 #'@param group an optional  with the group variable.
-#'@param measures a character value indicating which measures should be presented: mean.sd, mean.iqr, median.range, and missing.
+#'@param measures a list of functions to summarise quantitative variables. See more in details.
 #'@param digits a numeric value specifying the number of digits to present the results.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character indicating the name of output file in csv format to be saved.
-#'@return A data frame with mean, standard deviation, median, quantile 25\%,
-#'quantile 75\%, minimum, maximum, sample size and missing data for
-#'quantitative variables, and frequency, percentage, sample size and
-#'missing data for qualitative variables.
+#'@return a data frame with summary for all variables by group.
 #'
 #'@examples
-#'library(dplyr)
-#'library(magrittr)
 #'data(iris)
 #'
-#'iris_nt <- iris %>%
-#'  mutate(Species = ql_var(Species,
-#'                          from = c("setosa", "versicolor", "virginica"),
-#'                          to = c("Setosa", "Versicolor", "Virginica"),
-#'                          order = c("Virginica", "Setosa", "Versicolor")))
-#'iris_nt %>% nt_describe(group = Species)
+#'iris %>% nt_describe(group = Species)
 #'
 #'@export
 nt_describe <- function(data,
                         group = NULL,
-                        measures = c("mean.sd", "median.iqr",
-                                     "median.range", "missing"),
+                        measures = list(nt_mean_sd,
+                                        nt_median_iqr,
+                                        nt_median_range,
+                                        nt_missing),
                         digits = 2,
                         save = FALSE,
                         file = "descriptive_analysis"){
@@ -58,7 +50,7 @@ nt_describe <- function(data,
   vars.name <- names(vars)
 
   temp <- map2(.x = vars, .y = vars.name, .f = aux_describe,
-               group = group, group.name = group.name, digits = digits,
+               group = group[[1]], group.name = group.name, digits = digits,
                measures = measures)
 
   out <- Reduce(rbind, temp)
@@ -69,19 +61,59 @@ nt_describe <- function(data,
   return(out)
 }
 
+#'@importFrom stats sd
+#'@export
+nt_mean_sd <- function(var, digits){
+  mean <- round(mean(var, na.rm = TRUE), digits)
+  sd <- round(sd(var, na.rm = TRUE), digits)
+  name <- paste0("  Mean", " \U00b1 ", "SD")
+  measure <- paste0(mean, " \U00b1 ", sd)
+  out <- list(name = name, measure = measure)
+  return(out)
+}
+
+#'@importFrom stats median quantile
+#'@export
+nt_median_iqr <- function(var, digits){
+  median <- round(median(var, na.rm = TRUE), digits)
+  q25 <- round(quantile(var, probs = 0.25, na.rm = TRUE), digits)
+  q75 <- round(quantile(var, probs = 0.75, na.rm = TRUE), digits)
+  name <- "  Median (Q25% ; Q75%)"
+  measure <- paste0(median," (", q25, " ; ", q75, ")")
+  out <- list(name = name, measure = measure)
+  return(out)
+}
+
+#'@export
+nt_missing <- function(var, digits){
+  out <- list(name = " Missing", measure = sum(is.na(var)))
+  return(out)
+}
+
+#'@importFrom stats median
+#'@export
+nt_median_range <- function(var, digits){
+  median <- round(median(var, na.rm = TRUE), digits)
+  min <- round(min(var, na.rm = TRUE), digits)
+  max <- round(max(var, na.rm = TRUE), digits)
+  name <- "  Median (Min ; Max)"
+  measure <- paste0(median," (", min, " ; ", max, ")")
+  out <- list(name = name, measure = measure)
+  return(out)
+}
+
 aux_describe <- function(var, var.name, group, group.name, digits, measures){
 
   var.label <- extract_label(var, var.name)
   unit.label <- extract_unit(var)
 
   if (!is.null(group))
-    group.label <- extract_label(group[[1]], group.name)
+    group.label <- extract_label(group, group.name)
 
   if (is.numeric(var)){
     out <- describe_quantitative(var = var,
                                  group = group,
                                  digits = digits,
-                                 var.name = var.name,
                                  var.label = var.label,
                                  unit.label = unit.label,
                                  group.label = group.label,
@@ -90,71 +122,42 @@ aux_describe <- function(var, var.name, group, group.name, digits, measures){
     out <- describe_qualitative(var = var,
                                 group = group,
                                 digits = digits,
-                                var.name = var.name,
                                 var.label = var.label,
                                 group.label = group.label)
+
+
   }
   return(out)
 }
 
-#'@importFrom purrr map
-#'@importFrom dplyr mutate filter select transmute everything
-#'@importFrom tidyr gather nest unnest
-#'@importFrom magrittr %>%
 describe_quantitative <- function(var, group,
                                   digits,
-                                  var.name, var.label,
-                                  unit.label, group.label, measures){
+                                  var.label, unit.label, group.label,
+                                  measures){
 
   if (is.null(group)) {
-
-    temp <- quantitative_measures(var, digits = digits)
-    temp <- temp %>% mutate(variable = var.name) %>%
-      select(.data$variable, everything()) %>%
-      transmute(variable = .data$variable,
-                mean.sd =
-                  paste0(.data$mean, " \U00b1 ", .data$sd),
-                median.q25.q75 =
-                  paste0(.data$median,
-                         " (", .data$q25, " ; ", .data$q75, ")"),
-                median.min.max =
-                  paste0(.data$median,
-                         " (", .data$min, " ; ", .data$max, ")"),
-                n = .data$n, missing = .data$missing)
-
-    out <- format_quantitative(temp, group = FALSE,
+    desc <- quantitative_measures(var,
+                                  digits = digits,
+                                  measures = measures)
+    out <- format_quantitative(desc = desc, group = NULL,
                                var.label = var.label,
                                unit.label = unit.label,
-                               measures = measures)
-
+                               group.label = group.label)
   } else {
-    temp <- data_frame(!!var.name := var, g = fct_drop(group[[1]])) %>%
-      gather(key = "key", value = "value", -.data$g) %>%
-      filter(!is.na(.data$g)) %>% nest(.data$value) %>%
-      mutate(desc = map(.data$data,
-                        ~ quantitative_measures(x = .$value,
-                                                digits = digits))) %>%
-      unnest(.data$desc, .drop = TRUE) %>%
-      mutate(variable = .data$key, group = .data$g) %>%
-      select(.data$variable, .data$group, everything()) %>%
-      select(-.data$key, -.data$g) %>%
-      transmute(variable = .data$variable,
-                group = .data$group,
-                mean.sd =
-                  paste0(.data$mean, " \U00b1 ", .data$sd),
-                median.q25.q75 =
-                  paste0(.data$median,
-                         " (", .data$q25, " ; ", .data$q75, ")"),
-                median.min.max =
-                  paste0(.data$median,
-                         " (", .data$min, " ; ", .data$max, ")"),
-                n = .data$n, missing = .data$missing)
-    temp <- split(temp, temp$group)
-    temp <- map(.x = temp, .f = format_quantitative, group = TRUE,
-                var.label = var.label,
-                unit.label = unit.label,
-                group.label = group.label,
-                measures = measures)
+
+    aux <- function(x, g = NULL){
+      out <- format_quantitative(x, group = g,
+                                 var.label = var.label,
+                                 unit.label = unit.label,
+                                 group.label = group.label)
+      return(out)
+    }
+
+    desc <- tapply(var, group, quantitative_measures,
+                   digits = digits,
+                   measures = measures)
+    group.lv <- setNames(as.list(levels(group)), levels(group))
+    temp <- mapply(aux, desc, group.lv, SIMPLIFY = FALSE)
 
     out <- Reduce(function(x, y)
       merge(x, y, by = "Variable", all = TRUE, sort = F),
@@ -165,159 +168,110 @@ describe_quantitative <- function(var, group,
   return(out)
 }
 
-#'@importFrom stats quantile sd median
-#'@importFrom dplyr summarise_all
-quantitative_measures <- function(x, digits){
+quantitative_measures <- function(x, digits, measures){
 
-  if (all(is.na(x))){
-    x <- data_frame(x = as.numeric(x))
-  } else {
-    x <- data_frame(x)
-  }
-
-  q25 <- function(x, na.rm) quantile(x, probs = 0.25, na.rm = na.rm)
-  q75 <- function(x, na.rm) quantile(x, probs = 0.75, na.rm = na.rm)
-  sample_size <- function(x, na.rm) length(x)
-  missing <- function(x, na.rm) sum(is.na(x))
-
-  funs <- c("mean", "median", "sd", "q25", "q75", "min",
-            "max", "sample_size", "missing")
-
-  out <- round(summarise_all(.tbl = x, .funs = funs, na.rm = TRUE), digits)
-  rownames(out) <- NULL
-  colnames(out)[length(funs) - 1] <- "n"
+  out <- lapply(measures, function(f) f(x, digits = digits))
+  out$n <- list(name = " n", measure = length(x))
 
   return(out)
 }
 
-format_quantitative <- function(var, group,
-                                var.label, unit.label, group.label = NULL,
-                                measures){
+format_quantitative <- function(desc,
+                                group,
+                                var.label,
+                                unit.label,
+                                group.label = NULL){
 
   var.label <- ifelse(unit.label == "", var.label,
                       paste0(var.label, " (", unit.label, ")"))
 
-  if (length(measures) > 1){
-    aux_variable <- c(var.label, NA)
-    aux_measures <- c("", NA)
-    index <- 2
-
-    if (any(measures == "mean.sd")) {
-      aux_variable[index] <- paste("  Mean", "SD", sep = " \U00b1 ")
-      aux_measures[index] <- var$mean.sd
-      index <- index + 1
-    }
-    if (any(measures == "median.iqr")) {
-      aux_variable[index] <- "  Median (Q25% ; Q75%)"
-      aux_measures[index] <- var$median.q25.q75
-      index <- index + 1
-    }
-    if (any(measures == "median.range")) {
-      aux_variable[index] <- "  Median (Min ; Max)"
-      aux_measures[index] <- var$median.min.max
-      index <- index + 1
-    }
-    if (any(measures == "missing")) {
-      aux_variable[index] <- "  Missing"
-      aux_measures[index] <- unique(var$missing)
-    }
+  if (length(desc[-length(desc)]) > 1){
+    aux_variable <- c(var.label,
+                      Reduce(c, lapply(desc[-length(desc)],
+                                       function(x) x$name)))
+    aux_measures <- c("", Reduce(c, lapply(desc[-length(desc)],
+                                           function(x) x$measure)))
   } else {
     aux_variable <- var.label
-    aux_measures <-  switch(measures,
-                            "mean.sd" = var$mean.sd,
-                            "median.iqr" = var$median.q25.q75,
-                            "median.range" = var$median.min.max,
-                            "missing" = unique(var$missing))
+    aux_measures <- desc[[1]]$measure
   }
 
-  out <- data_frame(Variable = aux_variable, Measure = aux_measures)
+  out <- data.frame(Variable = aux_variable, Measure = aux_measures)
 
-  if (group){
-    colnames(out)[2] <- paste0(group.label, ":", var$group,
-                               " (n = ", var$n, ")")
+  if (!is.null(group)){
+    colnames(out)[2] <- paste0(group.label, ":", group,
+                               " (n = ", desc$n$measure, ")")
   } else {
-    colnames(out)[2] <- paste0("(n = ", var$n, ")")
+    colnames(out)[2] <- paste0("(n = ", desc$n$measure, ")")
   }
   return(out)
 }
 
-#'@importFrom purrr map
-#'@importFrom dplyr mutate filter select transmute everything
-#'@importFrom tidyr gather nest unnest
-#'@importFrom magrittr %>%
 describe_qualitative <- function(var, group = NULL,
                                  digits = 2,
-                                 var.name, var.label, group.label){
+                                 var.label, group.label){
 
-  lv <- levels(as.factor(var))
+  if (!is.factor(var))
+    stop(paste0(var.label, " is not a factor."))
+
+  lv <- levels(var)
 
   if (is.null(group)) {
-    temp <- qualitative_measures(h = var, digits = digits, levels = lv)
-    temp <- temp %>% mutate(variable = var.name) %>%
-      select(.data$variable, everything()) %>%
-      select(category = .data$category, percent = .data$perc,
-             frequency = .data$freq, missing = .data$missing,
-             n = .data$n)
-
-    out <- format_qualitative(temp, group = FALSE, var.label = var.label)
+    desc <- qualitative_measures(h = var, digits = digits)
+    out <- format_qualitative(desc = desc, group = NULL,
+                              var.label = var.label)
 
   } else {
-    temp <- data_frame(!!var.name := var, g = fct_drop(group[[1]])) %>%
-      gather(key = "key", value = "value", -.data$g) %>%
-      filter(!is.na(.data$g)) %>% nest(.data$value) %>%
-      mutate(desc = map(.data$data,
-                        ~ qualitative_measures(h = .$value,
-                                               digits = digits,
-                                               levels = lv))) %>%
-      unnest(.data$desc, .drop = TRUE) %>%
-      select(group = .data$g, variable = .data$key, category = .data$category,
-             percent = .data$perc, frequency = .data$freq,
-             .data$n, missing = .data$missing)
-    temp <- split(temp, temp$group)
-    temp <- map(.x = temp, .f = format_qualitative, group = TRUE,
-                var.label = var.label,
-                group.label = group.label)
+
+    aux <- function(x, g = NULL){
+      out <- format_qualitative(x, group = g,
+                                var.label = var.label,
+                                group.label = group.label)
+      return(out)
+    }
+
+    desc <- tapply(var, group, qualitative_measures,
+                   digits = digits)
+    group.lv <- setNames(as.list(levels(group)), levels(group))
+    temp <- mapply(aux, desc, group.lv, SIMPLIFY = FALSE)
 
     out <- Reduce(function(x, y)
       merge(x, y, by = "Variable", all = TRUE, sort = F), temp)
   }
 
-  out <- as.data.frame(out)
   return(out)
 }
 
-#'@importFrom forcats fct_explicit_na fct_count
-#'@importFrom dplyr mutate filter select
-qualitative_measures <- function(h, digits, levels){
-  h <- factor(h, levels = levels)
+#'@importFrom forcats fct_explicit_na
+qualitative_measures <- function(h, digits){
   h <- fct_explicit_na(h, na_level = "Missing")
+  levels <- levels(h)
+  count <- tapply(h, h, length)
+  n <- length(h)
+  missing <- count[length(count)]
+  perc <- round(100*prop.table(count), digits)
+  perc <- ifelse(!is.finite(perc), NA, perc)
 
-  out <- fct_count(h) %>%
-      mutate(freq = .data$n, n = sum(.data$freq),
-             missing = sum(.data$freq[.data$f == "Missing"])) %>%
-      filter(.data$f != "Missing") %>%
-      mutate(perc = round(100*prop.table(.data$freq), digits),
-             perc = ifelse(!is.finite(perc), NA, perc)) %>%
-      select(category = .data$f, .data$perc, .data$freq, .data$n, .data$missing)
+  perc_count <- paste0(perc, " (", count, ")")
+
+  out <- list(levels = levels, perc_count = perc_count, n = n)
 
   return(out)
 }
 
-
-format_qualitative <- function(var, group,
+format_qualitative <- function(desc, group,
                                var.label, group.label = NULL){
 
-  aux_variable <- c(var.label, paste(" ", as.character(var$category)), "Missing")
-  aux_measure <- c("", paste0(var$frequency, " (", var$percent, ")"),
-                   unique(var$missing))
+  aux_variable <- c(var.label, paste(" ", as.character(desc$levels)))
+  aux_measure <- c("", desc$perc_count)
 
-  out <- data_frame(Variable = aux_variable, Measure = aux_measure)
+  out <- data.frame(Variable = aux_variable, Measure = aux_measure)
 
-  if (group){
-    colnames(out)[2] <- paste0(group.label, ":", unique(var$group),
-                               " (n = ", unique(var$n), ")")
+  if (!is.null(group)){
+    colnames(out)[2] <- paste0(group.label, ":", group,
+                               " (n = ", desc$n, ")")
   } else {
-    colnames(out)[2] <- paste0("(n = ", unique(var$n), ")")
+    colnames(out)[2] <- paste0("(n = ", desc$n, ")")
   }
   return(out)
 
