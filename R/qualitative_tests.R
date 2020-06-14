@@ -26,21 +26,34 @@ nt_dist_ql_tg <-  function(var, group,
         p.value <- result$p.value
 
         if (max(dim(tab)) == 2){
-          pt <- prop.test(tab, conf.level = conf.level)
-          lower <- pt$conf.int[[1]]
-          upper <- pt$conf.int[[2]]
-          test <- "Fisher's Exact"
+          pt <- try(prop.test(tab, conf.level = conf.level), silent = TRUE)
+
+          if (class(pt) != "try-error"){
+            lower <- pt$conf.int[[1]]
+            upper <- pt$conf.int[[2]]
+            test <- "Fisher's Exact"
+          } else {
+            lower <- NA
+            upper <- NA
+            test <- "Fisher's Exact"
+          }
+
         } else {
           lower <- NA
           upper <- NA
           test <- "Fisher-Freeman-Halton's Exact"
         }
       } else {
-        result <- chisq.test(tab)
+        result <- try(chisq.test(tab), silent = TRUE)
         lower <- NA
         upper <- NA
-        p.value <- result$p.value
-        test <- "Chi-Square"
+        if (class(result) != "try-error"){
+          p.value <- result$p.value
+          test <- "Chi-Square"
+        } else {
+          p.value <- NA
+          test <- NA
+        }
       }
 
       alt <- switch(alternative,
@@ -51,16 +64,13 @@ nt_dist_ql_tg <-  function(var, group,
     }
 
   } else {
-    id <- data_frame(id = rep(1:(length(var)/2), 2))
-    data.test <- bind_cols(id, data.test)
-
-    tab <- table(data.test$x, data.test$g, data.test$id)
-    result <- mantelhaen.test(tab)
+    tab <- table(data.test$x, data.test$g)
+    result <- mcnemar.test(tab)
     p.value <- result$p.value
-    test <- ifelse(dim(tab) == 2, "McNemar", "Cochran-Mantel-Haenszel")
+    test <- ifelse(max(dim(tab)) == 2, "McNemar", "McNemar-Bowker")
     lower <- NA
     upper <- NA
-    hypothesis <- "Marginal Heterogeneity"
+    hypothesis <- "Marginal Homogeneity"
   }
 
   out <- data_frame(Variable = var.label[[1]], Group = group.label[[1]],
@@ -103,12 +113,17 @@ nt_dist_ql_mg <-  function(var, group,
 
     if (class(result) != "try-error"){
       p.value <- result$p.value
-      test <- "Fisher's Exact test"
+      test <- "Fisher's Exact"
     } else {
-      result <- chisq.test(tab)
+      result <- try(chisq.test(tab), silent = TRUE)
 
-      p.value <- result$p.value
-      test <- "Chi-Square"
+      if (class(result) != "try-error"){
+        p.value <- result$p.value
+        test <- "Chi-Square"
+      } else {
+        p.value <- NA
+        test <- NA
+      }
     }
   }
 
