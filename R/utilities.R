@@ -213,8 +213,12 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
   if (!any(names(descriptive.tab) == "Variable"))
     stop("'descriptive.tab' does not have any column 'Variable'.")
 
-  if (any(class(test.tab) == "two_groups") |
-      any(class(test.tab) == "multiple_groups")){
+  if ("descriptive" %in% class(descriptive.tab))
+    class(descriptive.tab) <- "data.frame"
+
+  if ("two_groups" %in% class(test.tab)){
+
+    class(test.tab) <- "data.frame"
 
     if (!any(names(test.tab) == "p value"))
       stop("'test.tab' does not have any column 'p value'.")
@@ -234,17 +238,38 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
       write.csv(tab, file = paste0(file, ".csv"))
   }
 
-  if (any(class(test.tab$mc) == "multiple_comparisons")){
+  if ("multiple_groups" %in% class(test.tab)){
 
-    if (!any(names(test.tab$omnibus) == "p value") &
-        !any(names(test.tab$mc) == "p value"))
+    if (!any(names(test.tab$omnibus.test) == "p value"))
       stop("'test.tab' does not have any column 'p value'.")
 
-    aux <- test.tab$omnibus %>%
+    test.tab <- test.tab$omnibus.test %>%
+      mutate(Variable = as.character(.data$Variable)) %>%
+      select(.data$Variable, .data$`p value`)
+    descriptive.tab <- descriptive.tab %>%
+      mutate(Variable = as.character(.data$Variable))
+
+    tab <- left_join(descriptive.tab, test.tab, by = "Variable")
+    out <- tab %>% mutate(`p value` =
+                            ifelse(.data$`p value` < 0.001, "< 0.001",
+                                   round(.data$`p value`, digits)))  %>%
+      replace_na(list(`p value` = ""))
+
+    if (save)
+      write.csv(tab, file = paste0(file, ".csv"))
+  }
+
+  if ("multiple_comparisons" %in% class(test.tab)){
+
+    if (!any(names(test.tab$omnibus.test) == "p value") &
+        !any(names(test.tab$mc.test) == "p value"))
+      stop("'test.tab' does not have any column 'p value'.")
+
+    aux <- test.tab$omnibus.test %>%
       mutate(Variable = as.character(.data$Variable)) %>%
       select(.data$Variable, .data$`p value`)
 
-    temp <- test.tab$mc %>% select(-.data$`95% CI`, -.data$Test, -.data$Group) %>%
+    temp <- test.tab$mc.test %>% select(-.data$`95% CI`, -.data$Test, -.data$Group) %>%
       spread(key = .data$Hypothesis, value = "p value", drop = TRUE)
 
     for(i in 2:ncol(temp)){
@@ -268,6 +293,7 @@ put_together <- function(descriptive.tab, test.tab, digits = 3,
       write.csv(comparisons, file = paste0(file, "_legend.csv"))
     }
   }
+
   return(out)
 }
 
