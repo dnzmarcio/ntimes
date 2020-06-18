@@ -4,17 +4,17 @@
 \alias{nt_norm_test}
 \title{Normality tests}
 \usage{
-nt_norm_test(data, group = NULL, test = "sf", digits = 3, pvalue.plot = TRUE)
+nt_norm_test(test)
 }
 \arguments{
-\item{data}{a data frame with the variables.}
-
-\item{group}{an optional character indicating the group variable.}
-
 \item{test}{a character value specifying the normality test to be performed.
 The options are Anderson-Darling (\code{ad}), Shapiro-Francia (\code{"sf"}),
 Kolmogorov-Smirnov (\code{ks}),  Cramer-vonMises (\code{cvm}) and
 Pearson (\code{ps}). The default is Shapiro-Francia (\code{"sf"}).}
+
+\item{data}{a data frame with the variables.}
+
+\item{group}{an optional character indicating the group variable.}
 
 \item{digits}{a integer value indicating the numer of decimal places.}
 

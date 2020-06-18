@@ -7,7 +7,7 @@
 nt_describe(
   data,
   group = NULL,
-  measures = list(nt_mean_sd, nt_median_iqr, nt_median_range, nt_missing),
+  measures = list(nt_mean_sd, nt_median_iqr, nt_median_range),
   digits = 2,
   save = FALSE,
   file = "descriptive_analysis"

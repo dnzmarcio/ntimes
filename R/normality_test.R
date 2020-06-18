@@ -34,7 +34,7 @@
 #'iris %>% nt_norm_test(group = Species)
 #'
 #'@export
-nt_norm_test <- function(data, group = NULL, test = "sf",
+nt_norm_test <- function(data, group = NULL, test = nt_norm_test(test = "sf"),
                          digits = 3, pvalue.plot = TRUE){
 
   data <- as_data_frame(data)
@@ -93,54 +93,16 @@ nt_norm_test <- function(data, group = NULL, test = "sf",
   return(out)
 }
 
-#'@importFrom nortest ad.test sf.test lillie.test cvm.test pearson.test
-#'@importFrom dplyr select
-#'@importFrom purrr map
-#'@importFrom tidyr nest unnest
-#'@importFrom tibble data_frame
-norm_test <-  function(var, group = NULL,
-                       test, digits = 3){
 
-  if (!is.numeric(var))
-    stop("'var' contains non-numeric variable.")
 
-  aux_norm_test <- function(var, test){
-
-    if (test == "ad")
-      result <- try(ad.test(var), silent = TRUE)
-    if (test == "sf")
-      result <- try(sf.test(var), silent = TRUE)
-    if (test == "ks")
-      result <- try(lillie.test(var), silent = TRUE)
-    if (test == "cvm")
-      result <- try(cvm.test(var), silent = TRUE)
-    if (test == "ps")
-      result <- try(pearson.test(var), silent = TRUE)
-
-    out <- ifelse(class(result) == "try-error", 0, result$p.value)
-
-    return(out)
-  }
-
-  if (is.null(group)){
-    out <- aux_norm_test(var, test = test)
-  } else {
-    data.test <- data_frame(var, g = group)
-    out <- data.test %>% arrange(.data$g) %>% nest(-.data$g) %>%
-      mutate(p = map(.data$data, ~ aux_norm_test(.$var, test = test))) %>%
-      unnest(.data$p, .drop = TRUE) %>%
-      select(Group = .data$g, `p value` = .data$p)
-  }
-
-  return(out)
-}
 
 #'@import ggplot2
 #'@importFrom stats qnorm
 #'@importFrom dplyr summarise
 qq_plot <-  function(var, var.label,
                      group = NULL, group.label = NULL,
-                     test = "sf", digits = 3, pvalue.plot = TRUE){
+                     test = nt_norm_test(test = "sf"),
+                     digits = 3, pvalue.plot = TRUE){
 
   qqline_slope <- function(var){
     y <- quantile(var, c(0.25, 0.75), na.rm = TRUE)

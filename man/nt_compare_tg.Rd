@@ -8,10 +8,11 @@ nt_compare_tg(
   data,
   group,
   alternative = "two.sided",
-  test = "auto",
-  conf.level = 0.95,
+  norm.test = nt_norm_test(test = "sf"),
+  var.test = nt_var_test(test = "levene"),
+  distr.test = list(nt_student_t, nt_welch_t, nt_mann_whitney, nt_brunner_munzel),
   paired = FALSE,
-  norm.test = "sf",
+  conf.level = 0.95,
   format = TRUE,
   digits.ci = 3,
   digits.p = 5,
@@ -27,19 +28,16 @@ nt_compare_tg(
 \item{alternative}{a character value indicating the alternative hypothesis,
 must be one of "two.sided", "greater" or "less".}
 
-\item{test}{a character value indicating the tests to be performed.
-The options are "auto", "par", "npar", "t", "wt", "mw", "bm". See more in details.}
-
-\item{conf.level}{a character value specifying the confidence level of the confidence interval for
-the difference between the two groups.}
-
-\item{paired}{a logical value indicating whether a paired test should be used.}
-
 \item{norm.test}{a character value specifying the normality test to be performed.
 The options are Anderson-Darling (\code{ad}), Shapiro-Francia (\code{"sf"}),
 Kolmogorov-Smirnov (\code{ks}),  Cramer-vonMises (\code{cvm}) and
 Pearson (\code{p}). The default is Shapiro-Francia (\code{"sf"}). It is only used if
 \code{test = "automatic"}.}
+
+\item{paired}{a logical value indicating whether a paired test should be used.}
+
+\item{conf.level}{a character value specifying the confidence level of the confidence interval for
+the difference between the two groups.}
 
 \item{format}{a logical value indicating whether the output should be formatted.}
 
@@ -50,6 +48,9 @@ Pearson (\code{p}). The default is Shapiro-Francia (\code{"sf"}). It is only use
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character value indicating the name of output file in csv format to be saved.}
+
+\item{test}{a character value indicating the tests to be performed.
+The options are "auto", "par", "npar", "t", "wt", "mw", "bm". See more in details.}
 }
 \description{
 Performing comparisons between two groups.
@@ -75,7 +76,8 @@ library(dplyr)
 library(forcats)
 data(iris)
 
-iris_nt <- iris \%>\% filter(Species != "setosa") \%>\% mutate(Species = fct_drop(Species))
-iris_nt \%>\% nt_compare_tg(group = Species)
+iris \%>\% filter(Species != "setosa") \%>\%
+mutate(Species = fct_drop(Species)) \%>\%
+nt_compare_tg(group = Species)
 
 }

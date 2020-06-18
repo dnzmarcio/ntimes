@@ -1,13 +1,13 @@
 #'@importFrom forcats fct_drop
 #'@importFrom dplyr bind_cols
 #'@importFrom stats prop.test fisher.test chisq.test mcnemar.test mantelhaen.test
-nt_dist_ql_tg <-  function(var, group,
-                           alternative,
-                           conf.level, paired,
-                           format, digits.p, digits.ci,
-                           var.name, var.label, group.label){
+dist_ql_tg <-  function(var, group,
+                        alternative,
+                        conf.level, paired,
+                        digits.p, digits.ci,
+                        var.name, var.label, group.label){
 
-  data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
+  data.test <- data.frame(x = var, g = fct_drop(group))
   lg <- levels(data.test$g)
 
   if (!paired){
@@ -20,13 +20,13 @@ nt_dist_ql_tg <-  function(var, group,
       lower <- NA
       upper <- NA
     } else {
-      result <- try(fisher.test(tab), silent = TRUE)
+      result <- try(stats::fisher.test(tab), silent = TRUE)
 
       if (class(result) != "try-error"){
         p.value <- result$p.value
 
         if (max(dim(tab)) == 2){
-          pt <- try(prop.test(tab, conf.level = conf.level), silent = TRUE)
+          pt <- try(stats::prop.test(tab, conf.level = conf.level), silent = TRUE)
 
           if (class(pt) != "try-error"){
             lower <- pt$conf.int[[1]]
@@ -35,16 +35,16 @@ nt_dist_ql_tg <-  function(var, group,
           } else {
             lower <- NA
             upper <- NA
-            test <- "Fisher's Exact"
+            test <- "Fisher's exact test"
           }
 
         } else {
           lower <- NA
           upper <- NA
-          test <- "Fisher-Freeman-Halton's Exact"
+          test <- "Fisher-Freeman-Halton's exact test"
         }
       } else {
-        result <- try(chisq.test(tab), silent = TRUE)
+        result <- try(stats::chisq.test(tab), silent = TRUE)
         lower <- NA
         upper <- NA
         if (class(result) != "try-error"){
@@ -67,25 +67,20 @@ nt_dist_ql_tg <-  function(var, group,
     tab <- table(data.test$x, data.test$g)
     result <- mcnemar.test(tab)
     p.value <- result$p.value
-    test <- ifelse(max(dim(tab)) == 2, "McNemar", "McNemar-Bowker")
+    test <- ifelse(max(dim(tab)) == 2, "McNemar test", "McNemar-Bowker test")
     lower <- NA
     upper <- NA
     hypothesis <- "Marginal Homogeneity"
   }
 
-  out <- data_frame(Variable = var.label[[1]], Group = group.label[[1]],
-                    Hypothesis = hypothesis, Lower = lower, Upper = upper,
-                    Test = test, p.value) %>%
-    mutate(Lower = round(.data$Lower, digits.ci),
-           Upper = round(.data$Upper, digits.ci),
-           'p value' = round(.data$p.value, digits.p))
+  out <- data.frame(Variable = var.label,
+                    Group = group.label,
+                    Hypothesis = hypothesis,
+                    Lower = round(lower, digits.ci),
+                    Upper = round(upper, digits.ci),
+                    Test = test,
+                    p.value = round(p.value, digits.p))
 
-  if (format){
-    out <- out %>% mutate(`95% CI` = paste0("(",.data$Lower,
-                                            " ; ",
-                                            .data$Upper, ")")) %>%
-      select(-.data$Lower, -.data$Upper, -.data$p.value)
-  }
 
   return(out)
 }
@@ -94,10 +89,10 @@ nt_dist_ql_tg <-  function(var, group,
 #'@importFrom forcats fct_drop
 #'@importFrom dplyr bind_cols
 #'@importFrom stats fisher.test chisq.test
-nt_dist_ql_mg <-  function(var, group,
-                           format, digits.p, var.name, var.label, group.label){
+dist_ql_mg <-  function(var, group,
+                        digits.p, var.name, var.label, group.label){
 
-  data.test <- data_frame(x = var, g = fct_drop(group[[1]]))
+  data.test <- data.frame(x = var, g = fct_drop(group))
   lg <- levels(data.test$g)
 
   tab <- table(data.test$g, data.test$x)
@@ -109,17 +104,17 @@ nt_dist_ql_mg <-  function(var, group,
     lower <- NA
     upper <- NA
   } else {
-    result <- try(fisher.test(tab), silent = TRUE)
+    result <- try(stats::fisher.test(tab), silent = TRUE)
 
     if (class(result) != "try-error"){
       p.value <- result$p.value
-      test <- "Fisher's Exact"
+      test <- "Fisher's exact test"
     } else {
-      result <- try(chisq.test(tab), silent = TRUE)
+      result <- try(stats::chisq.test(tab), silent = TRUE)
 
       if (class(result) != "try-error"){
         p.value <- result$p.value
-        test <- "Chi-Square"
+        test <- "Chi-square test"
       } else {
         p.value <- NA
         test <- NA
@@ -129,7 +124,7 @@ nt_dist_ql_mg <-  function(var, group,
 
   hypothesis <- "Association"
 
-  out <- data_frame(Variable = var.label[[1]], Group = group.label[[1]],
+  out <- data.frame(Variable = var.label[[1]], Group = group.label[[1]],
                     Hypothesis = hypothesis,  Test = test,
                     `p value` =  round(p.value, digits.p))
 
@@ -138,10 +133,10 @@ nt_dist_ql_mg <-  function(var, group,
 
 #'@importFrom multcomp glht mcp
 #'@importFrom stats confint
-nt_dist_ql_mc <-  function(var, group, alternative, contrast,
-                           format, digits.p, digits.ci, var.label, group.label) {
+dist_ql_mc <-  function(var, group, alternative, contrast,
+                        digits.p, digits.ci, var.label, group.label) {
 
-  data.test <- data_frame(x = var, g = group[[1]])
+  data.test <- data.frame(x = var, g = group)
 
   av <- glm(x ~ g, data = data.test, family = "binomial")
   mc <- glht(av, linfct = mcp(g = contrast), alternative = alternative)
@@ -161,16 +156,9 @@ nt_dist_ql_mc <-  function(var, group, alternative, contrast,
   lower <- round(exp(confint(mc)$confint[, 2]), digits.ci)
   upper <- round(exp(confint(mc)$confint[, 3]), digits.ci)
 
-  out <- data_frame(Variable = var.label, Group = group.label,
+  out <- data.frame(Variable = var.label, Group = group.label,
                     Hypothesis = hypothesis, Lower = lower, Upper = upper,
                     Test = test, `p value` = p.value)
-
-  if (format){
-    out <- out %>% mutate('95% CI' = paste0("(", .data$Lower, " ; ",
-                                            .data$Upper, ")")) %>%
-      select(.data$Variable, .data$Group, .data$Hypothesis,
-             .data$Test, .data$`95% CI`, .data$`p value`)
-  }
 
   return(out)
 }

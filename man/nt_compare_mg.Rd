@@ -7,9 +7,14 @@
 nt_compare_mg(
   data,
   group,
-  test = "auto",
-  norm.test = "sf",
+  norm.test = nt_norm_test(test = "sf"),
+  var.test = nt_var_test(test = "levene"),
+  distr.test = list(nt_anova, nt_welch_anova, nt_kruskal_wallis),
+  contrast = "Tukey",
+  alternative = "two.sided",
+  format = TRUE,
   digits.p = 3,
+  digits.ci = 2,
   save = FALSE,
   file = "nt_compare_mg",
   mc = FALSE
@@ -19,9 +24,6 @@ nt_compare_mg(
 \item{data}{a data frame with the variables.}
 
 \item{group}{a data frame with the group variable.}
-
-\item{test}{a character value indicating the tests to be performed.
-The options are "auto", "par" and "npar". See more in details.}
 
 \item{norm.test}{a character value specifying the normality test to be performed.
 The options are Anderson-Darling (\code{ad}), Shapiro-Francia (\code{"sf"}),
@@ -36,6 +38,9 @@ Pearson (\code{p}). The default is Shapiro-Francia (\code{"sf"}). It is only use
 \item{file}{a character value indicating the name of output file in csv format to be saved.}
 
 \item{mc}{a logical value indicating if pairwise comparisons should will be performed.}
+
+\item{test}{a character value indicating the tests to be performed.
+The options are "auto", "par" and "npar". See more in details.}
 }
 \description{
 Performing comparisons among three or more groups.

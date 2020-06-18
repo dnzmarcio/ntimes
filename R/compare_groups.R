@@ -7,7 +7,7 @@
 #'@importFrom dplyr select
 #'@importFrom utils write.csv
 #'@importFrom rlang := .data quo_is_null enquo
-#'@importFrom tibble data_frame as_data_frame
+#'@importFrom tibble tibble
 #'
 #'@param data a data frame with the variables.
 #'@param group a data frame with the group variable.
@@ -49,16 +49,20 @@
 #'library(forcats)
 #'data(iris)
 #'
-#'iris_nt <- iris %>% filter(Species != "setosa") %>% mutate(Species = fct_drop(Species))
-#'iris_nt %>% nt_compare_tg(group = Species)
+#'iris %>% filter(Species != "setosa") %>%
+#' mutate(Species = fct_drop(Species)) %>%
+#' nt_compare_tg(group = Species)
 #'
 #'@export
 nt_compare_tg <- function(data, group,
                           alternative = "two.sided",
-                          test = "auto",
-                          conf.level = 0.95,
+                          norm.test = nt_norm_test(test = "sf"),
+                          var.test = nt_var_test(test = "levene"),
+                          distr.test =
+                            list(nt_student_t, nt_welch_t,
+                                 nt_mann_whitney, nt_brunner_munzel),
                           paired = FALSE,
-                          norm.test = "sf",
+                          conf.level = 0.95,
                           format = TRUE,
                           digits.ci = 3,
                           digits.p = 5,
@@ -78,16 +82,26 @@ nt_compare_tg <- function(data, group,
 
   temp <- map2(.x = vars, .y = vars.name, .f = aux_compare_tg,
                group = group, group.name = group.name,
-               test = test,
+               norm.test = norm.test,
+               var.test = var.test,
+               distr.test = distr.test,
+               paired = paired,
                alternative = alternative,
                conf.level = conf.level,
-               paired = paired,
-               norm.test = norm.test,
                format = format,
                digits.p = digits.p,
                digits.ci = digits.ci)
 
   out <- Reduce(rbind, temp)
+
+  if (format){
+    out <- out %>% mutate('95% CI' =
+                            paste0("(", .data$Lower, " ; ",
+                                   .data$Upper, ")")) %>%
+      select(.data$Variable, .data$Group, .data$Hypothesis,
+             .data$Test, .data$`95% CI`, `p value` = .data$`p.value`)
+  }
+
 
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
@@ -97,41 +111,38 @@ nt_compare_tg <- function(data, group,
 }
 
 aux_compare_tg <- function(var, var.name, group, group.name = group.name,
-                           test, alternative, conf.level,
-                           paired = paired, norm.test,
+                           norm.test, var.test, distr.test,
+                           paired = paired, alternative, conf.level,
                            format, digits.p, digits.ci){
 
   unit.label <- extract_unit(var)
   var.label <- extract_label(var, var.name)
-  var.label <- ifelse(unit.label == "", var.label,
-         paste0(var.label, " (", unit.label, ")"))
   group.label <- extract_label(group, group.name)
 
   if (is.numeric(var)){
-    out <- nt_dist_qt_tg(var = var,
-                         group = group,
-                         test = test,
-                         alternative = alternative,
-                         conf.level = conf.level,
-                         paired = paired,
-                         norm.test = norm.test,
-                         format = format,
-                         digits.p = digits.p,
-                         digits.ci = digits.ci,
-                         var.label = var.label,
-                         group.label = group.label)
+    out <- dist_qt_tg(var = var,
+                      group = group[[1]],
+                      norm.test = norm.test,
+                      var.test = var.test,
+                      distr.test = distr.test,
+                      paired = paired,
+                      alternative = alternative,
+                      conf.level = conf.level,
+                      digits.p = digits.p,
+                      digits.ci = digits.ci,
+                      var.label = var.label,
+                      group.label = group.label)
 
   } else {
-    out <- nt_dist_ql_tg(var = var,
-                         group = group,
-                         alternative = alternative,
-                         conf.level = conf.level,
-                         paired = paired,
-                         format = format,
-                         digits.p = digits.p,
-                         digits.ci = digits.ci,
-                         var.label = var.label,
-                         group.label = group.label)
+    out <- dist_ql_tg(var = var,
+                      group = group[[1]],
+                      paired = paired,
+                      alternative = alternative,
+                      conf.level = conf.level,
+                      digits.p = digits.p,
+                      digits.ci = digits.ci,
+                      var.label = var.label,
+                      group.label = group.label)
 
   }
 
@@ -148,7 +159,7 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
 #'@importFrom dplyr select
 #'@importFrom utils write.csv
 #'@importFrom rlang := .data quo_is_null enquo
-#'@importFrom tibble data_frame as_data_frame
+#'@importFrom tibble tibble
 #'
 #'@param data a data frame with the variables.
 #'@param group a data frame with the group variable.
@@ -184,7 +195,14 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
 #'
 #'@export
 nt_compare_mg <- function(data, group,
-                          test = "auto", norm.test = "sf", digits.p = 3,
+                          norm.test = nt_norm_test(test = "sf"),
+                          var.test = nt_var_test(test = "levene"),
+                          distr.test =
+                            list(nt_anova, nt_welch_anova,
+                                 nt_kruskal_wallis),
+                          contrast = "Tukey",
+                          alternative = "two.sided",
+                          format = TRUE, digits.p = 3, digits.ci = 2,
                           save = FALSE, file = "nt_compare_mg", mc = FALSE){
 
   group <- enquo(group)
@@ -200,24 +218,65 @@ nt_compare_mg <- function(data, group,
 
   temp <- map2(.x = vars, .y = vars.name, .f = aux_compare_mg,
                group = group, group.name = group.name,
-               test = test, norm.test = norm.test,
+               norm.test = norm.test, var.test = var.test,
+               distr.test = distr.test,
                digits.p = digits.p, mc = mc)
 
-  out <- Reduce(rbind, temp)
-  class(out) <- c("data.frame", "multiple_groups")
+  omnibus.test <- Reduce(rbind, temp)
+
+  if (mc){
+    aux <- omnibus.test[which(omnibus.test$p.value < 0.05), ]
+    vars.name <- aux$Variable
+    vars <- data[vars.name]
+    group.name <- unique(aux$Group)
+    group <- data[group.name]
+    test <- omnibus.test$Test
+
+    temp <- pmap(list(vars, vars.name, test), .f = aux_compare_mc,
+                 group = group, group.name = group.name,
+                 alternative = alternative, contrast = contrast,
+                 digits.p = digits.p, digits.ci = digits.ci)
+    mc.test <- Reduce(rbind, temp)
+
+    if (format){
+      mc.test <- mc.test %>%
+        mutate('95% CI' =
+                 paste0("(", .data$Lower, " ; ",
+                        .data$Upper, ")"),) %>%
+        select(.data$Variable, .data$Group, .data$Hypothesis,
+               .data$Test, .data$`95% CI`, `p value` = .data$`p.value`)
+
+      if (save)
+        write.csv(mc_test, file = paste0(file, "_mc_test.csv"))
+    }
+  }
+
+  if (format){
+    omnibus.test <- omnibus.test %>%
+      select(.data$Variable, .data$Group, .data$Test, .data$Hypothesis,
+             `p value` = .data$`p.value`)
+  }
 
   if (save)
-    write.csv(out, file = paste0(file, ".csv"))
+    write.csv(omnibus.test, file = paste0(file, "_omnibus_test.csv"))
 
-  if (mc)
-    out <- list(results = out, data = data)
+  if (!mc){
+    out <- list(omnibus.test = omnibus.test)
+    class(out) <- c("list", "multiple_groups")
+  } else {
+    out <- list(omnibus.test = omnibus.test, mc.test = mc.test)
+    class(out) <- c("list", "multiple_comparisons")
+  }
+
+
 
   return(out)
 }
 
 
 aux_compare_mg <- function(var, var.name, group, group.name,
-                           test, norm.test,
+                           norm.test, var.test,
+                           distr.test,
                            format, digits.p, mc){
   if (mc){
     var.label <- var.name
@@ -225,24 +284,21 @@ aux_compare_mg <- function(var, var.name, group, group.name,
   } else {
     unit.label <- extract_unit(var)
     var.label <- extract_label(var, var.name)
-    var.label <- ifelse(unit.label == "", var.label,
-                        paste0(var.label, " (", unit.label, ")"))
-
     group.label <- extract_label(group, group.name)
   }
 
   if (is.numeric(var)){
-    out <- nt_dist_qt_mg(var = var,
-                         group = group,
-                         test = test,
+    out <- dist_qt_mg(var = var,
+                         group = group[[1]],
+                         distr.test = distr.test,
                          norm.test = norm.test,
                          digits.p = digits.p,
                          var.label = var.label,
                          group.label = group.label)
 
   } else {
-    out <- nt_dist_ql_mg(var = var,
-                         group = group,
+    out <- dist_ql_mg(var = var,
+                         group = group[[1]],
                          digits.p = digits.p,
                          var.label = var.label,
                          group.label = group.label)
@@ -252,71 +308,28 @@ aux_compare_mg <- function(var, var.name, group, group.name,
   return(out)
 }
 
-#'@importFrom tidyr spread
-#'@importFrom purrr pmap
-#'@export
-nt_compare_mc <- function(omnibus.test,
-                          alternative = "two.sided",
-                          contrast = "Tukey",
-                          digits.ci = 2,
-                          digits.p = 3,
-                          format = TRUE,
-                          save = FALSE,
-                          file = "nt_distribution_mc") {
-
-
-  mc.test <- omnibus.test$result %>% filter(.data$`p value` < 0.05)
-  vars.name <- mc.test$Variable
-  group.name <- unique(mc.test$Group)
-  otest <- mc.test$Test
-
-  vars <- omnibus.test$data %>% select(vars.name)
-  group <- omnibus.test$data %>% select(group.name)
-
-  if (nlevels(fct_drop(group[[1]])) == 2)
-    stop("'group' should have more than two levels.")
-
-  temp <- pmap(list(vars, vars.name, otest), .f = aux_compare_mc,
-               group = group, group.name = group.name,
-               alternative = alternative, contrast = contrast,
-               format = format, digits.p = digits.p, digits.ci = digits.ci)
-  results <- Reduce(rbind, temp)
-  class(results) <- c("data.frame", "multiple_comparisons")
-
-  out <-list(omnibus = omnibus.test$results, mc = results)
-
-  if(save)
-    write.csv(results, file = paste0(file, ".csv"))
-
-
-  return(out)
-}
-
-
-aux_compare_mc <- function(var, var.name, otest, group, group.name,
-                           alternative, contrast, format, digits.p, digits.ci){
+aux_compare_mc <- function(var, var.name, omnibus.test, group, group.name,
+                           alternative, contrast, digits.p, digits.ci){
 
   var.label <- extract_label(var, var.name)
   group.label <- extract_label(group, group.name)
 
   if (is.numeric(var)){
-    out <- nt_dist_qt_mc(var = var,
-                         otest = otest,
-                         group = group,
+    out <- dist_qt_mc(var = var,
+                         omnibus.test = omnibus.test,
+                         group = group[[1]],
                          alternative = alternative,
                          contrast = contrast,
-                         format = format,
                          digits.p = digits.p,
                          digits.ci = digits.ci,
                          var.label = var.label,
                          group.label = group.label)
 
   } else {
-    out <- nt_dist_ql_mc(var = var,
-                         group = group,
+    out <- dist_ql_mc(var = var,
+                         group = group[[1]],
                          alternative = alternative,
                          contrast = contrast,
-                         format = format,
                          digits.p = digits.p,
                          digits.ci = digits.ci,
                          var.label = var.label,
