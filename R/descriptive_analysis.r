@@ -8,7 +8,7 @@
 #'@importFrom utils write.csv
 #'@importFrom magrittr %>%
 #'@importFrom rlang := .data quo_is_null enquo
-#'@importFrom tibble data_frame as_data_frame
+#'@importFrom tibble tibble
 #'
 #'@param data a data frame with the variables.
 #'@param group an optional  with the group variable.
@@ -28,13 +28,11 @@ nt_describe <- function(data,
                         group = NULL,
                         measures = list(nt_mean_sd,
                                         nt_median_iqr,
-                                        nt_median_range,
-                                        nt_missing),
+                                        nt_median_range),
                         digits = 2,
                         save = FALSE,
                         file = "descriptive_analysis"){
 
-  data <- as_data_frame(data)
   group <- enquo(group)
 
   if (!quo_is_null(group)){
@@ -58,6 +56,7 @@ nt_describe <- function(data,
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
 
+  class(out) <- c("data.frame", "descriptive")
   return(out)
 }
 
@@ -66,7 +65,7 @@ nt_describe <- function(data,
 nt_mean_sd <- function(var, digits){
   mean <- round(mean(var, na.rm = TRUE), digits)
   sd <- round(sd(var, na.rm = TRUE), digits)
-  name <- paste0("  Mean", " \U00b1 ", "SD")
+  name <- paste0(" Mean", " \U00b1 ", "SD")
   measure <- paste0(mean, " \U00b1 ", sd)
   out <- list(name = name, measure = measure)
   return(out)
@@ -78,15 +77,9 @@ nt_median_iqr <- function(var, digits){
   median <- round(median(var, na.rm = TRUE), digits)
   q25 <- round(quantile(var, probs = 0.25, na.rm = TRUE), digits)
   q75 <- round(quantile(var, probs = 0.75, na.rm = TRUE), digits)
-  name <- "  Median (Q25% ; Q75%)"
+  name <- " Median (Q25% ; Q75%)"
   measure <- paste0(median," (", q25, " ; ", q75, ")")
   out <- list(name = name, measure = measure)
-  return(out)
-}
-
-#'@export
-nt_missing <- function(var, digits){
-  out <- list(name = " Missing", measure = sum(is.na(var)))
   return(out)
 }
 
@@ -96,7 +89,7 @@ nt_median_range <- function(var, digits){
   median <- round(median(var, na.rm = TRUE), digits)
   min <- round(min(var, na.rm = TRUE), digits)
   max <- round(max(var, na.rm = TRUE), digits)
-  name <- "  Median (Min ; Max)"
+  name <- " Median (Min ; Max)"
   measure <- paste0(median," (", min, " ; ", max, ")")
   out <- list(name = name, measure = measure)
   return(out)
@@ -170,7 +163,13 @@ describe_quantitative <- function(var, group,
 
 quantitative_measures <- function(x, digits, measures){
 
+  missing <- function(var, digits){
+    out <- list(name = " Missing", measure = sum(is.na(var)))
+    return(out)
+  }
+
   out <- lapply(measures, function(f) f(x, digits = digits))
+  out$missing <- missing(x, digits)
   out$n <- list(name = " n", measure = length(x))
 
   return(out)
@@ -202,7 +201,7 @@ format_quantitative <- function(desc,
     colnames(out)[2] <- paste0(group.label, ":", group,
                                " (n = ", desc$n$measure, ")")
   } else {
-    colnames(out)[2] <- paste0("(n = ", desc$n$measure, ")")
+    colnames(out)[2] <- paste0("All (n = ", desc$n$measure, ")")
   }
   return(out)
 }
@@ -245,16 +244,21 @@ describe_qualitative <- function(var, group = NULL,
 #'@importFrom forcats fct_explicit_na
 qualitative_measures <- function(h, digits){
   h <- fct_explicit_na(h, na_level = "Missing")
-  levels <- levels(h)
+  lh <- levels(h)
+
   count <- tapply(h, h, length)
   n <- length(h)
-  missing <- count[length(count)]
   perc <- round(100*prop.table(count), digits)
   perc <- ifelse(!is.finite(perc), NA, perc)
 
   perc_count <- paste0(perc, " (", count, ")")
 
-  out <- list(levels = levels, perc_count = perc_count, n = n)
+  if (!("Missing" %in% lh)){
+    lh <- c(lh, "Missing")
+    perc_count <- c(perc_count, "0 (0)")
+  }
+
+  out <- list(levels = lh, perc_count = perc_count, n = n)
 
   return(out)
 }
@@ -262,7 +266,7 @@ qualitative_measures <- function(h, digits){
 format_qualitative <- function(desc, group,
                                var.label, group.label = NULL){
 
-  aux_variable <- c(var.label, paste(" ", as.character(desc$levels)))
+  aux_variable <- c(var.label, paste("", as.character(desc$levels)))
   aux_measure <- c("", desc$perc_count)
 
   out <- data.frame(Variable = aux_variable, Measure = aux_measure)
@@ -271,7 +275,7 @@ format_qualitative <- function(desc, group,
     colnames(out)[2] <- paste0(group.label, ":", group,
                                " (n = ", desc$n, ")")
   } else {
-    colnames(out)[2] <- paste0("(n = ", desc$n, ")")
+    colnames(out)[2] <- paste0("All (n = ", desc$n, ")")
   }
   return(out)
 
