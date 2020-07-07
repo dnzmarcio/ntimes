@@ -13,36 +13,18 @@
 #'@param group a data frame with the group variable.
 #'@param alternative a character value indicating the alternative hypothesis,
 #'must be one of "two.sided", "greater" or "less".
-#'@param test a character value indicating the tests to be performed.
-#'The options are "auto", "par", "npar", "t", "wt", "mw", "bm". See more in details.
+#'@param norm.test a function with numeric variable and group variable as input, and object with p.value as output.
+#'@param var.test a function with numeric variable and group variable as input, and object with p.value as output.
+#'@param distr.test a list of functions for four possible cases: (1) normality and homoscedasticity,
+#'(2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.
 #'@param conf.level a character value specifying the confidence level of the confidence interval for
 #'the difference between the two groups.
 #'@param paired a logical value indicating whether a paired test should be used.
-#'@param norm.test a character value specifying the normality test to be performed.
-#'The options are Anderson-Darling (\code{ad}), Shapiro-Francia (\code{"sf"}),
-#'Kolmogorov-Smirnov (\code{ks}),  Cramer-vonMises (\code{cvm}) and
-#'Pearson (\code{p}). The default is Shapiro-Francia (\code{"sf"}). It is only used if
-#'\code{test = "automatic"}.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits.ci the number of digits to present the confidence intervals.
 #'@param digits.p the number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character value indicating the name of output file in csv format to be saved.
-#'
-#'@details If \code{test = "auto"}, the normality assumption will be verified by
-#'a normality test (Anderson-Daling (\link[nortest]{ad.test}),
-#'Shapiro-Francia (\link[nortest]{sf.test}),
-#''Kolmogorov-Smirnov (\link[nortest]{lillie.test}),
-#'Cramer-vonMises (\link[nortest]{cvm.test}),
-#'or Pearson (\link[nortest]{pearson.test})) and
-#'Levene test (\link[car]{leveneTest}) will evaluate the assumption of
-#'homocedasticity at a significance level of 0.05.
-#'If the data satisfies both assumptions, then t-test is chosen;
-#'if only normality is satisfied, then Welch t-test is performed; if only homoscedasticity, then
-#'Mann-Whitney is used; if neither assumptions, then Brunner-Munzel t test is applied;
-#'If \code{test = "par"}, then only parametric tests will be performed; If \code{test = "npar"}, then
-#'only non-parametric tests will be performed; If either "t", "wt", "mw" and "bm", then only t-test,
-#'Welch-t test, Mann-Whitney or Brunner-Munzel test will be performed, respectively.
 #'
 #'@examples
 #'library(dplyr)
@@ -164,13 +146,10 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
 #'
 #'@param data a data frame with the variables.
 #'@param group a data frame with the group variable.
-#'@param test a character value indicating the tests to be performed.
-#'The options are "auto", "par" and "npar". See more in details.
-#'@param norm.test a character value specifying the normality test to be performed.
-#'The options are Anderson-Darling (\code{ad}), Shapiro-Francia (\code{"sf"}),
-#'Kolmogorov-Smirnov (\code{ks}),  Cramer-vonMises (\code{cvm}) and
-#'Pearson (\code{p}). The default is Shapiro-Francia (\code{"sf"}). It is only used if
-#'\code{test = "automatic"}.
+#'@param norm.test a function with numeric variable and group variable as input, and object with p.value as output.
+#'@param var.test a function with numeric variable and group variable as input, and object with p.value as output.
+#'@param distr.test a list of functions for four possible cases: (1) normality and homoscedasticity,
+#'(2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.
 #'@param digits.p the number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character value indicating the name of output file in csv format to be saved.

@@ -25,11 +25,12 @@ nt_compare_mg(
 
 \item{group}{a data frame with the group variable.}
 
-\item{norm.test}{a character value specifying the normality test to be performed.
-The options are Anderson-Darling (\code{ad}), Shapiro-Francia (\code{"sf"}),
-Kolmogorov-Smirnov (\code{ks}),  Cramer-vonMises (\code{cvm}) and
-Pearson (\code{p}). The default is Shapiro-Francia (\code{"sf"}). It is only used if
-\code{test = "automatic"}.}
+\item{norm.test}{a function with numeric variable and group variable as input, and object with p.value as output.}
+
+\item{var.test}{a function with numeric variable and group variable as input, and object with p.value as output.}
+
+\item{distr.test}{a list of functions for four possible cases: (1) normality and homoscedasticity,
+(2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.}
 
 \item{digits.p}{the number of digits to present the p-values.}
 
@@ -38,9 +39,6 @@ Pearson (\code{p}). The default is Shapiro-Francia (\code{"sf"}). It is only use
 \item{file}{a character value indicating the name of output file in csv format to be saved.}
 
 \item{mc}{a logical value indicating if pairwise comparisons should will be performed.}
-
-\item{test}{a character value indicating the tests to be performed.
-The options are "auto", "par" and "npar". See more in details.}
 }
 \description{
 Performing comparisons among three or more groups.
