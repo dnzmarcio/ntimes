@@ -247,6 +247,7 @@ qualitative_measures <- function(h, digits){
   lh <- levels(h)
 
   count <- tapply(h, h, length)
+  count <- ifelse(is.na(count), 0, count)
   n <- length(h)
   perc <- round(100*prop.table(count), digits)
   perc <- ifelse(!is.finite(perc), NA, perc)
