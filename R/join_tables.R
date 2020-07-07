@@ -72,7 +72,7 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
         replace_na(list(`p value` = ""))
 
       if (save)
-        write.csv(tab, file = paste0(file, ".csv"))
+        write.csv(out, file = paste0(file, ".csv"))
     } else if (attr(test.tab, "ntimes") == "multiple_groups"){
 
       test.tab <- test.tab$omnibus.test %>%
@@ -88,7 +88,7 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
         replace_na(list(`p value` = ""))
 
       if (save)
-        write.csv(tab, file = paste0(file, ".csv"))
+        write.csv(out, file = paste0(file, ".csv"))
     } else if (attr(test.tab, "ntimes") == "multiple_comparisons"){
 
       aux <- test.tab$omnibus.test %>%
@@ -115,7 +115,7 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
       out <- list(tab = tab, comparisons = comparisons)
 
       if (save){
-        write.csv(tab, file = paste0(file, ".csv"))
+        write.csv(out, file = paste0(file, ".csv"))
         write.csv(comparisons, file = paste0(file, "_legend.csv"))
       }
     }
@@ -129,8 +129,7 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
     colnames(tab)[3:4] <- c(temp[[3]][2], temp[[4]][2])
 
     if (save){
-      write.csv(tab, file = paste0(file, ".csv"))
-      write.csv(comparisons, file = paste0(file, "_legend.csv"))
+      write.csv(out, file = paste0(file, ".csv"))
     }
 
     out <- tab
