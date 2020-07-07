@@ -106,7 +106,8 @@ nt_compare_tg <- function(data, group,
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
 
-  class(out) <- c("data.frame", "two_groups")
+  attr(out, "ntimes") <- "two_groups"
+
   return(out)
 }
 
@@ -262,10 +263,10 @@ nt_compare_mg <- function(data, group,
 
   if (!mc){
     out <- list(omnibus.test = omnibus.test)
-    class(out) <- c("list", "multiple_groups")
+    attr(out, "ntimes") <- "multiple_groups"
   } else {
     out <- list(omnibus.test = omnibus.test, mc.test = mc.test)
-    class(out) <- c("list", "multiple_comparisons")
+    attr(out, "ntimes") <- "multiple_comparisons"
   }
 
 

@@ -56,7 +56,7 @@ nt_describe <- function(data,
   if (save)
     write.csv(out, file = paste0(file, ".csv"))
 
-  class(out) <- c("data.frame", "descriptive")
+  attr(out, "ntimes") <- "descriptive"
   return(out)
 }
 
