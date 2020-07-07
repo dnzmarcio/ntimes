@@ -134,6 +134,7 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
     }
 
     out <- tab
+    attr(out, "ntimes") <- "descriptive"
   }
 
   return(out)
