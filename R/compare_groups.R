@@ -15,7 +15,7 @@
 #'must be one of "two.sided", "greater" or "less".
 #'@param norm.test a function with numeric variable and group variable as input, and object with p.value as output.
 #'@param var.test a function with numeric variable and group variable as input, and object with p.value as output.
-#'@param distr.test a list of functions for four possible cases: (1) normality and homoscedasticity,
+#'@param qt.test a list of functions for four possible cases: (1) normality and homoscedasticity,
 #'(2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.
 #'@param conf.level a character value specifying the confidence level of the confidence interval for
 #'the difference between the two groups.
@@ -40,7 +40,7 @@ nt_compare_tg <- function(data, group,
                           alternative = "two.sided",
                           norm.test = nt_norm_test(test = "sf"),
                           var.test = nt_var_test(test = "levene"),
-                          distr.test =
+                          qt.test =
                             list(nt_student_t, nt_welch_t,
                                  nt_mann_whitney, nt_brunner_munzel),
                           paired = FALSE,
@@ -66,7 +66,7 @@ nt_compare_tg <- function(data, group,
                group = group, group.name = group.name,
                norm.test = norm.test,
                var.test = var.test,
-               distr.test = distr.test,
+               qt.test = qt.test,
                paired = paired,
                alternative = alternative,
                conf.level = conf.level,
@@ -94,7 +94,7 @@ nt_compare_tg <- function(data, group,
 }
 
 aux_compare_tg <- function(var, var.name, group, group.name = group.name,
-                           norm.test, var.test, distr.test,
+                           norm.test, var.test, qt.test,
                            paired = paired, alternative, conf.level,
                            format, digits.p, digits.ci){
 
@@ -107,7 +107,7 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
                       group = group[[1]],
                       norm.test = norm.test,
                       var.test = var.test,
-                      distr.test = distr.test,
+                      qt.test = qt.test,
                       paired = paired,
                       alternative = alternative,
                       conf.level = conf.level,
@@ -148,7 +148,7 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
 #'@param group a data frame with the group variable.
 #'@param norm.test a function with numeric variable and group variable as input, and object with p.value as output.
 #'@param var.test a function with numeric variable and group variable as input, and object with p.value as output.
-#'@param distr.test a list of functions for four possible cases: (1) normality and homoscedasticity,
+#'@param qt.test a list of functions for four possible cases: (1) normality and homoscedasticity,
 #'(2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.
 #'@param digits.p the number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
@@ -177,7 +177,7 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
 nt_compare_mg <- function(data, group,
                           norm.test = nt_norm_test(test = "sf"),
                           var.test = nt_var_test(test = "levene"),
-                          distr.test =
+                          qt.test =
                             list(nt_anova, nt_welch_anova,
                                  nt_kruskal_wallis),
                           contrast = "Tukey",
@@ -199,7 +199,7 @@ nt_compare_mg <- function(data, group,
   temp <- map2(.x = vars, .y = vars.name, .f = aux_compare_mg,
                group = group, group.name = group.name,
                norm.test = norm.test, var.test = var.test,
-               distr.test = distr.test,
+               qt.test = qt.test,
                digits.p = digits.p, mc = mc)
 
   omnibus.test <- Reduce(rbind, temp)
@@ -256,7 +256,7 @@ nt_compare_mg <- function(data, group,
 
 aux_compare_mg <- function(var, var.name, group, group.name,
                            norm.test, var.test,
-                           distr.test,
+                           qt.test,
                            format, digits.p, mc){
   if (mc){
     var.label <- var.name
@@ -270,7 +270,7 @@ aux_compare_mg <- function(var, var.name, group, group.name,
   if (is.numeric(var)){
     out <- dist_qt_mg(var = var,
                          group = group[[1]],
-                         distr.test = distr.test,
+                         qt.test = qt.test,
                          norm.test = norm.test,
                          digits.p = digits.p,
                          var.label = var.label,

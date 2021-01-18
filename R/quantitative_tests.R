@@ -1,5 +1,5 @@
 dist_qt_tg <-  function(var, group,
-                           norm.test, var.test, distr.test,
+                           norm.test, var.test, qt.test,
                            alternative, conf.level, paired,
                            digits.p, digits.ci,
                            var.label, group.label) {
@@ -24,13 +24,13 @@ dist_qt_tg <-  function(var, group,
     # Possible cases
     if (all(p.norm > 0.05)) {
       if (p.var > 0.05) {
-        result <- try(distr.test[[1]](data.test$x, data.test$g,
+        result <- try(qt.test[[1]](data.test$x, data.test$g,
                                   alternative = alternative,
                                   paired = paired,
                                   conf.level = conf.level), silent = TRUE)
 
       } else {
-        result <- try(distr.test[[2]](data.test$x, data.test$g,
+        result <- try(qt.test[[2]](data.test$x, data.test$g,
                                   alternative = alternative,
                                   paired = paired,
                                   conf.level = conf.level), silent = TRUE)
@@ -38,13 +38,13 @@ dist_qt_tg <-  function(var, group,
 
     } else {
       if (p.var > 0.05) {
-        result <- try(distr.test[[3]](data.test$x, data.test$g,
+        result <- try(qt.test[[3]](data.test$x, data.test$g,
                                   alternative = alternative,
                                   paired = paired,
                                   conf.level = conf.level), silent = TRUE)
 
       } else {
-        result <- try(distr.test[[4]](data.test$x, data.test$g,
+        result <- try(qt.test[[4]](data.test$x, data.test$g,
                                   alternative = alternative,
                                   paired = paired,
                                   conf.level = conf.level), silent = TRUE)
@@ -91,7 +91,7 @@ dist_qt_tg <-  function(var, group,
 }
 
 dist_qt_mg <-  function(var, group,
-                        norm.test, var.test, distr.test,
+                        norm.test, var.test, qt.test,
                         digits.p,
                         var.label, group.label) {
 
@@ -114,12 +114,12 @@ dist_qt_mg <-  function(var, group,
 
     if (all(p.norm > 0.05)) {
       if (p.var > 0.05) {
-        result <- try(distr.test[[1]](data.test$x, data.test$g), silent = TRUE)
+        result <- try(qt.test[[1]](data.test$x, data.test$g), silent = TRUE)
       } else {
-        result <- try(distr.test[[2]](data.test$x, data.test$g), silent = TRUE)
+        result <- try(qt.test[[2]](data.test$x, data.test$g), silent = TRUE)
       }
     } else {
-      result <- try(distr.test[[3]](data.test$x, data.test$g), silent = TRUE)
+      result <- try(qt.test[[3]](data.test$x, data.test$g), silent = TRUE)
     }
 
     if (class(result) != "try-error"){

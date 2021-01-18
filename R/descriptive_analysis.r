@@ -26,9 +26,11 @@
 #'@export
 nt_describe <- function(data,
                         group = NULL,
-                        measures = list(nt_mean_sd,
+                        measures_qt = list(nt_mean_sd,
                                         nt_median_iqr,
-                                        nt_median_range),
+                                        nt_median_range,
+                                        nt_missing),
+                        measures_ql = list(nt_perc_count),
                         digits = 2,
                         save = FALSE,
                         file = "descriptive_analysis"){
@@ -49,7 +51,8 @@ nt_describe <- function(data,
 
   temp <- map2(.x = vars, .y = vars.name, .f = aux_describe,
                group = group[[1]], group.name = group.name, digits = digits,
-               measures = measures)
+               measures_qt = measures_qt,
+               measures_ql = measures_ql)
 
   out <- Reduce(rbind, temp)
 
@@ -95,7 +98,36 @@ nt_median_range <- function(var, digits){
   return(out)
 }
 
-aux_describe <- function(var, var.name, group, group.name, digits, measures){
+#'@export
+nt_missing <- function(var, digits){
+  out <- list(name = "Missing", measure = sum(is.na(var)))
+  return(out)
+}
+
+#'@importFrom forcats fct_explicit_na
+#'@export
+nt_perc_count <- function(var, digits){
+  h <- fct_explicit_na(var, na_level = "Missing")
+  lh <- levels(var)
+
+  count <- tapply(h, h, length)
+  count <- ifelse(is.na(count), 0, count)
+  n <- length(h)
+  perc <- 100*prop.table(count)
+  perc <- ifelse(!is.finite(perc), NA, format(round(perc, digits), nsmall = digits))
+
+  perc_count <- paste0(perc, " (", count, ")")
+
+  if (!("Missing" %in% lh)){
+    lh <- c(lh, "Missing")
+    perc_count <- c(perc_count, "0 (0)")
+  }
+
+  out <- list(name= lh, measure = perc_count)
+}
+
+aux_describe <- function(var, var.name, group, group.name,
+                         digits, measures_qt, measures_ql){
 
   var.label <- extract_label(var, var.name)
   unit.label <- extract_unit(var)
@@ -110,13 +142,14 @@ aux_describe <- function(var, var.name, group, group.name, digits, measures){
                                  var.label = var.label,
                                  unit.label = unit.label,
                                  group.label = group.label,
-                                 measures = measures)
+                                 measures_qt = measures_qt)
   } else {
     out <- describe_qualitative(var = var,
                                 group = group,
                                 digits = digits,
                                 var.label = var.label,
-                                group.label = group.label)
+                                group.label = group.label,
+                                measures_ql = measures_ql)
 
 
   }
@@ -126,12 +159,12 @@ aux_describe <- function(var, var.name, group, group.name, digits, measures){
 describe_quantitative <- function(var, group,
                                   digits,
                                   var.label, unit.label, group.label,
-                                  measures){
+                                  measures_qt){
 
   if (is.null(group)) {
     desc <- quantitative_measures(var,
                                   digits = digits,
-                                  measures = measures)
+                                  measures_qt = measures_qt)
     out <- format_quantitative(desc = desc, group = NULL,
                                var.label = var.label,
                                unit.label = unit.label,
@@ -148,7 +181,7 @@ describe_quantitative <- function(var, group,
 
     desc <- tapply(var, group, quantitative_measures,
                    digits = digits,
-                   measures = measures)
+                   measures_qt = measures_qt)
     group.lv <- setNames(as.list(levels(group)), levels(group))
     temp <- mapply(aux, desc, group.lv, SIMPLIFY = FALSE)
 
@@ -161,15 +194,9 @@ describe_quantitative <- function(var, group,
   return(out)
 }
 
-quantitative_measures <- function(x, digits, measures){
+quantitative_measures <- function(x, digits, measures_qt){
 
-  missing <- function(var, digits){
-    out <- list(name = " Missing", measure = sum(is.na(var)))
-    return(out)
-  }
-
-  out <- lapply(measures, function(f) f(x, digits = digits))
-  out$missing <- missing(x, digits)
+  out <- lapply(measures_qt, function(f) f(x, digits = digits))
   out$n <- list(name = " n", measure = length(x))
 
   return(out)
@@ -208,15 +235,19 @@ format_quantitative <- function(desc,
 
 describe_qualitative <- function(var, group = NULL,
                                  digits = 2,
-                                 var.label, group.label){
+                                 var.label, group.label,
+                                 measures_ql){
 
-  if (!is.factor(var))
-    stop(paste0(var.label, " is not a factor."))
+  if (!is.factor(var)){
+    var <- as.factor(var)
+    warning(paste0(var.label, " was transformed into a factor."))
+  }
 
   lv <- levels(var)
 
   if (is.null(group)) {
-    desc <- qualitative_measures(h = var, digits = digits)
+    desc <- qualitative_measures(h = var, digits = digits,
+                                 measures_ql = measures_ql)
     out <- format_qualitative(desc = desc, group = NULL,
                               var.label = var.label)
 
@@ -230,7 +261,7 @@ describe_qualitative <- function(var, group = NULL,
     }
 
     desc <- tapply(var, group, qualitative_measures,
-                   digits = digits)
+                   digits = digits, measures_ql = measures_ql)
     group.lv <- setNames(as.list(levels(group)), levels(group))
     temp <- mapply(aux, desc, group.lv, SIMPLIFY = FALSE)
 
@@ -241,42 +272,38 @@ describe_qualitative <- function(var, group = NULL,
   return(out)
 }
 
-#'@importFrom forcats fct_explicit_na
-qualitative_measures <- function(h, digits){
-  h <- fct_explicit_na(h, na_level = "Missing")
-  lh <- levels(h)
+qualitative_measures <- function(h, digits, measures_ql){
 
-  count <- tapply(h, h, length)
-  count <- ifelse(is.na(count), 0, count)
-  n <- length(h)
-  perc <- round(100*prop.table(count), digits)
-  perc <- ifelse(!is.finite(perc), NA, perc)
-
-  perc_count <- paste0(perc, " (", count, ")")
-
-  if (!("Missing" %in% lh)){
-    lh <- c(lh, "Missing")
-    perc_count <- c(perc_count, "0 (0)")
-  }
-
-  out <- list(levels = lh, perc_count = perc_count, n = n)
+  out <- lapply(measures_ql, function(f) f(h, digits = digits))
+  out$n <- list(name = " n", measure = length(h))
 
   return(out)
+
 }
 
 format_qualitative <- function(desc, group,
-                               var.label, group.label = NULL){
+                               var.label, group.label){
 
-  aux_variable <- c(var.label, paste("", as.character(desc$levels)))
-  aux_measure <- c("", desc$perc_count)
+  if (is.null(desc[[1]]$name)){
+    aux_variable <- var.label
+  } else {
+    aux_variable <- c(var.label, paste0("  \t ",
+                                        as.character(desc[[1]]$name)))
+  }
+
+  aux_measure <- c("", desc[[1]]$measure)
 
   out <- data.frame(Variable = aux_variable, Measure = aux_measure)
 
+
+  if (is.null(desc$n))
+    desc$n$measure <- 0
+
   if (!is.null(group)){
-    colnames(out)[2] <- paste0(group.label, ":", group,
-                               " (n = ", desc$n, ")")
+    colnames(out)[2] <- paste0(group.label, ": ", group,
+                               " (n = ", desc$n$measure, ")")
   } else {
-    colnames(out)[2] <- paste0("All (n = ", desc$n, ")")
+    colnames(out)[2] <- paste0("All (n = ", desc$n$measure, ")")
   }
   return(out)
 
