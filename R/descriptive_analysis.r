@@ -132,8 +132,14 @@ aux_describe <- function(var, var.name, group, group.name,
   var.label <- extract_label(var, var.name)
   unit.label <- extract_unit(var)
 
-  if (!is.null(group))
+  if (!is.null(group)){
     group.label <- extract_label(group, group.name)
+
+    if (!is.factor(group)){
+      group <- as.factor(group)
+      warning(paste0("Group variable was transformed into a factor."))
+    }
+  }
 
   if (is.numeric(var)){
     out <- describe_quantitative(var = var,

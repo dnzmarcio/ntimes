@@ -166,6 +166,11 @@ aux_simple_cox <- function(var, var.name, time, status,
                                        increment[[aux.names[i]]],
                                        " unit of change"))
     } else {
+      if (!is.factor(var)){
+        var <- as.factor(var)
+        warning(paste0(var.name, "was transformed into a factor."))
+      }
+
       lv <- levels(var)
       tab.levels[[i]] <- paste0(lv[2:length(lv)], "/", lv[1])
     }
