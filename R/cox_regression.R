@@ -179,7 +179,8 @@ aux_simple_cox <- function(var, var.name, time, status,
   }
 
   data.model <- bind_cols(time = time, status = status, var = var, add = add)
-  out <- fit_cox(data.model, tab.labels, tab.levels, strata.var, increment)
+  out <- fit_cox(data.model, tab.labels, tab.levels,
+                 strata.var, increment[[var.name]])
 
   if (format){
     out$p.value.lr = ifelse(duplicated(out$term), NA, out$p.value.lr)
@@ -202,18 +203,20 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
   data <- na.exclude(data)
 
   if (!is.null(increment))
-    for (i in 1:length(increment)){
-      data[[tab.labels[[i]]]] <- data[[tab.labels[[i]]]]/increment[[i]]
-    }
+    # for (i in 1:length(increment)){
+    #   if (tab.type[[i]] == "numeric")
+        data[[tab.labels]] <- data[[tab.labels]]/increment
+    #}
 
   if (is.null(strata.var)){
     fit <- try(coxph(Surv(time, status) ~ ., data = data), silent = TRUE)
 
     if (class(fit) != "try-error"){
       temp <- tidy(fit, exponentiate = TRUE, conf.int = TRUE)
-      temp$term <- c("(Intercept)", unlist(tab.labels))
-      temp$group <- c("", unlist(tab.levels))
-      temp <- temp[, c(1,2,6,7,5)]
+      temp$term <- unlist(tab.labels)
+      temp$group <- unlist(tab.levels)
+      temp <- temp[, c("term", "group", "estimate",
+                       "conf.low", "conf.high", "p.value")]
 
       p.value.lr <- rep(NA, length(unique(temp$term)))
       for (i in 3:ncol(data)){

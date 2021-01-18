@@ -143,7 +143,7 @@ aux_simple_logistic <- function(var, var.name, response, response.label,
     tab.labels[[names(aux.labels)[i]]] <- rep(aux.labels[[i]], length(tab.levels[[i]]))
   }
 
-  out <- fit_logistic(data.model, tab.labels, tab.levels, var.label, increment)
+  out <- fit_logistic(data.model, tab.labels, tab.levels, var.label, increment[[var.name]])
 
   # if (any(duplicated(out$term))){
   #   index <- which(duplicated(out$term, fromLast = TRUE))
@@ -167,9 +167,9 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label, increment){
   data <- na.exclude(data)
 
   if (!is.null(increment))
-    for (i in 1:length(increment)){
-      data[[tab.labels[[i]]]] <- data[[tab.labels[[i]]]]/increment[[i]]
-    }
+    #for (i in 1:length(increment)){
+      data[[tab.labels[[i]]]] <- data[[tab.labels[[i]]]]/increment
+    #}
 
   fit <- glm(response ~ ., data = data, family = "binomial")
 
