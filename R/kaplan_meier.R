@@ -73,12 +73,12 @@ nt_km <-  function(data, time, status,
 
   plot <- list()
 
-  gp <- std_fun(time, status, xlab = xlab, ylab = ylab)
+  overall <- std_fun(time, status, xlab = xlab, ylab = ylab)
   if (!is.null(time.points))
     aux <- tab_km(time, status, time.points, digits = digits)
 
   if(save)
-    gp <- gp + ggsave(filename = "km_overall.jpeg",
+    overall <- overall + ggsave(filename = "km_overall.jpeg",
                       height = fig.height, width = fig.width)
 
 
@@ -99,6 +99,8 @@ nt_km <-  function(data, time, status,
       tab <- aux
   }
 
+  plot$overall <- overall
+
   if (!is.null(time.points)){
     if (format){
       tab <-  tab  %>%
@@ -116,8 +118,8 @@ nt_km <-  function(data, time, status,
 
     out <- list(tab = tab, plot = plot)
   } else {
-    plot$overall <- gp
-    out <- plot
+    plot$overall <- overall
+    out <- list(plot = plot)
   }
 
   return(out)
