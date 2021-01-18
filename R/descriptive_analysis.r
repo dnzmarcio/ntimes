@@ -66,9 +66,9 @@ nt_describe <- function(data,
 #'@importFrom stats sd
 #'@export
 nt_mean_sd <- function(var, digits){
-  mean <- round(mean(var, na.rm = TRUE), digits)
-  sd <- round(sd(var, na.rm = TRUE), digits)
-  name <- paste0(" Mean", " \U00b1 ", "SD")
+  mean <- format(round(mean(var, na.rm = TRUE), digits), nsmall = digits)
+  sd <- format(round(sd(var, na.rm = TRUE), digits), nsmall = digits)
+  name <- paste0("Mean", " \U00b1 ", "SD")
   measure <- paste0(mean, " \U00b1 ", sd)
   out <- list(name = name, measure = measure)
   return(out)
@@ -77,10 +77,13 @@ nt_mean_sd <- function(var, digits){
 #'@importFrom stats median quantile
 #'@export
 nt_median_iqr <- function(var, digits){
-  median <- round(median(var, na.rm = TRUE), digits)
-  q25 <- round(quantile(var, probs = 0.25, na.rm = TRUE), digits)
-  q75 <- round(quantile(var, probs = 0.75, na.rm = TRUE), digits)
-  name <- " Median (Q25% ; Q75%)"
+  median <- format(round(median(var, na.rm = TRUE), digits),
+                   nsmall = digits)
+  q25 <- format(round(quantile(var, probs = 0.25, na.rm = TRUE), digits),
+                nsmall = digits)
+  q75 <- format(round(quantile(var, probs = 0.75, na.rm = TRUE), digits),
+                nsmall = digits)
+  name <- "Median (Q25% ; Q75%)"
   measure <- paste0(median," (", q25, " ; ", q75, ")")
   out <- list(name = name, measure = measure)
   return(out)
@@ -89,10 +92,13 @@ nt_median_iqr <- function(var, digits){
 #'@importFrom stats median
 #'@export
 nt_median_range <- function(var, digits){
-  median <- round(median(var, na.rm = TRUE), digits)
-  min <- round(min(var, na.rm = TRUE), digits)
-  max <- round(max(var, na.rm = TRUE), digits)
-  name <- " Median (Min ; Max)"
+  median <- format(round(median(var, na.rm = TRUE), digits),
+                   nsmall = digits)
+  min <- format(round(min(var, na.rm = TRUE), digits),
+                nsmall = digits)
+  max <- format(round(max(var, na.rm = TRUE), digits),
+                nsmall = digits)
+  name <- "Median (Min ; Max)"
   measure <- paste0(median," (", min, " ; ", max, ")")
   out <- list(name = name, measure = measure)
   return(out)
@@ -219,8 +225,8 @@ format_quantitative <- function(desc,
 
   if (length(desc[-length(desc)]) > 1){
     aux_variable <- c(var.label,
-                      Reduce(c, lapply(desc[-length(desc)],
-                                       function(x) x$name)))
+                      paste0("  \t ", Reduce(c, lapply(desc[-length(desc)],
+                                       function(x) x$name))))
     aux_measures <- c("", Reduce(c, lapply(desc[-length(desc)],
                                            function(x) x$measure)))
   } else {
@@ -230,8 +236,11 @@ format_quantitative <- function(desc,
 
   out <- data.frame(Variable = aux_variable, Measure = aux_measures)
 
+  if (is.null(desc$n$measure))
+    desc$n$measure <- 0
+
   if (!is.null(group)){
-    colnames(out)[2] <- paste0(group.label, ":", group,
+    colnames(out)[2] <- paste0(group.label, ": ", group,
                                " (n = ", desc$n$measure, ")")
   } else {
     colnames(out)[2] <- paste0("All (n = ", desc$n$measure, ")")
