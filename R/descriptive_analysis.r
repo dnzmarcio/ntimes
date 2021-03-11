@@ -89,11 +89,12 @@ nt_describe <- function(data,
 #'@importFrom stats sd
 #'@export
 nt_mean_sd <- function(var, digits){
+
   mean <- format(round(mean(var, na.rm = TRUE), digits), nsmall = digits)
   sd <- format(round(sd(var, na.rm = TRUE), digits), nsmall = digits)
   name <- paste0("Mean", " \U00b1 ", "SD")
-  measure <- paste0(mean, " \U00b1 ", sd)
-  out <- list(name = name, measure = measure)
+  value <- paste0(mean, " \U00b1 ", sd)
+  out <- list(name = name, value = value)
   return(out)
 }
 
@@ -114,6 +115,7 @@ nt_mean_sd <- function(var, digits){
 #'@importFrom stats median quantile
 #'@export
 nt_median_iqr <- function(var, digits){
+
   median <- format(round(median(var, na.rm = TRUE), digits),
                    nsmall = digits)
   q25 <- format(round(quantile(var, probs = 0.25, na.rm = TRUE), digits),
@@ -121,8 +123,8 @@ nt_median_iqr <- function(var, digits){
   q75 <- format(round(quantile(var, probs = 0.75, na.rm = TRUE), digits),
                 nsmall = digits)
   name <- "Median (Q25% ; Q75%)"
-  measure <- paste0(median," (", q25, " ; ", q75, ")")
-  out <- list(name = name, measure = measure)
+  value <- paste0(median," (", q25, " ; ", q75, ")")
+  out <- list(name = name, value = value)
   return(out)
 }
 
@@ -144,6 +146,7 @@ nt_median_iqr <- function(var, digits){
 #'@importFrom stats median
 #'@export
 nt_median_range <- function(var, digits){
+
   median <- format(round(median(var, na.rm = TRUE), digits),
                    nsmall = digits)
   min <- format(round(min(var, na.rm = TRUE), digits),
@@ -151,8 +154,8 @@ nt_median_range <- function(var, digits){
   max <- format(round(max(var, na.rm = TRUE), digits),
                 nsmall = digits)
   name <- "Median (Min ; Max)"
-  measure <- paste0(median," (", min, " ; ", max, ")")
-  out <- list(name = name, measure = measure)
+  value <- paste0(median," (", min, " ; ", max, ")")
+  out <- list(name = name, value = value)
   return(out)
 }
 
@@ -172,7 +175,8 @@ nt_median_range <- function(var, digits){
 #'
 #'@export
 nt_missing <- function(var, digits){
-  out <- list(name = "Missing", measure = sum(is.na(var)))
+
+  out <- list(name = "Missing", value = sum(is.na(var)))
   return(out)
 }
 
@@ -209,7 +213,7 @@ nt_perc_count <- function(var, digits){
     perc_count <- c(perc_count, "0 (0)")
   }
 
-  out <- list(name= lh, measure = perc_count)
+  out <- list(name = lh, value = perc_count)
 }
 
 aux_describe <- function(var, var.name, group, group.name,
@@ -289,7 +293,7 @@ describe_quantitative <- function(var, group,
 quantitative_measures <- function(x, digits, measures_qt){
 
   out <- lapply(measures_qt, function(f) f(x, digits = digits))
-  out$n <- list(name = " n", measure = length(x))
+  out$n <- list(name = " n", value = length(x))
 
   return(out)
 }
@@ -305,25 +309,28 @@ format_quantitative <- function(desc,
 
   if (length(desc[-length(desc)]) > 1){
     aux_variable <- c(var.label,
-                      paste0("  \t ", Reduce(c, lapply(desc[-length(desc)],
-                                       function(x) x$name))))
+                      paste0("  \t ",
+                             Reduce(c, lapply(desc[-length(desc)],
+                                              function(x)
+                                                x$name))))
     aux_measures <- c("", Reduce(c, lapply(desc[-length(desc)],
-                                           function(x) x$measure)))
+                                           function(x)
+                                             x$value)))
   } else {
     aux_variable <- var.label
-    aux_measures <- desc[[1]]$measure
+    aux_measures <- desc[[1]]$value
   }
 
   out <- data.frame(Variable = aux_variable, Measure = aux_measures)
 
-  if (is.null(desc$n$measure))
-    desc$n$measure <- 0
+  if (is.null(desc$n$value))
+    desc$n$value <- 0
 
   if (!is.null(group)){
     colnames(out)[2] <- paste0(group.label, ": ", group,
-                               " (n = ", desc$n$measure, ")")
+                               " (n = ", desc$n$value, ")")
   } else {
-    colnames(out)[2] <- paste0("All (n = ", desc$n$measure, ")")
+    colnames(out)[2] <- paste0("All (n = ", desc$n$value, ")")
   }
   return(out)
 }
@@ -369,8 +376,11 @@ describe_qualitative <- function(var, group = NULL,
 
 qualitative_measures <- function(h, digits, measures_ql){
 
-  out <- lapply(measures_ql, function(f) f(h, digits = digits))
-  out$n <- list(name = " n", measure = length(h))
+  aux <- function(f) {
+    out <- f(h, digits = digits)
+  }
+  out <- lapply(measures_ql, aux)
+  out$n <- list(name = " n", value = length(h))
 
   return(out)
 
@@ -386,19 +396,19 @@ format_qualitative <- function(desc, group,
                                         as.character(desc[[1]]$name)))
   }
 
-  aux_measure <- c("", desc[[1]]$measure)
+  aux_measure <- c("", desc[[1]]$value)
 
   out <- data.frame(Variable = aux_variable, Measure = aux_measure)
 
 
   if (is.null(desc$n))
-    desc$n$measure <- 0
+    desc$n$value <- 0
 
   if (!is.null(group)){
     colnames(out)[2] <- paste0(group.label, ": ", group,
-                               " (n = ", desc$n$measure, ")")
+                               " (n = ", desc$n$value, ")")
   } else {
-    colnames(out)[2] <- paste0("All (n = ", desc$n$measure, ")")
+    colnames(out)[2] <- paste0("All (n = ", desc$n$value, ")")
   }
   return(out)
 
