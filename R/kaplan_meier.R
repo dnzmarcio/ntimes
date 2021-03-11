@@ -136,21 +136,21 @@ nt_km <-  function(data, time, status, labels = NULL,
   return(out)
 }
 
-#'@importFrom survival survfit
+#'@importFrom survival survfit Surv
 tab_km <- function(time, status, time.points, digits){
 
   data.model <- data.frame(time, status)
   fit <- survfit(Surv(time, status) ~ 1, data = data.model)
   temp <- summary(fit, times = time.points)
 
-  out <- data.frame(Time = temp$time, Variable = "Overall",
-                    Group = NA, survival = temp$surv,
+  out <- data.frame(time = temp$time, variable = "Overall",
+                    group = NA, survival = temp$surv,
                     lower = temp$lower, upper = temp$upper)
 
   return(out)
 }
 
-#'@importFrom survival survfit
+#'@importFrom survival survfit Surv
 #'@importFrom tidyr separate
 #'@importFrom dplyr mutate
 #'@importFrom rlang .data
