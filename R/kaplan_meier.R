@@ -49,7 +49,7 @@
 #'@importFrom magrittr %>%
 #'
 #'@export
-nt_km <-  function(data, time, status,
+nt_km <-  function(data, time, status, labels = NULL,
                    xlab = "Time", ylab = "Survival",
                    save = FALSE, fig.height = 5, fig.width = 5,
                    std_fun = std_km,
@@ -81,9 +81,18 @@ nt_km <-  function(data, time, status,
     overall <- overall + ggsave(filename = "km_overall.jpeg",
                       height = fig.height, width = fig.width)
 
+  if (!is.null(labels)){
+    vars <- data_labeller(vars, labels)
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                      .f = extract_label)
+  } else {
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+  }
 
   if(ncol(data) > 2){
-    plot <- map2(.x = vars, .y = vars.name, .f = aux_km,
+    plot <- pmap(.l = list(vars, vars.name, vars.label),
+                 .f = aux_km,
                  time = time, status = status,
                  xlab = xlab, ylab = ylab,
                  fig.height = fig.height, fig.width = fig.width,
@@ -104,7 +113,9 @@ nt_km <-  function(data, time, status,
   if (!is.null(time.points)){
     if (format){
       tab <-  tab  %>%
-        mutate(Variable = ifelse(duplicated(.data$Variable), "", .data$Variable)) %>%
+        rename(Variable = variable,
+               Group = group,
+               Time = time) %>%
         mutate(`Survival (CI 95%)` =
                  paste0(round(.data$survival, digits),
                         " (", round(.data$lower, digits),
@@ -151,29 +162,27 @@ tab_km_group <- function(var, var.name, time, status, time.points, digits){
   fit <- survfit(Surv(time, status) ~ var, data = data.model)
   temp <- summary(fit, times = time.points)
 
-  out <- data.frame(Time = temp$time,
+  out <- data.frame(time = temp$time,
                     strata = temp$strata,
                     survival = temp$surv,
                     lower = temp$lower,
                     upper = temp$upper) %>%
-    separate(.data$strata, into = c("variable", "Group"), sep = "=") %>%
-    mutate(Variable = var.label) %>% select(-.data$variable)
+    separate(.data$strata, into = c("variable", "group"), sep = "=") %>%
+    mutate(variable = var.label)
 
   return(out)
 }
 
 
-aux_km <- function(var, var.name, time, status, xlab, ylab,
+aux_km <- function(var, var.name, var.label, time, status, xlab, ylab,
                    fig.height, fig.width, save, std_fun_group){
 
   if (is.character(var))
     var <- as.factor(var)
   if (is.numeric(var))
-    stop(paste0(var.name, " is numeric!"))
+    stop(paste0(var.label, " is numeric!"))
 
   if (nlevels(droplevels(var)) >= 2){
-    var.label <- extract_label(var, var.name)
-
     out <- std_fun_group(time = time, status = status,
                          var = var, var.label = var.label,
                          xlab = xlab, ylab = ylab)
