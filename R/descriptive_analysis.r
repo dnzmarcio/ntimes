@@ -197,8 +197,9 @@ nt_missing <- function(var, digits){
 #'@importFrom forcats fct_explicit_na
 #'@export
 nt_perc_count <- function(var, digits){
+
   h <- fct_explicit_na(var, na_level = "Missing")
-  lh <- levels(var)
+  lh <- levels(h)
 
   count <- tapply(h, h, length)
   count <- ifelse(is.na(count), 0, count)
