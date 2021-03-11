@@ -8,6 +8,7 @@ nt_km(
   data,
   time,
   status,
+  labels = NULL,
   xlab = "Time",
   ylab = "Survival",
   save = FALSE,
