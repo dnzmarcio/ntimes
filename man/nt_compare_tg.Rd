@@ -10,7 +10,7 @@ nt_compare_tg(
   alternative = "two.sided",
   norm.test = nt_norm_test(test = "sf"),
   var.test = nt_var_test(test = "levene"),
-  distr.test = list(nt_student_t, nt_welch_t, nt_mann_whitney, nt_brunner_munzel),
+  qt.test = list(nt_student_t, nt_welch_t, nt_mann_whitney, nt_brunner_munzel),
   paired = FALSE,
   conf.level = 0.95,
   format = TRUE,
@@ -32,7 +32,7 @@ must be one of "two.sided", "greater" or "less".}
 
 \item{var.test}{a function with numeric variable and group variable as input, and object with p.value as output.}
 
-\item{distr.test}{a list of functions for four possible cases: (1) normality and homoscedasticity,
+\item{qt.test}{a list of functions for four possible cases: (1) normality and homoscedasticity,
 (2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.}
 
 \item{paired}{a logical value indicating whether a paired test should be used.}

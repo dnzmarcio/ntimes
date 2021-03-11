@@ -9,7 +9,7 @@ nt_compare_mg(
   group,
   norm.test = nt_norm_test(test = "sf"),
   var.test = nt_var_test(test = "levene"),
-  distr.test = list(nt_anova, nt_welch_anova, nt_kruskal_wallis),
+  qt.test = list(nt_anova, nt_welch_anova, nt_kruskal_wallis),
   contrast = "Tukey",
   alternative = "two.sided",
   format = TRUE,
@@ -29,7 +29,7 @@ nt_compare_mg(
 
 \item{var.test}{a function with numeric variable and group variable as input, and object with p.value as output.}
 
-\item{distr.test}{a list of functions for four possible cases: (1) normality and homoscedasticity,
+\item{qt.test}{a list of functions for four possible cases: (1) normality and homoscedasticity,
 (2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.}
 
 \item{digits.p}{the number of digits to present the p-values.}
