@@ -1,7 +1,29 @@
 #'Descriptive measures
 #'
-#'@description Calculating a descriptive table for quantitative and
-#'qualitative variables in the usual format to present in scientific article.
+#'@description It calculates a descriptive table for quantitative and
+#'qualitative variables in a publishable format.
+#'
+#'@param data a data frame with the variables.
+#'@param group an optional  with the group variable.
+#'@param measures_qt a list of functions to summarise quantitative variables. See more in details.
+#'@param measures_ql a list of functions to summarise qualitative variables. See more in details.
+#'@param digits a numeric value specifying the number of digits to present the results.
+#'@param save a logical value indicating whether the output should be saved as a csv file.
+#'@param file a character indicating the name of output file in csv format to be saved.
+#'
+#'@details For quantitative variables, mean +/- sd, median (quantile 0.25 - quantile 0.75),
+#'median (minimum - maximum) and number of missing observations are calculated using the
+#'functions \code{\link[ntimes]{nt_mean_sd}}, \code{\link[ntimes]{nt_median_iqr}},
+#'\code{\link[ntimes]{nt_median_range}} and \code{\link[ntimes]{nt_missing}}.
+#'For qualitative variables, percentage (frequency) is calculated using
+#'\code{\link[ntimes]{nt_perc_count}}.
+#'
+#'@return a data frame with summary for all variables by group.
+#'
+#'@examples
+#'data(iris)
+#'
+#'iris %>% nt_describe(group = Species)
 #'
 #'@importFrom purrr map2
 #'@importFrom dplyr filter select
@@ -9,19 +31,6 @@
 #'@importFrom magrittr %>%
 #'@importFrom rlang := .data quo_is_null enquo
 #'@importFrom tibble tibble
-#'
-#'@param data a data frame with the variables.
-#'@param group an optional  with the group variable.
-#'@param measures a list of functions to summarise quantitative variables. See more in details.
-#'@param digits a numeric value specifying the number of digits to present the results.
-#'@param save a logical value indicating whether the output should be saved as a csv file.
-#'@param file a character indicating the name of output file in csv format to be saved.
-#'@return a data frame with summary for all variables by group.
-#'
-#'@examples
-#'data(iris)
-#'
-#'iris %>% nt_describe(group = Species)
 #'
 #'@export
 nt_describe <- function(data,
@@ -63,6 +72,20 @@ nt_describe <- function(data,
   return(out)
 }
 
+#'Mean and standard deviation
+#'
+#'@description It calculates mean and standard deviation, concatenating them to
+#'present on a table.
+#'
+#'@param var a numeric vector.
+#'@param digits a numeric value specifying the number of digits to present the results.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
 #'@importFrom stats sd
 #'@export
 nt_mean_sd <- function(var, digits){
@@ -74,6 +97,20 @@ nt_mean_sd <- function(var, digits){
   return(out)
 }
 
+#'Median with first and third quantiles
+#'
+#'@description It calculates median with quantiles 25% and 75%, concatenating them
+#'to present on a table.
+#'
+#'@param var a numeric vector.
+#'@param digits a numeric value specifying the number of digits to present the results.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
 #'@importFrom stats median quantile
 #'@export
 nt_median_iqr <- function(var, digits){
@@ -89,6 +126,21 @@ nt_median_iqr <- function(var, digits){
   return(out)
 }
 
+
+#'Median with minimum and maximum
+#'
+#'@description It calculates median with minimum and maximum, concatenating them
+#'to present on a table.
+#'
+#'@param var a numeric vector.
+#'@param digits a numeric value specifying the number of digits to present the results.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
 #'@importFrom stats median
 #'@export
 nt_median_range <- function(var, digits){
@@ -104,12 +156,40 @@ nt_median_range <- function(var, digits){
   return(out)
 }
 
+#'Number of missing observations
+#'
+#'@description It calculates the number of missing observations.
+#'
+#'@param var a numeric vector.
+#'@param digits a numeric value specifying the number of digits to present the
+#'results. It is not used for the number of missing observations.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
 #'@export
 nt_missing <- function(var, digits){
   out <- list(name = "Missing", measure = sum(is.na(var)))
   return(out)
 }
 
+#'Percentages and frequencies
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param var a numeric vector.
+#'@param digits a numeric value specifying the number of digits to present the results.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
 #'@importFrom forcats fct_explicit_na
 #'@export
 nt_perc_count <- function(var, digits){

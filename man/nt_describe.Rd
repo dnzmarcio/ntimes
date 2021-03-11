@@ -7,7 +7,8 @@
 nt_describe(
   data,
   group = NULL,
-  measures = list(nt_mean_sd, nt_median_iqr, nt_median_range),
+  measures_qt = list(nt_mean_sd, nt_median_iqr, nt_median_range, nt_missing),
+  measures_ql = list(nt_perc_count),
   digits = 2,
   save = FALSE,
   file = "descriptive_analysis"
@@ -18,7 +19,9 @@ nt_describe(
 
 \item{group}{an optional  with the group variable.}
 
-\item{measures}{a list of functions to summarise quantitative variables. See more in details.}
+\item{measures_qt}{a list of functions to summarise quantitative variables. See more in details.}
+
+\item{measures_ql}{a list of functions to summarise qualitative variables. See more in details.}
 
 \item{digits}{a numeric value specifying the number of digits to present the results.}
 
@@ -30,8 +33,16 @@ nt_describe(
 a data frame with summary for all variables by group.
 }
 \description{
-Calculating a descriptive table for quantitative and
-qualitative variables in the usual format to present in scientific article.
+It calculates a descriptive table for quantitative and
+qualitative variables in a publishable format.
+}
+\details{
+For quantitative variables, mean +/- sd, median (quantile 0.25 - quantile 0.75),
+median (minimum - maximum) and number of missing observations are calculated using the
+functions \code{\link[ntimes]{nt_mean_sd}}, \code{\link[ntimes]{nt_median_iqr}},
+\code{\link[ntimes]{nt_median_range}} and \code{\link[ntimes]{nt_missing}}.
+For qualitative variables, percentage (frequency) is calculated using
+\code{\link[ntimes]{nt_perc_count}}.
 }
 \examples{
 data(iris)

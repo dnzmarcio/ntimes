@@ -13,6 +13,7 @@
 #'@param digits.p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character indicating the name of output file in csv format to be saved.
+#'
 #'@examples
 #'library(survival)
 #'library(dplyr)
