@@ -6,6 +6,8 @@
 #'@param time a numeric vector with the follow-up time.
 #'@param status a numeric vector indicating status, 0 = censored, 1 = event at time.
 #'@param ...  character values indicating confounding variables.
+#'@param labels a list of labels with components given by their variable names.
+#'@param increment a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.
 #'@param cluster a character vector containing the cluster variable.
 #'@param strata a character vector containing the strata variable.
 #'@param format a logical value indicating whether the output should be formatted.
@@ -20,32 +22,32 @@
 #'library(magrittr)
 #'data(ovarian)
 #'
-#'ovarian_nt <- ovarian %>% mutate(resid.ds = ql_var(resid.ds,
-#'                                                from = 1:2,
-#'                                                to = c("no", "yes"),
-#'                                                label = "Residual Disease"),
-#'                              ecog.ps = ql_var(ecog.ps,
-#'                                               from = 1:2,
-#'                                               to = c("I", "II"),
-#'                                               label = "ECOG-PS"),
-#'                              rx = ql_var(rx,
-#'                                          from = 1:2,
-#'                                          to = c("t1", "t2"),
-#'                                          label = "Treatment"),
-#'                              age = qt_var(age,
-#'                                           label = "Age"))
-#'ovarian_nt %>% nt_simple_cox(time = futime, status = fustat)
+#'ovarian_nt <- ovarian %>% mutate(resid.ds = factor(resid.ds,
+#'                                                   levels = 1:2,
+#'                                                   labels = c("no", "yes")),
+#'                              ecog.ps = factor(ecog.ps,
+#'                                               levels = 1:2,
+#'                                               labels = c("I", "II")),
+#'                              rx =factor(rx,
+#'                                          levels = 1:2,
+#'                                          labels = c("t1", "t2")))
+#'ovarian_nt %>% nt_simple_cox(time = futime, status = fustat,
+#'                             labels = list(resid.ds = "Residual Disease",
+#'                                           ecog.ps = "ECOG-PS",
+#'                                           rx = "Treatment",
+#'                                           age = "Age"))
 #'
 #'@importFrom rlang enquo quos quo_get_expr .data
 #'@importFrom dplyr select mutate transmute rename
-#'@importFrom purrr map2
+#'@importFrom purrr pmap map2
 #'@importFrom survival survfit
 #'@importFrom broom tidy
 #'@importFrom tidyr replace_na
 #'@importFrom utils write.csv
 #'
 #'@export
-nt_simple_cox <- function(data, time, status, ..., increment = NULL,
+nt_simple_cox <- function(data, time, status, ...,
+                          labels = NULL, increment = NULL,
                           cluster = FALSE, strata = NULL, format = TRUE,
                           digits = 2, digits.p = 3, save = FALSE,
                           file = "simple_cox"){
@@ -55,30 +57,39 @@ nt_simple_cox <- function(data, time, status, ..., increment = NULL,
   strata <- enquo(strata)
   aux <- quos(...)
 
-  if (ncol(data) > 2){
-    vars <- select(.data = data, -!!time)
-    vars <- select(.data = vars, -!!status)
-    if (!is.null(quo_get_expr(strata))){
-      vars <- select(.data = vars, -!!strata)
-      strata.var <- select(.data = data, !!strata)
-      strata.var <- strata.var[[1]]
-    } else {
-      strata.var <- NULL
-    }
-    vars.name <- names(vars)
+  vars <- select(.data = data, -!!time)
+  vars <- select(.data = vars, -!!status)
 
-    if (length(aux) > 0){
-      for (i in 1:length(aux)){
-        vars <- select(.data = vars, -!!aux[[i]])
-      }
-      add <- select(.data = data, !!!aux)
-      add.name <- names(add)
-      add.label <- map2(add, add.name, extract_label)
-    } else {
-      add <- NULL
-      add.name <- NULL
-      add.label <- NULL
+  if (!is.null(quo_get_expr(strata))){
+    vars <- select(.data = vars, -!!strata)
+    strata.var <- select(.data = data, !!strata)
+    strata.var <- strata.var[[1]]
+  } else {
+    strata.var <- NULL
+  }
+
+  if (length(aux) > 0){
+    for (i in 1:length(aux)){
+      vars <- select(.data = vars, -!!aux[[i]])
     }
+    add <- select(.data = data, !!!aux)
+    add.name <- names(add)
+    add.label <- map2(add, add.name, extract_label)
+  } else {
+    add <- NULL
+    add.name <- NULL
+    add.label <- NULL
+  }
+
+  vars.name <- names(vars)
+
+  if (!is.null(labels)){
+    vars <- data_labeller(vars, labels)
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+  } else {
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
   }
 
   time <- select(.data = data, !!time)
@@ -96,7 +107,8 @@ nt_simple_cox <- function(data, time, status, ..., increment = NULL,
                                            .data$conf.low, " ; ",
                                            .data$conf.high, ")"))
 
-  temp <- map2(.x = vars, .y = vars.name, .f = aux_simple_cox,
+  temp <- pmap(.l = list(vars, vars.name, vars.label),
+               .f = aux_simple_cox,
                time = time, status = status,
                add = add, add.name = add.name, add.label = add.label,
                strata.var = strata.var,
@@ -139,7 +151,8 @@ nt_simple_cox <- function(data, time, status, ..., increment = NULL,
 #'@importFrom stats setNames
 #'@importFrom dplyr mutate bind_cols
 #'@importFrom rlang .data
-aux_simple_cox <- function(var, var.name, time, status,
+aux_simple_cox <- function(var, var.name, var.label,
+                           time, status,
                            add, add.name, add.label,
                            strata.var, increment,
                            format){

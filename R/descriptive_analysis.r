@@ -5,6 +5,7 @@
 #'
 #'@param data a data frame with the variables.
 #'@param group an optional  with the group variable.
+#'@param labels a list of labels with components given by their variable names.
 #'@param measures_qt a list of functions to summarise quantitative variables. See more in details.
 #'@param measures_ql a list of functions to summarise qualitative variables. See more in details.
 #'@param digits a numeric value specifying the number of digits to present the results.
@@ -13,19 +14,23 @@
 #'
 #'@details For quantitative variables, mean +/- sd, median (quantile 0.25 - quantile 0.75),
 #'median (minimum - maximum) and number of missing observations are calculated using the
-#'functions \code{\link[ntimes]{nt_mean_sd}}, \code{\link[ntimes]{nt_median_iqr}},
-#'\code{\link[ntimes]{nt_median_range}} and \code{\link[ntimes]{nt_missing}}.
+#'functions \code{\link[ntimes]{helper_mean_sd}}, \code{\link[ntimes]{helper_median_iqr}},
+#'\code{\link[ntimes]{helper_median_range}} and \code{\link[ntimes]{helper_missing}}.
 #'For qualitative variables, percentage (frequency) is calculated using
-#'\code{\link[ntimes]{nt_perc_count}}.
+#'\code{\link[ntimes]{helper_perc_count}}.
 #'
 #'@return a data frame with summary for all variables by group.
 #'
 #'@examples
 #'data(iris)
 #'
-#'iris %>% nt_describe(group = Species)
+#'iris %>% nt_describe(group = Species,
+#'                     labels = list(Sepal.Length = "Sepal Length",
+#'                                   Sepal.Width = "Sepal Width",
+#'                                   Petal.Length = "Petal Length",
+#'                                   Petal.Width = "Petal Width"))
 #'
-#'@importFrom purrr map2
+#'@importFrom purrr pmap
 #'@importFrom dplyr filter select
 #'@importFrom utils write.csv
 #'@importFrom magrittr %>%
@@ -58,9 +63,24 @@ nt_describe <- function(data,
   }
 
   vars.name <- names(vars)
+  if (!is.null(labels)){
+    vars <- data_labeller(vars, labels)
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
 
-  temp <- map2(.x = vars, .y = vars.name, .f = aux_describe,
-               group = group[[1]], group.name = group.name, digits = digits,
+    group <- data_labeller(group, labels)
+    group.label <- extract_label(group, group.name)
+  } else {
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+  }
+
+  temp <- pmap(.l = list(vars, vars.name, vars.label),
+               .f = aux_describe,
+               group = group[[1]],
+               group.name = group.name,
+               group.label = group.label,
+               digits = digits,
                measures_qt = measures_qt,
                measures_ql = measures_ql)
 
@@ -77,12 +97,7 @@ aux_describe <- function(var, var.name, var.label,
                          group, group.name, group.label,
                          digits, measures_qt, measures_ql){
 
-  var.label <- extract_label(var, var.name)
-  unit.label <- extract_unit(var)
-
   if (!is.null(group)){
-    group.label <- extract_label(group, group.name)
-
     if (!is.factor(group)){
       group <- as.factor(group)
       warning(paste0("Group variable was transformed into a factor."))
@@ -94,7 +109,6 @@ aux_describe <- function(var, var.name, var.label,
                                  group = group,
                                  digits = digits,
                                  var.label = var.label,
-                                 unit.label = unit.label,
                                  group.label = group.label,
                                  measures_qt = measures_qt)
   } else {
@@ -112,7 +126,7 @@ aux_describe <- function(var, var.name, var.label,
 
 describe_quantitative <- function(var, group,
                                   digits,
-                                  var.label, unit.label, group.label,
+                                  var.label, group.label,
                                   measures_qt){
 
   if (is.null(group)) {
@@ -121,14 +135,12 @@ describe_quantitative <- function(var, group,
                                   measures_qt = measures_qt)
     out <- format_quantitative(desc = desc, group = NULL,
                                var.label = var.label,
-                               unit.label = unit.label,
                                group.label = group.label)
   } else {
 
     aux <- function(x, g = NULL){
       out <- format_quantitative(x, group = g,
                                  var.label = var.label,
-                                 unit.label = unit.label,
                                  group.label = group.label)
       return(out)
     }
@@ -159,11 +171,7 @@ quantitative_measures <- function(x, digits, measures_qt){
 format_quantitative <- function(desc,
                                 group,
                                 var.label,
-                                unit.label,
                                 group.label = NULL){
-
-  var.label <- ifelse(unit.label == "", var.label,
-                      paste0(var.label, " (", unit.label, ")"))
 
   if (length(desc[-length(desc)]) > 1){
     aux_variable <- c(var.label,

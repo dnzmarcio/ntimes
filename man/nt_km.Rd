@@ -29,6 +29,8 @@ nt_km(
 
 \item{status}{a data frame with the indicator associated to events.}
 
+\item{labels}{a list of labels with components given by their variable names.}
+
 \item{xlab}{a character value specifying the x axis label.}
 
 \item{ylab}{a character value specifying the y axis label.}
@@ -73,11 +75,11 @@ See \code{\link{std_km}} and \code{\link{std_km_group}}.
 library(survival)
 data(lung)
 
-lung_nt <- lung \%>\% mutate(sex = ql_var(sex, from = 1:2,
-                                    to = c("Female", "Male"),
-                                    label = "Sex"),
-                       ph.ecog = ql_var(ph.ecog, label = "ECOG")) \%>\%
+lung_nt <- lung \%>\% mutate(sex = factor(sex, levels = 1:2,
+                                    labels = c("Female", "Male")),
+                       ph.ecog = as.factor(ph.ecog)) \%>\%
                        select(sex, ph.ecog, time, status)
-lung_nt \%>\% nt_km(time = time, status = status)
+lung_nt \%>\% nt_km(time = time, status = status,
+                 labels = list(sex = "Sex", ph.ecog = "ECOG"))
 
 }

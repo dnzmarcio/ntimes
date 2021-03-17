@@ -8,6 +8,7 @@ nt_simple_logistic(
   data,
   response,
   ...,
+  labels = NULL,
   increment = NULL,
   format = TRUE,
   digits = 2,
@@ -22,6 +23,10 @@ nt_simple_logistic(
 \item{response}{a character value indicating the response variable.}
 
 \item{...}{character values indicating confounding variables.}
+
+\item{labels}{a list of labels with components given by their variable names.}
+
+\item{increment}{a variable named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
 
 \item{format}{a logical value indicating whether the output should be formatted.}
 
@@ -47,14 +52,14 @@ titanic_nt <- titanic_train \%>\%
                      levels = c("male", "female"),
                      labels = c("Male", "Female")),
         Pclass = factor(Pclass,
-                        from = 1:3,
-                        levels = c("I", "II", "III"),
-                        labels = "Passenger Class"),
+                        levels = 1:3,
+                        labels = c("I", "II", "III")),
         Embarked = factor(Embarked,
                           levels = c("C", "Q", "S"),
                           labels = c("Cherbourg", "Queenstown", "Southampton")))
 
 titanic_nt \%>\% select(Survived, Sex, Age, Pclass, Embarked) \%>\%
- nt_simple_logistic(response = Survived, Age)
+ nt_simple_logistic(response = Survived, Age,
+                    labels = list(Pclass = "Passanger class"))
 
 }

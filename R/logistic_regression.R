@@ -5,6 +5,8 @@
 #'@param data a data frame with the variables.
 #'@param response a character value indicating the response variable.
 #'@param ...  character values indicating confounding variables.
+#'@param labels a list of labels with components given by their variable names.
+#'@param increment a variable named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
@@ -21,25 +23,27 @@
 #'                      levels = c("male", "female"),
 #'                      labels = c("Male", "Female")),
 #'         Pclass = factor(Pclass,
-#'                         from = 1:3,
-#'                         levels = c("I", "II", "III"),
-#'                         labels = "Passenger Class"),
+#'                         levels = 1:3,
+#'                         labels = c("I", "II", "III")),
 #'         Embarked = factor(Embarked,
 #'                           levels = c("C", "Q", "S"),
 #'                           labels = c("Cherbourg", "Queenstown", "Southampton")))
 #'
 #'titanic_nt %>% select(Survived, Sex, Age, Pclass, Embarked) %>%
-#'  nt_simple_logistic(response = Survived, Age)
+#'  nt_simple_logistic(response = Survived, Age,
+#'                     labels = list(Pclass = "Passanger class"))
 #'
 #'@import titanic
-#'@importFrom purrr map2
+#'@importFrom purrr pmap map2
 #'@importFrom dplyr select
 #'@importFrom rlang enquo quos .data
 #'@importFrom tibble as_data_frame
 #'@importFrom utils write.csv
 #'
 #'@export
-nt_simple_logistic <- function(data, response, ..., increment = NULL,
+nt_simple_logistic <- function(data, response, ...,
+                               labels = NULL,
+                               increment = NULL,
                                format = TRUE, digits = 2, digits.p = 3,
                                save = FALSE, file = "simple_logistic"){
 
@@ -61,14 +65,23 @@ nt_simple_logistic <- function(data, response, ..., increment = NULL,
   }
 
   vars.name <- names(vars)
-
-  response <- select(.data = data, !!response)
   response.name <- names(response)
-  response.label <- extract_label(response, response.name)
-  response <- response[[1]]
 
-  temp <- map2(.x = vars, .y = vars.name, .f = aux_simple_logistic,
-               response = response, response.label = response.label,
+  if (!is.null(labels)){
+    vars <- data_labeller(vars, labels)
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+
+    response <- data_labeller(response, labels)
+    response.label <- extract_label(response, response.name)
+  } else {
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+  }
+
+  temp <- pmap(.l = list(vars, vars.name, vars.label),
+               .f = aux_simple_logistic,
+               response = response[[1]], response.label = response.label,
                add = add, add.name = add.name, add.label = add.label,
                increment = increment,
                format = format)
@@ -107,11 +120,11 @@ nt_simple_logistic <- function(data, response, ..., increment = NULL,
   return(out)
 }
 
-aux_simple_logistic <- function(var, var.name, response, response.label,
-                                add, add.name, add.label, increment,
+aux_simple_logistic <- function(var, var.name, var.label,
+                                response, response.label,
+                                add, add.name, add.label,
+                                increment,
                                 format){
-
-  var.label <- extract_label(var, var.name)
 
   if (!is.null(add)){
     aux <- data.frame(add, var)

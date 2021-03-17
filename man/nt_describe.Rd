@@ -21,6 +21,8 @@ nt_describe(
 
 \item{group}{an optional  with the group variable.}
 
+\item{labels}{a list of labels with components given by their variable names.}
+
 \item{measures_qt}{a list of functions to summarise quantitative variables. See more in details.}
 
 \item{measures_ql}{a list of functions to summarise qualitative variables. See more in details.}
@@ -41,14 +43,18 @@ qualitative variables in a publishable format.
 \details{
 For quantitative variables, mean +/- sd, median (quantile 0.25 - quantile 0.75),
 median (minimum - maximum) and number of missing observations are calculated using the
-functions \code{\link[ntimes]{nt_mean_sd}}, \code{\link[ntimes]{nt_median_iqr}},
-\code{\link[ntimes]{nt_median_range}} and \code{\link[ntimes]{nt_missing}}.
+functions \code{\link[ntimes]{helper_mean_sd}}, \code{\link[ntimes]{helper_median_iqr}},
+\code{\link[ntimes]{helper_median_range}} and \code{\link[ntimes]{helper_missing}}.
 For qualitative variables, percentage (frequency) is calculated using
-\code{\link[ntimes]{nt_perc_count}}.
+\code{\link[ntimes]{helper_perc_count}}.
 }
 \examples{
 data(iris)
 
-iris \%>\% nt_describe(group = Species)
+iris \%>\% nt_describe(group = Species,
+                    labels = list(Sepal.Length = "Sepal Length",
+                                  Sepal.Width = "Sepal Width",
+                                  Petal.Length = "Petal Length",
+                                  Petal.Width = "Petal Width"))
 
 }

@@ -9,6 +9,7 @@ nt_simple_cox(
   time,
   status,
   ...,
+  labels = NULL,
   increment = NULL,
   cluster = FALSE,
   strata = NULL,
@@ -27,6 +28,10 @@ nt_simple_cox(
 \item{status}{a numeric vector indicating status, 0 = censored, 1 = event at time.}
 
 \item{...}{character values indicating confounding variables.}
+
+\item{labels}{a list of labels with components given by their variable names.}
+
+\item{increment}{a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
 
 \item{cluster}{a character vector containing the cluster variable.}
 
@@ -51,20 +56,19 @@ library(dplyr)
 library(magrittr)
 data(ovarian)
 
-ovarian_nt <- ovarian \%>\% mutate(resid.ds = ql_var(resid.ds,
-                                               from = 1:2,
-                                               to = c("no", "yes"),
-                                               label = "Residual Disease"),
-                             ecog.ps = ql_var(ecog.ps,
-                                              from = 1:2,
-                                              to = c("I", "II"),
-                                              label = "ECOG-PS"),
-                             rx = ql_var(rx,
-                                         from = 1:2,
-                                         to = c("t1", "t2"),
-                                         label = "Treatment"),
-                             age = qt_var(age,
-                                          label = "Age"))
-ovarian_nt \%>\% nt_simple_cox(time = futime, status = fustat)
+ovarian_nt <- ovarian \%>\% mutate(resid.ds = factor(resid.ds,
+                                                  levels = 1:2,
+                                                  labels = c("no", "yes")),
+                             ecog.ps = factor(ecog.ps,
+                                              levels = 1:2,
+                                              labels = c("I", "II")),
+                             rx =factor(rx,
+                                         levels = 1:2,
+                                         labels = c("t1", "t2")))
+ovarian_nt \%>\% nt_simple_cox(time = futime, status = fustat,
+                            labels = list(resid.ds = "Residual Disease",
+                                          ecog.ps = "ECOG-PS",
+                                          rx = "Treatment",
+                                          age = "Age"))
 
 }
