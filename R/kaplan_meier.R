@@ -114,9 +114,9 @@ nt_km <-  function(data, time, status, labels = NULL,
   if (!is.null(time.points)){
     if (format){
       tab <-  tab  %>%
-        rename(Variable = variable,
-               Group = group,
-               Time = time) %>%
+        rename(Variable = .data$variable,
+               Group = .data$group,
+               Time = .data$time) %>%
         mutate(`Survival (CI 95%)` =
                  paste0(round(.data$survival, digits),
                         " (", round(.data$lower, digits),
@@ -169,7 +169,7 @@ tab_km_group <- function(var, var.name, time, status, time.points, digits){
                     lower = temp$lower,
                     upper = temp$upper) %>%
     separate(.data$strata, into = c("variable", "group"), sep = "=") %>%
-    mutate(variable = var.label)
+    mutate(variable = .data$var.label)
 
   return(out)
 }
@@ -339,7 +339,7 @@ std_km_group <- function(time, status, var, var.label,
              ifelse(is.na(.data$conf.high), .data$estimate, .data$conf.high),
            conf.low =
              ifelse(is.na(.data$conf.low), .data$estimate, .data$conf.low)) %>%
-    mutate(group = factor(group, levels = levels(var)))
+    mutate(group = factor(.data$group, levels = levels(var)))
 
   ### Basic plot
   surv.plot <- ggplot(data.plot, aes_string(x = "time", y = "estimate",

@@ -51,6 +51,7 @@ nt_simple_logistic <- function(data, response, ...,
   aux <- quos(...)
 
   vars <- select(.data = data, -!!response)
+  response <- select(.data = data, !!response)
   if (length(aux) > 0){
     for (i in 1:length(aux)){
       vars <- select(.data = vars, -!!aux[[i]])
@@ -106,7 +107,7 @@ nt_simple_logistic <- function(data, response, ...,
                 logLik = .data$logLik, AIC = .data$AIC, BIC = .data$BIC,
                 deviance = .data$deviance) %>%
       mutate(`Estimate (95% CI)` =
-               recode(`Estimate (95% CI)`, `NA (NA ; NA)` = "Reference")) %>%
+               recode(.data$`Estimate (95% CI)`, `NA (NA ; NA)` = "Reference")) %>%
       replace_na(list(`Wald p value` = "", `LR p value` = "",
                       n = "", null.deviance = "", df.null = "",
                       logLik = "", AIC = "", BIC = "",
@@ -300,7 +301,7 @@ aux_multiple_logistic <- function(fit, ci.type, user.contrast, user.contrast.int
   names(labels) <- names(temp)
   coef <- tidy(fit) %>%
     mutate(term = str_replace_all(.data$term, labels),
-           term = sub(" $", "", x = term))
+           term = sub(" $", "", x = .data$term))
 
   out <- list(effect = effect, coef = coef)
 

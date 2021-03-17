@@ -169,6 +169,7 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
 
 #'@importFrom multcomp glht
 #'@importFrom stats confint
+#'@importFrom stats logLik
 contrast_calc <- function(fit, fit0, design.matrix, beta, beta.var, type){
 
   contrast_aux <- function(design.matrix){

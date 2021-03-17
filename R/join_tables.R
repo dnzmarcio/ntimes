@@ -20,7 +20,7 @@
 #'
 #'@return A data frame containing \code{tab.x} and \code{tab.y}.
 #'
-#'@importFrom tidyr replace_na
+#'@importFrom tidyr replace_na pivot_wider unite
 #'@importFrom dplyr mutate select left_join
 #'@importFrom stringr str_split
 #'
@@ -96,7 +96,8 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
         select(.data$Variable, .data$`p value`)
 
       temp <- test.tab$mc.test %>% select(-.data$`95% CI`, -.data$Test, -.data$Group) %>%
-        spread(key = .data$Hypothesis, value = "p value", drop = TRUE)
+        pivot_wider(names_from = .data$Hypothesis,
+                     values_from = .data$`p value`, drop = TRUE)
 
       for(i in 2:ncol(temp)){
         temp[, i] <- ifelse(temp[, i] < alpha, letters[i-1], "")

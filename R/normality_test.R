@@ -1,9 +1,5 @@
 #'Normality tests
-#'
-#'@importFrom purrr map2
-#'@importFrom tidyr gather nest unnest
-#'@importFrom dplyr mutate
-#'@importFrom tibble data_frame as_data_frame
+
 #'
 #'@description Perform Anderson-Darling, Shapiro-Francia,
 #'Kolmogorov-Smirnov, Cramer-vonMises, and Pearson normality tests

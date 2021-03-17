@@ -386,7 +386,7 @@ aux_multiple_cox <- function(fit, ci.type, user.contrast, user.contrast.interact
   names(labels) <- names(temp)
   coef <- tidy(fit) %>%
     mutate(term = str_replace_all(.data$term, labels),
-           term = sub(" $", "", x = term))
+           term = sub(" $", "", x = .data$term))
 
   out <- list(effect = effect, coef = coef)
 
