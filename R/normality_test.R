@@ -11,17 +11,7 @@
 #'
 #'@param data a data frame with the variables.
 #'@param group an optional character indicating the group variable.
-#'@param test a character value specifying the normality test to be performed.
-#'The options are Anderson-Darling (\code{ad}), Shapiro-Francia (\code{"sf"}),
-#'Kolmogorov-Smirnov (\code{ks}),  Cramer-vonMises (\code{cvm}) and
-#'Pearson (\code{ps}). The default is Shapiro-Francia (\code{"sf"}).
-#'@param digits a integer value indicating the numer of decimal places.
-#'@param pvalue.plot a logical value indicating if the p-value
-#'should be presented in the Quantile-Quantile plot.
-#'
-#'@details The function is a wrapper of \link[nortest]{ad.test},
-#'\link[nortest]{sf.test}, \link[nortest]{lillie.test},
-#'\link[nortest]{cvm.test}, and \link[nortest]{pearson.test}.
+#'@param norm.test a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.
 #'
 #'@return \code{tab} a table of p-values for each of the five normality tests.
 #'@return \code{plot} a Quantile-Quantile plot.

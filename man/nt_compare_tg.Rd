@@ -8,9 +8,10 @@ nt_compare_tg(
   data,
   group,
   alternative = "two.sided",
-  norm.test = nt_norm_test(test = "sf"),
-  var.test = nt_var_test(test = "levene"),
-  qt.test = list(nt_student_t, nt_welch_t, nt_mann_whitney, nt_brunner_munzel),
+  norm.test = helper_sf_test,
+  var.test = helper_levene_test,
+  qt.test = list(helper_student_t, helper_welch_t, helper_mann_whitney,
+    helper_brunner_munzel),
   paired = FALSE,
   conf.level = 0.95,
   format = TRUE,
@@ -28,9 +29,9 @@ nt_compare_tg(
 \item{alternative}{a character value indicating the alternative hypothesis,
 must be one of "two.sided", "greater" or "less".}
 
-\item{norm.test}{a function with numeric variable and group variable as input, and object with p.value as output.}
+\item{norm.test}{a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.}
 
-\item{var.test}{a function with numeric variable and group variable as input, and object with p.value as output.}
+\item{var.test}{a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_levene_test}.}
 
 \item{qt.test}{a list of functions for four possible cases: (1) normality and homoscedasticity,
 (2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.}

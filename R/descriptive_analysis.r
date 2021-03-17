@@ -35,11 +35,12 @@
 #'@export
 nt_describe <- function(data,
                         group = NULL,
-                        measures_qt = list(nt_mean_sd,
-                                        nt_median_iqr,
-                                        nt_median_range,
-                                        nt_missing),
-                        measures_ql = list(nt_perc_count),
+                        labels = NULL,
+                        measures_qt = list(helper_mean_sd,
+                                           helper_median_iqr,
+                                           helper_median_range,
+                                           helper_missing),
+                        measures_ql = list(helper_perc_count),
                         digits = 2,
                         save = FALSE,
                         file = "descriptive_analysis"){
@@ -72,152 +73,8 @@ nt_describe <- function(data,
   return(out)
 }
 
-#'Mean and standard deviation
-#'
-#'@description It calculates mean and standard deviation, concatenating them to
-#'present on a table.
-#'
-#'@param var a numeric vector.
-#'@param digits a numeric value specifying the number of digits to present the results.
-#'
-#'@details This function can be modified by the user,
-#'but input and output should be kept the same.
-#'
-#'@return a list with the first element \code{name} as the measure name and the
-#'second element as the \code{value} for a given variable.
-#'
-#'@importFrom stats sd
-#'@export
-nt_mean_sd <- function(var, digits){
-
-  mean <- format(round(mean(var, na.rm = TRUE), digits), nsmall = digits)
-  sd <- format(round(sd(var, na.rm = TRUE), digits), nsmall = digits)
-  name <- paste0("Mean", " \U00b1 ", "SD")
-  value <- paste0(mean, " \U00b1 ", sd)
-  out <- list(name = name, value = value)
-  return(out)
-}
-
-#'Median with first and third quantiles
-#'
-#'@description It calculates median with quantiles 25% and 75%, concatenating them
-#'to present on a table.
-#'
-#'@param var a numeric vector.
-#'@param digits a numeric value specifying the number of digits to present the results.
-#'
-#'@details This function can be modified by the user,
-#'but input and output should be kept the same.
-#'
-#'@return a list with the first element \code{name} as the measure name and the
-#'second element as the \code{value} for a given variable.
-#'
-#'@importFrom stats median quantile
-#'@export
-nt_median_iqr <- function(var, digits){
-
-  median <- format(round(median(var, na.rm = TRUE), digits),
-                   nsmall = digits)
-  q25 <- format(round(quantile(var, probs = 0.25, na.rm = TRUE), digits),
-                nsmall = digits)
-  q75 <- format(round(quantile(var, probs = 0.75, na.rm = TRUE), digits),
-                nsmall = digits)
-  name <- "Median (Q25% ; Q75%)"
-  value <- paste0(median," (", q25, " ; ", q75, ")")
-  out <- list(name = name, value = value)
-  return(out)
-}
-
-
-#'Median with minimum and maximum
-#'
-#'@description It calculates median with minimum and maximum, concatenating them
-#'to present on a table.
-#'
-#'@param var a numeric vector.
-#'@param digits a numeric value specifying the number of digits to present the results.
-#'
-#'@details This function can be modified by the user,
-#'but input and output should be kept the same.
-#'
-#'@return a list with the first element \code{name} as the measure name and the
-#'second element as the \code{value} for a given variable.
-#'
-#'@importFrom stats median
-#'@export
-nt_median_range <- function(var, digits){
-
-  median <- format(round(median(var, na.rm = TRUE), digits),
-                   nsmall = digits)
-  min <- format(round(min(var, na.rm = TRUE), digits),
-                nsmall = digits)
-  max <- format(round(max(var, na.rm = TRUE), digits),
-                nsmall = digits)
-  name <- "Median (Min ; Max)"
-  value <- paste0(median," (", min, " ; ", max, ")")
-  out <- list(name = name, value = value)
-  return(out)
-}
-
-#'Number of missing observations
-#'
-#'@description It calculates the number of missing observations.
-#'
-#'@param var a numeric vector.
-#'@param digits a numeric value specifying the number of digits to present the
-#'results. It is not used for the number of missing observations.
-#'
-#'@details This function can be modified by the user,
-#'but input and output should be kept the same.
-#'
-#'@return a list with the first element \code{name} as the measure name and the
-#'second element as the \code{value} for a given variable.
-#'
-#'@export
-nt_missing <- function(var, digits){
-
-  out <- list(name = "Missing", value = sum(is.na(var)))
-  return(out)
-}
-
-#'Percentages and frequencies
-#'
-#'@description It calculates percentages and frequencies, concatenating them to
-#'present on a table.
-#'
-#'@param var a numeric vector.
-#'@param digits a numeric value specifying the number of digits to present the results.
-#'
-#'@details This function can be modified by the user,
-#'but input and output should be kept the same.
-#'
-#'@return a list with the first element \code{name} as the measure name and the
-#'second element as the \code{value} for a given variable.
-#'
-#'@importFrom forcats fct_explicit_na
-#'@export
-nt_perc_count <- function(var, digits){
-
-  h <- fct_explicit_na(var, na_level = "Missing")
-  lh <- levels(h)
-
-  count <- tapply(h, h, length)
-  count <- ifelse(is.na(count), 0, count)
-  n <- length(h)
-  perc <- 100*prop.table(count)
-  perc <- ifelse(!is.finite(perc), NA, format(round(perc, digits), nsmall = digits))
-
-  perc_count <- paste0(perc, " (", count, ")")
-
-  if (!("Missing" %in% lh)){
-    lh <- c(lh, "Missing")
-    perc_count <- c(perc_count, "0 (0)")
-  }
-
-  out <- list(name = lh, value = perc_count)
-}
-
-aux_describe <- function(var, var.name, group, group.name,
+aux_describe <- function(var, var.name, var.label,
+                         group, group.name, group.label,
                          digits, measures_qt, measures_ql){
 
   var.label <- extract_label(var, var.name)

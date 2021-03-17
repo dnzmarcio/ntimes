@@ -7,9 +7,9 @@
 nt_compare_mg(
   data,
   group,
-  norm.test = nt_norm_test(test = "sf"),
-  var.test = nt_var_test(test = "levene"),
-  qt.test = list(nt_anova, nt_welch_anova, nt_kruskal_wallis),
+  norm.test = helper_sf_test,
+  var.test = helper_levene_test,
+  qt.test = list(helper_anova, helper_welch_anova, helper_kruskal_wallis),
   contrast = "Tukey",
   alternative = "two.sided",
   format = TRUE,
@@ -25,36 +25,40 @@ nt_compare_mg(
 
 \item{group}{a data frame with the group variable.}
 
-\item{norm.test}{a function with numeric variable and group variable as input, and object with p.value as output.}
+\item{norm.test}{a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.}
 
-\item{var.test}{a function with numeric variable and group variable as input, and object with p.value as output.}
+\item{var.test}{a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_levene_test}.}
 
-\item{qt.test}{a list of functions for four possible cases: (1) normality and homoscedasticity,
-(2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.}
+\item{qt.test}{a list of functions for three possible cases: (1) normality and homoscedasticity,
+(2) normality and heteroscedasticity, (3) non-normality and homoscedasticity/heteroscedasticity.}
+
+\item{contrast}{a matrix of contrasts. See more details in \code{\link[multcomp]{glht}}.}
+
+\item{alternative}{a character value indicating the alternative hypothesis,
+must be one of "two.sided", "greater" or "less".}
+
+\item{format}{a logical value indicating whether the output should be formatted.}
 
 \item{digits.p}{the number of digits to present the p-values.}
+
+\item{digits.ci}{the number of digits to present the confidence intervals.}
 
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character value indicating the name of output file in csv format to be saved.}
 
-\item{mc}{a logical value indicating if pairwise comparisons should will be performed.}
+\item{mc}{a logical value indicating if pairwise comparisons should be performed.}
 }
 \description{
 Performing comparisons among three or more groups.
 }
 \details{
 If \code{test = "automatic"}, the normality assumption will be verified by
-a normality test (Anderson-Daling (\link[nortest]{ad.test}),
-Shapiro-Francia (\link[nortest]{sf.test}),
-'Kolmogorov-Smirnov (\link[nortest]{lillie.test}),
-Cramer-vonMises (\link[nortest]{cvm.test}),
-and Pearson (\link[nortest]{pearson.test})) and
-Levene test (\link[car]{leveneTest}) will evaluate the assumption of
-homocedasticity at a significance level of 0.05.
-If the data satisfies both assumptions, then ANOVA is chosen;
-if only normality is satisfied, then Welch ANOVA; if only homoscedasticity
-or neither assumptions, then Kruskal-Wallis.
+\code{norm.test} and homoscedasticity assumption will evaluate the assumption of
+\code{var.test} at a significance level of 0.05.
+If the data satisfies both assumptions, then \code{qt.test[[1]]} is chosen;
+if only normality is satisfied, then \code{qt.test[[2]]}; if only homoscedasticity
+or neither assumptions, then \code{qt.test[[3]]}.
 }
 \examples{
 library(magrittr)

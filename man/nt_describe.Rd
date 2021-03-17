@@ -7,8 +7,10 @@
 nt_describe(
   data,
   group = NULL,
-  measures_qt = list(nt_mean_sd, nt_median_iqr, nt_median_range, nt_missing),
-  measures_ql = list(nt_perc_count),
+  labels = NULL,
+  measures_qt = list(helper_mean_sd, helper_median_iqr, helper_median_range,
+    helper_missing),
+  measures_ql = list(helper_perc_count),
   digits = 2,
   save = FALSE,
   file = "descriptive_analysis"

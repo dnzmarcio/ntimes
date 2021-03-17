@@ -31,5 +31,7 @@ Imports:
     cowplot (>= 0.8.0),
     multcomp (>= 1.4-8),
     titanic (>= 0.1.0),
-    gsubfn (>= 0.6-6)
+    gsubfn (>= 0.6-6),
+    lawstat (>= 3.4),
+    PairedData (>= 1.1.1)
 RoxygenNote: 7.1.1

@@ -4,22 +4,14 @@
 \alias{nt_norm_test}
 \title{Normality tests}
 \usage{
-nt_norm_test(test)
+nt_norm_test(data, group = NULL, norm.test = helper_sf_test)
 }
 \arguments{
-\item{test}{a character value specifying the normality test to be performed.
-The options are Anderson-Darling (\code{ad}), Shapiro-Francia (\code{"sf"}),
-Kolmogorov-Smirnov (\code{ks}),  Cramer-vonMises (\code{cvm}) and
-Pearson (\code{ps}). The default is Shapiro-Francia (\code{"sf"}).}
-
 \item{data}{a data frame with the variables.}
 
 \item{group}{an optional character indicating the group variable.}
 
-\item{digits}{a integer value indicating the numer of decimal places.}
-
-\item{pvalue.plot}{a logical value indicating if the p-value
-should be presented in the Quantile-Quantile plot.}
+\item{norm.test}{a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.}
 }
 \value{
 \code{tab} a table of p-values for each of the five normality tests.
@@ -30,11 +22,6 @@ should be presented in the Quantile-Quantile plot.}
 Perform Anderson-Darling, Shapiro-Francia,
 Kolmogorov-Smirnov, Cramer-vonMises, and Pearson normality tests
 for several variables. In addition, it also plots a Quantile-Quantile plot and a histogram.
-}
-\details{
-The function is a wrapper of \link[nortest]{ad.test},
-\link[nortest]{sf.test}, \link[nortest]{lillie.test},
-\link[nortest]{cvm.test}, and \link[nortest]{pearson.test}.
 }
 \examples{
 library(magrittr)
