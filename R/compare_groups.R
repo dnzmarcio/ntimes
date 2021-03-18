@@ -227,7 +227,7 @@ nt_compare_mg <- function(data, group,
                .data$Test, .data$`95% CI`, `p value` = .data$`p.value`)
 
       if (save)
-        write.csv(mc_test, file = paste0(file, "_mc_test.csv"))
+        write.csv(mc.test, file = paste0(file, "_mc_test.csv"))
     }
   }
 
