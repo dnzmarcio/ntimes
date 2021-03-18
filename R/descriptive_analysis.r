@@ -73,6 +73,7 @@ nt_describe <- function(data,
   } else {
     vars.label <- map2(.x = vars, .y = as.list(vars.name),
                        .f = extract_label)
+    group.label <- extract_label(group, group.name)
   }
 
   temp <- pmap(.l = list(vars, vars.name, vars.label),
