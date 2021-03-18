@@ -1,8 +1,8 @@
 dist_qt_tg <-  function(var, group,
-                           norm.test, var.test, qt.test,
-                           alternative, conf.level, paired,
-                           digits.p, digits.ci,
-                           var.label, group.label) {
+                        norm.test, var.test, qt.test,
+                        alternative, conf.level, paired,
+                        digits.p, digits.ci,
+                        var.label, group.label) {
 
   data.test <- data.frame(x = var, g = droplevels(group))
   nlg <- nlevels(droplevels(data.test$g[!is.na(data.test$x)]))
@@ -17,37 +17,38 @@ dist_qt_tg <-  function(var, group,
     }
     p.norm <- tapply(data.test$x, data.test$g, aux)
 
-    # Checking homocedasticity
-    result <- try(var.test(data.test$x, data.test$g), silent = TRUE)
+    # Checking homoscedasticity
+    result <- try(var.test(x = data.test$x, g = data.test$g, paired = paired), silent = TRUE)
     p.var <- ifelse(class(result) == "try-error", 0, result$p.value)
 
     # Possible cases
     if (all(p.norm > 0.05)) {
       if (p.var > 0.05) {
         result <- try(qt.test[[1]](data.test$x, data.test$g,
-                                  alternative = alternative,
-                                  paired = paired,
-                                  conf.level = conf.level), silent = TRUE)
+                                   alternative = alternative,
+                                   paired = paired,
+                                   conf.level = conf.level), silent = TRUE)
 
       } else {
         result <- try(qt.test[[2]](data.test$x, data.test$g,
-                                  alternative = alternative,
-                                  paired = paired,
-                                  conf.level = conf.level), silent = TRUE)
+                                   alternative = alternative,
+                                   paired = paired,
+                                   conf.level = conf.level), silent = TRUE)
       }
 
     } else {
       if (p.var > 0.05) {
         result <- try(qt.test[[3]](data.test$x, data.test$g,
-                                  alternative = alternative,
-                                  paired = paired,
-                                  conf.level = conf.level), silent = TRUE)
+                                   alternative = alternative,
+                                   paired = paired,
+                                   conf.level = conf.level), silent = TRUE)
 
       } else {
-        result <- try(qt.test[[4]](data.test$x, data.test$g,
-                                  alternative = alternative,
-                                  paired = paired,
-                                  conf.level = conf.level), silent = TRUE)
+        result <- try(qt.test[[4]](x = data.test$x,
+                                   g = data.test$g,
+                                   alternative = alternative,
+                                   paired = paired,
+                                   conf.level = conf.level), silent = TRUE)
       }
     }
 
