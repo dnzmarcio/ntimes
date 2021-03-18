@@ -21,6 +21,10 @@ nt_multiple_cox(
 
 \item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).}
 
+\item{user.contrast}{a variable named list of numerical vectors indicating contrast for a covariate.}
+
+\item{user.contrast.interaction}{a variable named list of numerical vectors indicating a contrast for interaction.}
+
 \item{format}{a logical value indicating whether the output should be formatted.}
 
 \item{digits}{a numerical value defining of digits to present the results.}

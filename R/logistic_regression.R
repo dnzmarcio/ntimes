@@ -220,6 +220,8 @@ fit_logistic <- function(data, tab.labels, tab.levels, var.label, increment){
 #'
 #'@param fit a fitted model.
 #'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
+#'@param user.contrast a variable named list of numerical vectors indicating contrast for a covariate.
+#'@param user.contrast.interaction a variable named list of numerical vectors indicating a contrast for interaction.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
