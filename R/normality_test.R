@@ -19,21 +19,23 @@
 #'iris %>% select(-Species) %>% nt_norm_test()
 #'iris %>% nt_norm_test(group = Species)
 #'
+#'@importFrom purrr map2
+#'@importFrom tidyr pivot_longer
+#'@importFrom dplyr mutate bind_cols
+#'
 #'@export
-nt_norm_test <- function(data, group = NULL, test = nt_norm_test(test = "sf"),
-                         digits = 3, pvalue.plot = TRUE){
+nt_norm_test <- function(data, group = NULL, norm.test = helper_sf_test){
 
-  data <- as_data_frame(data)
   group <- enquo(group)
 
   if (!quo_is_null(group)){
-    vars <- select(.data = data, -!!group)
-    group <- select(.data = data, !!group)
-    group.name <- names(group)
-    group.label <- extract_label(group, group.name)
+    vars <- select(.data = data, -{{group}})
+    group.var <- select(.data = data, {{group}})
+    group.name <- names(group.var)
+    group.label <- map2(group.var, group.name, extract_label)
   } else {
     vars <-  data
-    group <- NULL
+    group.var <- NULL
     group.name <- NULL
     group.label <- NULL
   }
@@ -41,41 +43,28 @@ nt_norm_test <- function(data, group = NULL, test = nt_norm_test(test = "sf"),
   vars.name <- names(vars)
   vars.label <- map2(vars, vars.name, extract_label)
 
-  plot <- list()
+  if (!is.null(group.var)){
+    tab <- data %>%
+      pivot_longer(cols = -{{group}}, names_to = "Variable", values_to = "value") %>%
+      group_by(.data$Variable, {{group}}) %>%
+      summarise(p.value = norm.test(.data$value)$p.value) %>%
+      rename(Group = {{group}}, 'p value' = .data$p.value)
 
-  if (!is.null(group)){
-    tab <- vars %>%
-      gather(key = "Variable", value = "value") %>%
-      nest(-.data$Variable) %>%
-      mutate(Variable = unlist(vars.label)) %>%
-      mutate(p.value = map(.data$data,
-                       ~ norm_test(var = .$value, group = group[[1]],
-                                   test = test, digits = digits))) %>%
-      unnest(.data$p.value, .drop = TRUE)
   } else {
     tab <- vars %>%
-      gather(key = "Variable", value = "value") %>%
-      nest(-.data$Variable) %>%
-      mutate(Variable = unlist(vars.label)) %>%
-      mutate(p.value = map(.data$data,
-                       ~ norm_test(var = .$value, group = NULL,
-                                   test = test, digits = digits))) %>%
-      unnest(.data$p.value, .drop = TRUE)
+      pivot_longer(cols = everything(), names_to = "Variable", values_to = "value") %>%
+      group_by(.data$Variable) %>%
+      summarise(p.value = norm.test(.data$value)$p.value) %>%
+      rename('p value' = .data$p.value)
   }
 
-  qq_plot <- map2(vars, vars.label, qq_plot, group = group[[1]],
-                  test = test,
-                  group.label = group.label[[1]],
-                  digits = digits,
-                  pvalue.plot  = pvalue.plot)
+  qq_plot <- map2(vars, vars.label, qq_plot, group = group.var[[1]],
+                  group.label = group.label[[1]])
 
-  hist <- map2(vars, vars.label, hist_plot, group = group[[1]],
-               test = test,
-               group.label = group.label[[1]],
-               digits = digits,
-               pvalue.plot  = pvalue.plot)
+  hist <- map2(vars, vars.label, hist_plot, group = group.var[[1]],
+               group.label = group.label[[1]])
 
-  out <- list(pvalue = tab, qq_plot = qq_plot, hist = hist)
+  out <- list(tab = tab, qq_plot = qq_plot, hist = hist)
   return(out)
 }
 
@@ -86,9 +75,7 @@ nt_norm_test <- function(data, group = NULL, test = nt_norm_test(test = "sf"),
 #'@importFrom stats qnorm
 #'@importFrom dplyr summarise
 qq_plot <-  function(var, var.label,
-                     group = NULL, group.label = NULL,
-                     test = nt_norm_test(test = "sf"),
-                     digits = 3, pvalue.plot = TRUE){
+                     group = NULL, group.label = NULL){
 
   qqline_slope <- function(var){
     y <- quantile(var, c(0.25, 0.75), na.rm = TRUE)
@@ -106,22 +93,11 @@ qq_plot <-  function(var, var.label,
 
   if (is.null(group)){
     data_plot <- data.frame(var = var)
-
     slope <- qqline_slope(var)
     int <- qqline_int(var)
 
-    p <- norm_test(var = var, test = test)
-    p <- ifelse(round(p[[1]], digits) != 0,
-                        paste0("= ", round(p[[1]], digits)), "< 0.001")
-    pvalue <- paste("p-value", p)
-
     out <- ggplot(data_plot, aes_string(sample = 'var')) + stat_qq() +
       geom_abline(slope = slope, intercept = int) + theme_bw()
-    if (pvalue.plot)
-      out <- out +
-      annotate(geom = "text", label = pvalue,
-               x = -Inf, y = Inf,
-               hjust = -0.5, vjust = 2, size = 4)
 
   } else {
     if (is.null(group.label))
@@ -129,50 +105,29 @@ qq_plot <-  function(var, var.label,
 
     group <- paste(group.label, group, sep = ": ")
     group <- as.factor(group)
-    data_test <- data.frame(var, group)
-    data_qqline <- data.frame(var, group) %>% group_by(group) %>%
+    data_plot <- data.frame(var, group)
+    data_qqline <- data_plot %>% group_by(group) %>%
       summarise(slope = qqline_slope(var),
                 int = qqline_int(var))
 
-    p <- norm_test(var = var, group = group, test = test) %>%
-      select(-.data$Group)
-    p <- ifelse(round(p[[1]], digits) != 0,
-                paste("=", round(p[[1]], digits)), "< 0.001")
-    pvalue <- paste("p-value", p)
 
-    out <- ggplot(data_test, aes_string(sample = 'var')) + stat_qq() +
-      geom_abline(data = data_qqline, aes(intercept = int, slope = slope)) + theme_bw() +
-      facet_grid(. ~ group) +
-      ggtitle(paste0(var.label))
-    if (pvalue.plot)
-      out <- out +
-        annotate(geom = "text", label = pvalue,
-                 x = -Inf, y = Inf,
-                 hjust=-0.5, vjust=2, size = 4)
+    out <- ggplot(data_plot, aes_string(sample = 'var')) + stat_qq() +
+      geom_abline(data = data_qqline, aes_string(intercept = "int", slope = "slope")) +
+      theme_bw() +
+      ggtitle(paste0(var.label)) + facet_grid(. ~ group)
 
   }
   return(out)
 }
 
 hist_plot <-  function(var, var.label,
-                       group = NULL, group.label = NULL,
-                       test = "sf", digits = 3, pvalue.plot = TRUE){
+                       group = NULL, group.label = NULL){
 
   if (is.null(group)){
     data_plot <- data.frame(var = var)
 
-    p <- norm_test(var = var, test = test)
-    p <- ifelse(round(p[[1]], digits) != 0,
-                paste0("= ", round(p[[1]], digits)), "< 0.001")
-    pvalue <- paste("p-value", p)
-
     out <- ggplot(data_plot, aes_string(x = 'var')) +
       geom_histogram() + theme_bw()
-    if (pvalue.plot)
-      out <- out +
-      annotate(geom = "text", label = pvalue,
-               x = -Inf, y = Inf,
-               hjust = -0.5, vjust = 2, size = 4)
 
   } else {
     if (is.null(group.label))
@@ -180,23 +135,12 @@ hist_plot <-  function(var, var.label,
 
     group <- paste(group.label, group, sep = ": ")
     group <- as.factor(group)
-    data_test <- data.frame(var, group)
+    data_plot <- data.frame(var, group)
 
-    p <- norm_test(var = var, group = group, test = test) %>%
-      select(-.data$Group)
-    p <- ifelse(round(p[[1]], digits) != 0,
-                paste("=", round(p[[1]], digits)), "< 0.001")
-    pvalue <- paste("p-value", p)
-
-    out <- ggplot(data_test, aes_string(x = 'var')) +
+    out <- ggplot(data_plot, aes_string(x = 'var')) +
       geom_histogram() + theme_bw() +
       facet_grid(. ~ group) +
       ggtitle(paste0(var.label))
-    if (pvalue.plot)
-      out <- out +
-      annotate(geom = "text", label = pvalue,
-               x = -Inf, y = Inf,
-               hjust=-0.5, vjust=2, size = 4)
 
   }
   return(out)
