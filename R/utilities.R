@@ -65,10 +65,10 @@ recode_labels <- function(x, code, labels) {
 #   return(out)
 # }
 
+
 #'@importFrom stringr str_replace_all
 #'@importFrom dplyr bind_cols
 #'@importFrom purrr map2
-#'@export
 data_labeller <- function(data, labels){
 
   aux_label <- function(x, y){

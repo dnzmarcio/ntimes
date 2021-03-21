@@ -143,8 +143,21 @@ helper_perc_count <- function(var, digits){
   out <- list(name = lh, value = perc_count)
 }
 
-
+#'Percentages and frequencies
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param x a numeric vector.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
 #'@importFrom nortest sf.test
+#'@export
 helper_sf_test <-  function(x){
 
   p.value <- nortest::sf.test(x)$p.value
@@ -153,8 +166,24 @@ helper_sf_test <-  function(x){
   out <- list(test = test, p.value = p.value)
 }
 
+#'Percentages and frequencies
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param x a numeric vector.
+#'@param g a numeric value specifying the number of digits to present the results.
+#'@param paired a logical value.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
 #'@importFrom tidyr drop_na
 #'@importFrom lawstat levene.test
+#'@export
 helper_levene_test <- function(x, g, paired){
 
   temp <- na.exclude(data.frame(x, g))
@@ -170,6 +199,20 @@ helper_levene_test <- function(x, g, paired){
   out <- list(test = test, p.value = p.value)
 }
 
+#'Percentages and frequencies
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param x a numeric vector.
+#'@param g a numeric value specifying the number of digits to present the results.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
 #'@export
 helper_anova <- function(x, g){
 
@@ -181,6 +224,20 @@ helper_anova <- function(x, g){
   out <- list(test = test, p.value = p.value)
 }
 
+#'Percentages and frequencies
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param x a numeric vector.
+#'@param g a numeric value specifying the number of digits to present the results.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
 #'@export
 helper_welch_anova <- function(x, g){
 
@@ -192,6 +249,20 @@ helper_welch_anova <- function(x, g){
   out <- list(test = test, p.value = p.value)
 }
 
+#'Percentages and frequencies
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param x a numeric vector.
+#'@param g a numeric value specifying the number of digits to present the results.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
 #'@export
 helper_kruskal_wallis <- function(x, g){
 
@@ -203,6 +274,23 @@ helper_kruskal_wallis <- function(x, g){
   out <- list(test = test, p.value = p.value)
 }
 
+#'Helper for Student's t-test
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param x a numeric vector.
+#'@param g a numeric vector.
+#'@param paired a logical value.
+#'@param alternative a character value.
+#'@param conf.level a numeric value.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{test} as the measure name and the
+#'second element as the \code{p.value} for a given variable.
+#'
 #'@export
 helper_student_t <- function(x, g, paired, alternative, conf.level){
 
@@ -222,6 +310,23 @@ helper_student_t <- function(x, g, paired, alternative, conf.level){
               lower = lower, upper = upper)
 }
 
+#'Helper for Student's t-test
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param x a numeric vector.
+#'@param g a numeric vector.
+#'@param paired a logical value.
+#'@param alternative a character value.
+#'@param conf.level a numeric value.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{test} as the measure name and the
+#'second element as the \code{p.value} for a given variable.
+#'
 #'@export
 helper_welch_t <- function(x, g, paired, alternative, conf.level){
 
@@ -241,7 +346,23 @@ helper_welch_t <- function(x, g, paired, alternative, conf.level){
               lower = lower, upper = upper)
 }
 
-
+#'Helper for Student's t-test
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param x a numeric vector.
+#'@param g a numeric vector.
+#'@param paired a logical value.
+#'@param alternative a character value.
+#'@param conf.level a numeric value.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{test} as the measure name and the
+#'second element as the \code{p.value} for a given variable.
+#'
 #'@export
 helper_mann_whitney <- function(x, g, paired, alternative, conf.level){
 
@@ -261,6 +382,23 @@ helper_mann_whitney <- function(x, g, paired, alternative, conf.level){
 
 }
 
+#'Helper for Student's t-test
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param x a numeric vector.
+#'@param g a numeric vector.
+#'@param paired a logical value.
+#'@param alternative a character value.
+#'@param conf.level a numeric value.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{test} as the measure name and the
+#'second element as the \code{p.value} for a given variable.
+#'
 #'@export
 helper_brunner_munzel <- function(x, g, alternative, paired, conf.level){
 
