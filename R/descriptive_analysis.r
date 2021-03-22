@@ -67,13 +67,15 @@ nt_describe <- function(data,
     vars <- data_labeller(vars, labels)
     vars.label <- map2(.x = vars, .y = as.list(vars.name),
                        .f = extract_label)
-
-    group <- data_labeller(group, labels)
-    group.label <- extract_label(group, group.name)
+    if (!is.null(group)){
+      group <- data_labeller(group, labels)
+      group.label <- extract_label(group[[1]], group.name)
+    }
   } else {
     vars.label <- map2(.x = vars, .y = as.list(vars.name),
                        .f = extract_label)
-    group.label <- extract_label(group, group.name)
+    if (!is.null(group))
+      group.label <- extract_label(group[[1]], group.name)
   }
 
   temp <- pmap(.l = list(vars, vars.name, vars.label),
