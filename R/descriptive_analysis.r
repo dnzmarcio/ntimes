@@ -186,10 +186,9 @@ format_quantitative <- function(desc,
 
   if (length(desc[-length(desc)]) > 1){
     aux_variable <- c(var.label,
-                      paste0("  \t ",
                              Reduce(c, lapply(desc[-length(desc)],
                                               function(x)
-                                                x$name))))
+                                                x$name)))
     aux_measures <- c("", Reduce(c, lapply(desc[-length(desc)],
                                            function(x)
                                              x$value)))
@@ -272,8 +271,7 @@ format_qualitative <- function(desc, group,
   if (is.null(desc[[1]]$name)){
     aux_variable <- var.label
   } else {
-    aux_variable <- c(var.label, paste0("  \t ",
-                                        as.character(desc[[1]]$name)))
+    aux_variable <- c(var.label, as.character(desc[[1]]$name))
   }
 
   aux_measure <- c("", desc[[1]]$value)
