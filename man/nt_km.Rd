@@ -11,6 +11,7 @@ nt_km(
   labels = NULL,
   xlab = "Time",
   ylab = "Survival",
+  risktable.title = "n at risk",
   save = FALSE,
   fig.height = 5,
   fig.width = 5,

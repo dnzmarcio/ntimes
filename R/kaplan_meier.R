@@ -52,6 +52,7 @@
 #'@export
 nt_km <-  function(data, time, status, labels = NULL,
                    xlab = "Time", ylab = "Survival",
+                   risktable.title = "n at risk",
                    save = FALSE, fig.height = 5, fig.width = 5,
                    std_fun = std_km,
                    std_fun_group = std_km_group,
@@ -74,7 +75,8 @@ nt_km <-  function(data, time, status, labels = NULL,
 
   plot <- list()
 
-  overall <- std_fun(time, status, xlab = xlab, ylab = ylab)
+  overall <- std_fun(time, status, xlab = xlab, ylab = ylab,
+                     risktable.title = risktable.title)
   if (!is.null(time.points))
     aux <- tab_km(time, status, time.points, digits = digits)
 
@@ -95,7 +97,7 @@ nt_km <-  function(data, time, status, labels = NULL,
     plot <- pmap(.l = list(vars, vars.name, vars.label),
                  .f = aux_km,
                  time = time, status = status,
-                 xlab = xlab, ylab = ylab,
+                 xlab = xlab, ylab = ylab, risktable.title = risktable.title,
                  fig.height = fig.height, fig.width = fig.width,
                  save = save, std_fun_group = std_fun_group)
     if (!is.null(time.points)){
@@ -175,7 +177,8 @@ tab_km_group <- function(var, var.name, time, status, time.points, digits){
 }
 
 
-aux_km <- function(var, var.name, var.label, time, status, xlab, ylab,
+aux_km <- function(var, var.name, var.label, time, status,
+                   xlab, ylab, risktable.title,
                    fig.height, fig.width, save, std_fun_group){
 
   if (is.character(var))
@@ -186,7 +189,8 @@ aux_km <- function(var, var.name, var.label, time, status, xlab, ylab,
   if (nlevels(droplevels(var)) >= 2){
     out <- std_fun_group(time = time, status = status,
                          var = var, var.label = var.label,
-                         xlab = xlab, ylab = ylab)
+                         xlab = xlab, ylab = ylab,
+                         risktable.title = risktable.title)
 
     if (save)
       out <- out +
@@ -224,7 +228,7 @@ aux_km <- function(var, var.name, var.label, time, status, xlab, ylab,
 #'@importFrom magrittr %>%
 #'
 #'@export
-std_km <- function(time, status, xlab, ylab){
+std_km <- function(time, status, xlab, ylab, risktable.title){
 
   ### Data
   data.model <- data.frame(time, status)
@@ -279,7 +283,7 @@ std_km <- function(time, status, xlab, ylab){
   ## Formatting
   risk.table <- risk.table +
     scale_x_continuous(limits = c(0, max(time))) +
-    labs(x = xlab, y = "", title = "n at risk") + theme_bw() +
+    labs(x = xlab, y = "", title = risktable.title) + theme_bw() +
     theme(title = element_text(size = 9),
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank())
@@ -319,7 +323,7 @@ std_km <- function(time, status, xlab, ylab){
 #'
 #'@export
 std_km_group <- function(time, status, var, var.label,
-                         xlab, ylab){
+                         xlab, ylab, risktable.title){
 
   ### Data
   data.model <- data.frame(time, status, var)
@@ -405,7 +409,7 @@ std_km_group <- function(time, status, var, var.label,
   ## Formatting
   risk.table <- risk.table + theme_bw() +
     scale_x_continuous(limits = c(0, max(time))) +
-    labs(x = xlab, y = "", title = "n at risk")
+    labs(x = xlab, y = "", title = risktable.title)
 
 
   ## Changing y axis ticks

@@ -4,7 +4,7 @@
 \alias{std_km_group}
 \title{Standard Kaplan-Meier curve by group}
 \usage{
-std_km_group(time, status, var, var.label, xlab, ylab)
+std_km_group(time, status, var, var.label, xlab, ylab, risktable.title)
 }
 \arguments{
 \item{time}{a numeric vector.}
