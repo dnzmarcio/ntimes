@@ -11,6 +11,7 @@
 #'
 #'@param data a data frame with the variables.
 #'@param group a data frame with the group variable.
+#'@param labels a list of labels with components given by their variable names.
 #'@param alternative a character value indicating the alternative hypothesis,
 #'must be one of "two.sided", "greater" or "less".
 #'@param norm.test a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.
@@ -27,16 +28,18 @@
 #'@param file a character value indicating the name of output file in csv format to be saved.
 #'
 #'@examples
-#'library(dplyr)
-#'library(forcats)
+#'library(maggritr)
 #'data(iris)
 #'
 #'iris %>% filter(Species != "setosa") %>%
-#' mutate(Species = fct_drop(Species)) %>%
-#' nt_compare_tg(group = Species)
-#'
+#'  mutate(Species = as.factor(Species)) %>%
+#'  nt_compare_tg(group = Species,
+#'                labels = list(Sepal.Length = "Sepal Length",
+#'                              Sepal.Width = "Sepal Width",
+#'                              Petal.Length = "Petal Length",
+#'                              Petal.Width = "Petal Width"))
 #'@export
-nt_compare_tg <- function(data, group,
+nt_compare_tg <- function(data, group, labels = NULL,
                           alternative = "two.sided",
                           norm.test = helper_sf_test,
                           var.test = helper_levene_test,
@@ -59,11 +62,29 @@ nt_compare_tg <- function(data, group,
   vars.name <- names(vars)
   group.name <- names(group)
 
+  vars.name <- names(vars)
+  if (!is.null(labels)){
+    vars <- data_labeller(vars, labels)
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+    if (!is.null(group)){
+      group <- data_labeller(group, labels)
+      group.label <- extract_label(group[[1]], group.name)
+    }
+  } else {
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+    if (!is.null(group))
+      group.label <- extract_label(group[[1]], group.name)
+  }
+
   if (nlevels(fct_drop(group[[1]])) != 2)
     stop("'group' should have only two levels.")
-
-  temp <- map2(.x = vars, .y = vars.name, .f = aux_compare_tg,
-               group = group, group.name = group.name,
+  temp <- pmap(.l = list(vars, vars.name, vars.label),
+               .f = aux_compare_tg,
+               group = group[[1]],
+               group.name = group.name,
+               group.label = group.label,
                norm.test = norm.test,
                var.test = var.test,
                qt.test = qt.test,
@@ -93,18 +114,17 @@ nt_compare_tg <- function(data, group,
   return(out)
 }
 
-aux_compare_tg <- function(var, var.name, group, group.name = group.name,
+aux_compare_tg <- function(var, var.name, var.label,
+                           group, group.name, group.label,
                            norm.test, var.test, qt.test,
                            paired = paired, alternative, conf.level,
                            format, digits.p, digits.ci){
 
-  unit.label <- extract_unit(var)
-  var.label <- extract_label(var, var.name)
-  group.label <- extract_label(group, group.name)
-
   if (is.numeric(var)){
     out <- dist_qt_tg(var = var,
-                      group = group[[1]],
+                      group = group,
+                      var.label = var.label,
+                      group.label = group.label,
                       norm.test = norm.test,
                       var.test = var.test,
                       qt.test = qt.test,
@@ -112,20 +132,18 @@ aux_compare_tg <- function(var, var.name, group, group.name = group.name,
                       alternative = alternative,
                       conf.level = conf.level,
                       digits.p = digits.p,
-                      digits.ci = digits.ci,
-                      var.label = var.label,
-                      group.label = group.label)
+                      digits.ci = digits.ci)
 
   } else {
     out <- dist_ql_tg(var = var,
-                      group = group[[1]],
+                      group = group,
+                      var.label = var.label,
+                      group.label = group.label,
                       paired = paired,
                       alternative = alternative,
                       conf.level = conf.level,
                       digits.p = digits.p,
-                      digits.ci = digits.ci,
-                      var.label = var.label,
-                      group.label = group.label)
+                      digits.ci = digits.ci)
 
   }
 

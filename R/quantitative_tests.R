@@ -1,8 +1,8 @@
-dist_qt_tg <-  function(var, group,
+dist_qt_tg <-  function(var, var.label, group, group.label,
                         norm.test, var.test, qt.test,
                         alternative, conf.level, paired,
                         digits.p, digits.ci,
-                        var.label, group.label) {
+                        ...) {
 
   data.test <- data.frame(x = var, g = droplevels(group))
   nlg <- nlevels(droplevels(data.test$g[!is.na(data.test$x)]))

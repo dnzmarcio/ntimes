@@ -7,6 +7,7 @@
 nt_compare_tg(
   data,
   group,
+  labels = NULL,
   alternative = "two.sided",
   norm.test = helper_sf_test,
   var.test = helper_levene_test,
@@ -25,6 +26,8 @@ nt_compare_tg(
 \item{data}{a data frame with the variables.}
 
 \item{group}{a data frame with the group variable.}
+
+\item{labels}{a list of labels with components given by their variable names.}
 
 \item{alternative}{a character value indicating the alternative hypothesis,
 must be one of "two.sided", "greater" or "less".}
@@ -55,12 +58,14 @@ the difference between the two groups.}
 Performing comparisons between two groups.
 }
 \examples{
-library(dplyr)
-library(forcats)
+library(maggritr)
 data(iris)
 
 iris \%>\% filter(Species != "setosa") \%>\%
-mutate(Species = fct_drop(Species)) \%>\%
-nt_compare_tg(group = Species)
-
+ mutate(Species = as.factor(Species)) \%>\%
+ nt_compare_tg(group = Species,
+               labels = list(Sepal.Length = "Sepal Length",
+                             Sepal.Width = "Sepal Width",
+                             Petal.Length = "Petal Length",
+                             Petal.Width = "Petal Width"))
 }
