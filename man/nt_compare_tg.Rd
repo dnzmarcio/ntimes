@@ -19,7 +19,8 @@ nt_compare_tg(
   digits.ci = 3,
   digits.p = 5,
   save = FALSE,
-  file = "nt_compare_tg"
+  file = "nt_compare_tg",
+  ...
 )
 }
 \arguments{

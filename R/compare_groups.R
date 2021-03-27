@@ -52,7 +52,8 @@ nt_compare_tg <- function(data, group, labels = NULL,
                           digits.ci = 3,
                           digits.p = 5,
                           save = FALSE,
-                          file = "nt_compare_tg"){
+                          file = "nt_compare_tg",
+                          ...){
 
   group <- enquo(group)
 
@@ -93,7 +94,8 @@ nt_compare_tg <- function(data, group, labels = NULL,
                conf.level = conf.level,
                format = format,
                digits.p = digits.p,
-               digits.ci = digits.ci)
+               digits.ci = digits.ci,
+               ...)
 
   out <- Reduce(rbind, temp)
 

@@ -13,7 +13,8 @@ nt_describe(
   measures_ql = list(helper_perc_count),
   digits = 2,
   save = FALSE,
-  file = "descriptive_analysis"
+  file = "descriptive_analysis",
+  ...
 )
 }
 \arguments{
