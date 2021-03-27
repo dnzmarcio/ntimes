@@ -4,7 +4,7 @@
 \alias{helper_median_iqr}
 \title{Median with first and third quantiles}
 \usage{
-helper_median_iqr(var, digits)
+helper_median_iqr(var, digits, ...)
 }
 \arguments{
 \item{var}{a numeric vector.}

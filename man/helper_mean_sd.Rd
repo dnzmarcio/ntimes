@@ -4,7 +4,7 @@
 \alias{helper_mean_sd}
 \title{Mean and standard deviation}
 \usage{
-helper_mean_sd(var, digits)
+helper_mean_sd(var, digits, ...)
 }
 \arguments{
 \item{var}{a numeric vector.}

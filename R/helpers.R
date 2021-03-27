@@ -14,7 +14,9 @@
 #'
 #'@importFrom stats sd
 #'@export
-helper_mean_sd <- function(var, digits){
+helper_mean_sd <- function(var, digits, ...){
+
+  ldots <- list(...)
 
   mean <- format(round(mean(var, na.rm = TRUE), digits), nsmall = digits)
   sd <- format(round(sd(var, na.rm = TRUE), digits), nsmall = digits)
@@ -40,7 +42,9 @@ helper_mean_sd <- function(var, digits){
 #'
 #'@importFrom stats median quantile
 #'@export
-helper_median_iqr <- function(var, digits){
+helper_median_iqr <- function(var, digits, ...){
+
+  ldots <- list(...)
 
   median <- format(round(median(var, na.rm = TRUE), digits),
                    nsmall = digits)
@@ -71,7 +75,9 @@ helper_median_iqr <- function(var, digits){
 #'
 #'@importFrom stats median
 #'@export
-helper_median_range <- function(var, digits){
+helper_median_range <- function(var, digits, ...){
+
+  ldots <- list(...)
 
   median <- format(round(median(var, na.rm = TRUE), digits),
                    nsmall = digits)
@@ -100,7 +106,12 @@ helper_median_range <- function(var, digits){
 #'second element as the \code{value} for a given variable.
 #'
 #'@export
-helper_missing <- function(var, digits){
+helper_missing <- function(var, ...){
+
+  ldots <- list(...)
+
+  out <- list(name = "\t Missing",
+              value = sum(is.na(var)))
 
   out <- list(name = "Missing", value = sum(is.na(var)))
   return(out)
@@ -122,7 +133,9 @@ helper_missing <- function(var, digits){
 #'
 #'@importFrom forcats fct_explicit_na
 #'@export
-helper_perc_count <- function(var, digits){
+helper_perc_count <- function(var, digits, ...){
+
+  ldots <- list(...)
 
   h <- fct_explicit_na(var, na_level = "Missing")
   lh <- levels(h)

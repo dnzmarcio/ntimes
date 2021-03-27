@@ -4,7 +4,7 @@
 \alias{helper_missing}
 \title{Number of missing observations}
 \usage{
-helper_missing(var, digits)
+helper_missing(var, ...)
 }
 \arguments{
 \item{var}{a numeric vector.}

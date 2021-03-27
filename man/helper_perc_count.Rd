@@ -4,7 +4,7 @@
 \alias{helper_perc_count}
 \title{Percentages and frequencies}
 \usage{
-helper_perc_count(var, digits)
+helper_perc_count(var, digits, ...)
 }
 \arguments{
 \item{var}{a numeric vector.}

@@ -4,7 +4,7 @@
 \alias{helper_median_range}
 \title{Median with minimum and maximum}
 \usage{
-helper_median_range(var, digits)
+helper_median_range(var, digits, ...)
 }
 \arguments{
 \item{var}{a numeric vector.}

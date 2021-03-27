@@ -48,7 +48,8 @@ nt_describe <- function(data,
                         measures_ql = list(helper_perc_count),
                         digits = 2,
                         save = FALSE,
-                        file = "descriptive_analysis"){
+                        file = "descriptive_analysis",
+                        ...){
 
   group <- enquo(group)
 
@@ -85,7 +86,8 @@ nt_describe <- function(data,
                group.label = group.label,
                digits = digits,
                measures_qt = measures_qt,
-               measures_ql = measures_ql)
+               measures_ql = measures_ql,
+               ...)
 
   out <- Reduce(rbind, temp)
 
@@ -98,7 +100,8 @@ nt_describe <- function(data,
 
 aux_describe <- function(var, var.name, var.label,
                          group, group.name, group.label,
-                         digits, measures_qt, measures_ql){
+                         digits, measures_qt, measures_ql,
+                         ...){
 
   if (!is.null(group)){
     if (!is.factor(group)){
@@ -113,14 +116,16 @@ aux_describe <- function(var, var.name, var.label,
                                  digits = digits,
                                  var.label = var.label,
                                  group.label = group.label,
-                                 measures_qt = measures_qt)
+                                 measures_qt = measures_qt,
+                                 ...)
   } else {
     out <- describe_qualitative(var = var,
                                 group = group,
                                 digits = digits,
                                 var.label = var.label,
                                 group.label = group.label,
-                                measures_ql = measures_ql)
+                                measures_ql = measures_ql,
+                                ...)
 
 
   }
@@ -130,12 +135,14 @@ aux_describe <- function(var, var.name, var.label,
 describe_quantitative <- function(var, group,
                                   digits,
                                   var.label, group.label,
-                                  measures_qt){
+                                  measures_qt,
+                                  ...){
 
   if (is.null(group)) {
     desc <- quantitative_measures(var,
                                   digits = digits,
-                                  measures_qt = measures_qt)
+                                  measures_qt = measures_qt,
+                                  ...)
     out <- format_quantitative(desc = desc, group = NULL,
                                var.label = var.label,
                                group.label = group.label)
@@ -150,7 +157,8 @@ describe_quantitative <- function(var, group,
 
     desc <- tapply(var, group, quantitative_measures,
                    digits = digits,
-                   measures_qt = measures_qt)
+                   measures_qt = measures_qt,
+                   ...)
     group.lv <- setNames(as.list(levels(group)), levels(group))
     temp <- mapply(aux, desc, group.lv, SIMPLIFY = FALSE)
 
@@ -163,9 +171,9 @@ describe_quantitative <- function(var, group,
   return(out)
 }
 
-quantitative_measures <- function(x, digits, measures_qt){
+quantitative_measures <- function(x, digits, measures_qt, ...){
 
-  out <- lapply(measures_qt, function(f) f(x, digits = digits))
+  out <- lapply(measures_qt, function(f) f(var = x, digits = digits, ... = ...))
   out$n <- list(name = " n", value = length(x))
 
   return(out)
@@ -207,7 +215,8 @@ format_quantitative <- function(desc,
 describe_qualitative <- function(var, group = NULL,
                                  digits = 2,
                                  var.label, group.label,
-                                 measures_ql){
+                                 measures_ql,
+                                 ...){
 
   if (!is.factor(var)){
     var <- as.factor(var)
@@ -218,7 +227,8 @@ describe_qualitative <- function(var, group = NULL,
 
   if (is.null(group)) {
     desc <- qualitative_measures(h = var, digits = digits,
-                                 measures_ql = measures_ql)
+                                 measures_ql = measures_ql,
+                                 ...)
     out <- format_qualitative(desc = desc, group = NULL,
                               var.label = var.label)
 
@@ -232,7 +242,8 @@ describe_qualitative <- function(var, group = NULL,
     }
 
     desc <- tapply(var, group, qualitative_measures,
-                   digits = digits, measures_ql = measures_ql)
+                   digits = digits, measures_ql = measures_ql,
+                   ... = ...)
     group.lv <- setNames(as.list(levels(group)), levels(group))
     temp <- mapply(aux, desc, group.lv, SIMPLIFY = FALSE)
 
@@ -243,12 +254,12 @@ describe_qualitative <- function(var, group = NULL,
   return(out)
 }
 
-qualitative_measures <- function(h, digits, measures_ql){
+qualitative_measures <- function(h, digits, measures_ql, ...){
 
-  aux <- function(f) {
-    out <- f(h, digits = digits)
+  aux <- function(f, ...) {
+    out <- f(var = h, digits = digits, ...)
   }
-  out <- lapply(measures_ql, aux)
+  out <- lapply(measures_ql, aux, h = h, digits = digits, ... = ...)
   out$n <- list(name = " n", value = length(h))
 
   return(out)
