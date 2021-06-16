@@ -36,7 +36,7 @@
 #'@importFrom purrr map2
 #'
 #'@export
-nt_boxplot <-  function(data, group = NULL,
+nt_boxplot <-  function(data, group = NULL, labels = NULL,
                         save = FALSE, fig.height = 5, fig.width = 5,
                         std_fun = std_boxplot,
                         std_fun_group = std_boxplot_group){
@@ -52,25 +52,42 @@ nt_boxplot <-  function(data, group = NULL,
     group <- NULL
     group.name <- NULL
   }
+
   vars.name <- names(vars)
 
-  out <- map2(.x = vars, .y = vars.name, .f = aux_boxplot,
-              group = group, group.name = group.name,
+  if (!is.null(labels)){
+    vars <- data_labeller(vars, labels)
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+
+    if (!is.null(group)){
+      group <- data_labeller(group, labels)
+      group.label <- extract_label(group[[1]], group.name)
+    }
+
+  } else {
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+
+    if (!is.null(group)){
+      group <- data_labeller(group, labels)
+      group.label <- extract_label(group, group.name)
+    }
+  }
+
+  out <- pmap(.l = list(vars, vars.name, vars.label),
+              .f = aux_boxplot,
+              group = group, group.name = group.name, group.label = group.label,
               fig.height = fig.height, fig.width = fig.width, save = save,
               std_fun = std_fun, std_fun_group = std_fun_group)
 
   return(out)
 }
 
-aux_boxplot <- function(var, var.name, group, group.name,
+aux_boxplot <- function(var, var.name, var.label, group, group.name, group.label,
                         fig.height, fig.width, save, std_fun, std_fun_group){
 
   out <- list()
-  var.label <- extract_label(var, var.name)
-  var.unit <- extract_unit(var)
-
-  if (var.unit != "")
-    var.label <- paste(var.label, paste0("(", var.unit, ")"))
 
   if (is.null(group)) {
     gp <- std_fun(var = var,
@@ -83,8 +100,6 @@ aux_boxplot <- function(var, var.name, group, group.name,
     out <- gp
 
   } else {
-    group.label <- extract_label(group[[1]], group.name)
-
     gp <- std_fun_group(var = var,
                         group = group[[1]],
                         group.label = group.label,
