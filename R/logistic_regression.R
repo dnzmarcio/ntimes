@@ -7,6 +7,7 @@
 #'@param ...  character values indicating confounding variables.
 #'@param labels a list of labels with components given by their variable names.
 #'@param increment a variable named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.
+#'@param conf.level a numerical value indicating the confidence level for parameters of interest.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
@@ -43,7 +44,7 @@
 #'@export
 nt_simple_logistic <- function(data, response, ...,
                                labels = NULL,
-                               increment = NULL,
+                               increment = NULL, conf.level = 0.95,
                                format = TRUE, digits = 2, digits.p = 3,
                                save = FALSE, file = "simple_logistic"){
 
@@ -84,7 +85,7 @@ nt_simple_logistic <- function(data, response, ...,
                .f = aux_simple_logistic,
                response = response[[1]], response.label = response.label,
                add = add, add.name = add.name, add.label = add.label,
-               increment = increment,
+               increment = increment, conf.level = conf.level,
                format = format)
 
   out <- Reduce(rbind, temp)
@@ -124,7 +125,7 @@ nt_simple_logistic <- function(data, response, ...,
 aux_simple_logistic <- function(var, var.name, var.label,
                                 response, response.label,
                                 add, add.name, add.label,
-                                increment,
+                                increment, conf.level,
                                 format){
 
   if (!is.null(add)){
@@ -157,7 +158,8 @@ aux_simple_logistic <- function(var, var.name, var.label,
     tab.labels[[names(aux.labels)[i]]] <- rep(aux.labels[[i]], length(tab.levels[[i]]))
   }
 
-  out <- fit_logistic(data.model, tab.labels, tab.levels, var.label, increment[[var.name]])
+  out <- fit_logistic(data.model, tab.labels, tab.levels, var.label,
+                      increment[[var.name]], conf.level)
 
   # if (any(duplicated(out$term))){
   #   index <- which(duplicated(out$term, fromLast = TRUE))
@@ -176,18 +178,20 @@ aux_simple_logistic <- function(var, var.name, var.label,
 
 #'@importFrom broom tidy glance
 #'@importFrom stats na.exclude glm anova
-fit_logistic <- function(data, tab.labels, tab.levels, var.label, increment){
+fit_logistic <- function(data, tab.labels, tab.levels, var.label, increment, conf.level){
 
   data <- na.exclude(data)
 
   if (!is.null(increment))
     #for (i in 1:length(increment)){
-      data[[tab.labels[[i]]]] <- data[[tab.labels[[i]]]]/increment
+      data[["var"]] <- data[["var"]]/increment
     #}
 
   fit <- glm(response ~ ., data = data, family = "binomial")
 
-  temp <- tidy(fit, exponentiate = TRUE, conf.int = TRUE)
+  temp <- tidy(fit, exponentiate = TRUE,
+               conf.level = conf.level,
+               conf.int = TRUE)
   temp$term <- c("(Intercept)", unlist(tab.labels))
   temp$group <- c("", unlist(tab.levels))
   temp <- temp[-1, c(1, 8, 2, 6, 7, 5)]
