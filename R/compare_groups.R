@@ -137,6 +137,11 @@ aux_compare_tg <- function(var, var.name, var.label,
                       digits.ci = digits.ci)
 
   } else {
+    if (!is.factor(var)){
+      var <- as.factor(var)
+      warning(paste(var.label, "was transformed into a factor."))
+    }
+
     out <- dist_ql_tg(var = var,
                       group = group,
                       var.label = var.label,
