@@ -84,16 +84,17 @@ nt_km <-  function(data, time, status, labels = NULL,
     overall <- overall + ggsave(filename = "km_overall.jpeg",
                       height = fig.height, width = fig.width)
 
-  if (!is.null(labels)){
-    vars <- data_labeller(vars, labels)
-    vars.label <- map2(.x = vars, .y = as.list(vars.name),
-                      .f = extract_label)
-  } else {
-    vars.label <- map2(.x = vars, .y = as.list(vars.name),
-                       .f = extract_label)
-  }
-
   if(ncol(data) > 2){
+    if (!is.null(labels)){
+      vars <- data_labeller(vars, labels)
+      vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                         .f = extract_label)
+    } else {
+      vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                         .f = extract_label)
+    }
+
+
     plot <- pmap(.l = list(vars, vars.name, vars.label),
                  .f = aux_km,
                  time = time, status = status,
@@ -101,7 +102,8 @@ nt_km <-  function(data, time, status, labels = NULL,
                  fig.height = fig.height, fig.width = fig.width,
                  save = save, std_fun_group = std_fun_group)
     if (!is.null(time.points)){
-      tab <- map2(.x = vars, .y = vars.name, .f = tab_km_group,
+      tab <- pmap(.l = list(vars, vars.name, vars.label),
+                  .f = tab_km_group,
                   time = time, status = status,
                   time.points = time.points, digits = digits)
      tab <- bind_rows(aux, Reduce(rbind, tab))
@@ -158,9 +160,8 @@ tab_km <- function(time, status, time.points, digits){
 #'@importFrom dplyr mutate
 #'@importFrom rlang .data
 #'@importFrom magrittr %>%
-tab_km_group <- function(var, var.name, time, status, time.points, digits){
+tab_km_group <- function(var, var.name, var.label, time, status, time.points, digits){
 
-  var.label <- extract_label(var, var.name)
   data.model <- data.frame(time, status)
   fit <- survfit(Surv(time, status) ~ var, data = data.model)
   temp <- summary(fit, times = time.points)
@@ -171,7 +172,7 @@ tab_km_group <- function(var, var.name, time, status, time.points, digits){
                     lower = temp$lower,
                     upper = temp$upper) %>%
     separate(.data$strata, into = c("variable", "group"), sep = "=") %>%
-    mutate(variable = .data$var.label)
+    mutate(variable = var.label)
 
   return(out)
 }
