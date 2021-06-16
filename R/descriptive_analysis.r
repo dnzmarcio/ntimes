@@ -255,7 +255,7 @@ describe_qualitative <- function(var, group = NULL,
 
 qualitative_measures <- function(h, digits, measures_ql, ...){
 
-  aux <- function(f, ...) {
+  aux <- function(f, digits, ...) {
     out <- f(var = h, digits = digits, ...)
   }
   out <- lapply(measures_ql, aux, h = h, digits = digits, ... = ...)
