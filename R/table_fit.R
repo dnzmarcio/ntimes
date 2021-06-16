@@ -44,7 +44,12 @@ reference_df <- function(fit){
   for (i in 1:length(data)){
     if (is.numeric(data[, i])){
       df[, i] <- median(data[, i], na.rm = TRUE)
-    } else if (is.factor(data[, i])){
+    } else {
+
+      if (!is.factor(data[, i])){
+        data[, i] <- as.factor(data[, i])
+      }
+
       df[, i] <- factor(levels(data[, i])[1], levels = levels(data[, i]))
     }
   }
