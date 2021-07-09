@@ -70,7 +70,6 @@ nt_boxplot <-  function(data, group = NULL, labels = NULL,
                        .f = extract_label)
 
     if (!is.null(group)){
-      group <- data_labeller(group, labels)
       group.label <- extract_label(group, group.name)
     }
   }
