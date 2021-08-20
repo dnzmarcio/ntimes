@@ -57,7 +57,8 @@ nt_km <-  function(data, time, status, labels = NULL,
                    std_fun = std_km,
                    std_fun_group = std_km_group,
                    time.points = NULL, format = TRUE, digits = 2,
-                   file = "survival") {
+                   file = "survival",
+                   ...) {
 
   time <- enquo(time)
   status <- enquo(status)
@@ -76,12 +77,12 @@ nt_km <-  function(data, time, status, labels = NULL,
   plot <- list()
 
   overall <- std_fun(time, status, xlab = xlab, ylab = ylab,
-                     risktable.title = risktable.title)
+                     risktable.title = risktable.title, ...)
   if (!is.null(time.points))
     aux <- tab_km(time, status, time.points, digits = digits)
 
   if(save)
-    overall <- overall + ggsave(filename = "km_overall.jpeg",
+    ggsave(overall, filename = "km_overall.jpeg",
                       height = fig.height, width = fig.width)
 
   if(ncol(data) > 2){
@@ -100,7 +101,8 @@ nt_km <-  function(data, time, status, labels = NULL,
                  time = time, status = status,
                  xlab = xlab, ylab = ylab, risktable.title = risktable.title,
                  fig.height = fig.height, fig.width = fig.width,
-                 save = save, std_fun_group = std_fun_group)
+                 save = save, std_fun_group = std_fun_group,
+                 ... = ...)
     if (!is.null(time.points)){
       tab <- pmap(.l = list(vars, vars.name, vars.label),
                   .f = tab_km_group,
@@ -180,7 +182,7 @@ tab_km_group <- function(var, var.name, var.label, time, status, time.points, di
 
 aux_km <- function(var, var.name, var.label, time, status,
                    xlab, ylab, risktable.title,
-                   fig.height, fig.width, save, std_fun_group){
+                   fig.height, fig.width, save, std_fun_group, ...){
 
   if (is.character(var))
     var <- as.factor(var)
@@ -191,11 +193,11 @@ aux_km <- function(var, var.name, var.label, time, status,
     out <- std_fun_group(time = time, status = status,
                          var = var, var.label = var.label,
                          xlab = xlab, ylab = ylab,
-                         risktable.title = risktable.title)
+                         risktable.title = risktable.title,
+                         ...)
 
     if (save)
-      out <- out +
-      ggsave(filename = paste0("km_", var.name, ".jpeg"),
+      ggsave(out, filename = paste0("km_", var.name, ".jpeg"),
              height = fig.height, width = fig.width)
 
   } else {
@@ -229,7 +231,7 @@ aux_km <- function(var, var.name, var.label, time, status,
 #'@importFrom magrittr %>%
 #'
 #'@export
-std_km <- function(time, status, xlab, ylab, risktable.title){
+std_km <- function(time, status, xlab, ylab, risktable.title, ...){
 
   ### Data
   data.model <- data.frame(time, status)
@@ -324,7 +326,8 @@ std_km <- function(time, status, xlab, ylab, risktable.title){
 #'
 #'@export
 std_km_group <- function(time, status, var, var.label,
-                         xlab, ylab, risktable.title){
+                         xlab, ylab, risktable.title,
+                         ...){
 
   ### Data
   data.model <- data.frame(time, status, var)
