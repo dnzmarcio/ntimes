@@ -184,7 +184,7 @@ tab_km_group <- function(var, var.name, var.label, time, status, time.points, di
 
 
 aux_km <- function(var, var.name, var.label, time, status,
-                   xlab, ylab, risktable.title,
+                   xlab, ylab, time.points, risktable.title,
                    fig.height, fig.width, save, std_fun_group, ...){
 
   if (is.character(var))
