@@ -57,7 +57,7 @@ nt_km <-  function(data, time, status, labels = NULL,
                    std_fun = std_km,
                    std_fun_group = std_km_group,
                    time.points = NULL, format = TRUE, digits = 2,
-                   file = "survival",
+                   file = "survival", where = "",
                    ...) {
 
   time <- enquo(time)
@@ -82,7 +82,7 @@ nt_km <-  function(data, time, status, labels = NULL,
     aux <- tab_km(time, status, time.points, digits = digits)
 
   if(save)
-    ggsave(overall, filename = "km_overall.jpeg",
+    ggsave(overall, filename = paste0(where, "km_overall.jpeg"),
                       height = fig.height, width = fig.width)
 
   if(ncol(data) > 2){
@@ -132,7 +132,7 @@ nt_km <-  function(data, time, status, labels = NULL,
     }
 
     if (save)
-      write.csv(tab, file = paste0(file, ".csv"))
+      write.csv(tab, file = paste0(where, paste0(file, ".csv")))
 
     out <- list(tab = tab, plot = plot)
   } else {
@@ -197,7 +197,7 @@ aux_km <- function(var, var.name, var.label, time, status,
                          ...)
 
     if (save)
-      ggsave(out, filename = paste0("km_", var.name, ".jpeg"),
+      ggsave(out, filename = paste0(where, paste0("km_", var.name, ".jpeg")),
              height = fig.height, width = fig.width)
 
   } else {
