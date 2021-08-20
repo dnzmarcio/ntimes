@@ -99,7 +99,9 @@ nt_km <-  function(data, time, status, labels = NULL,
     plot <- pmap(.l = list(vars, vars.name, vars.label),
                  .f = aux_km,
                  time = time, status = status,
-                 xlab = xlab, ylab = ylab, risktable.title = risktable.title,
+                 xlab = xlab, ylab = ylab,
+                 time.points = time.points,
+                 risktable.title = risktable.title,
                  fig.height = fig.height, fig.width = fig.width,
                  save = save, std_fun_group = std_fun_group,
                  ... = ...)
@@ -193,6 +195,7 @@ aux_km <- function(var, var.name, var.label, time, status,
     out <- std_fun_group(time = time, status = status,
                          var = var, var.label = var.label,
                          xlab = xlab, ylab = ylab,
+                         time.points = time.points,
                          risktable.title = risktable.title,
                          ...)
 
@@ -231,7 +234,7 @@ aux_km <- function(var, var.name, var.label, time, status,
 #'@importFrom magrittr %>%
 #'
 #'@export
-std_km <- function(time, status, xlab, ylab, risktable.title, ...){
+std_km <- function(time, status, xlab, ylab, time.points, risktable.title, ...){
 
   ### Data
   data.model <- data.frame(time, status)
@@ -250,8 +253,14 @@ std_km <- function(time, status, xlab, ylab, risktable.title, ...){
 
   ### Formatting
   surv.plot <- surv.plot +
-    scale_x_continuous(limits = c(0, max(time))) +
     labs(x = xlab, y = ylab) + theme_bw()
+
+  if (!is.null(time.points)){
+    surv.plot <- surv.plot + scale_x_continuous(limits = c(0, max(time)),
+                                                breaks = time.points)
+  } else {
+    surv.plot <- surv.plot + scale_x_continuous(limits = c(0, max(time)))
+  }
 
   ### Changing from proportion to percentage
   surv.plot <- surv.plot +
@@ -285,11 +294,19 @@ std_km <- function(time, status, xlab, ylab, risktable.title, ...){
 
   ## Formatting
   risk.table <- risk.table +
-    scale_x_continuous(limits = c(0, max(time))) +
     labs(x = xlab, y = "", title = risktable.title) + theme_bw() +
     theme(title = element_text(size = 9),
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank())
+
+
+  if (!is.null(time.points)){
+    risk.table <- risk.table + scale_x_continuous(limits = c(0, max(time)),
+                                                  breaks = time.points)
+  } else {
+    risk.table <- risk.table + scale_x_continuous(limits = c(0, max(time)))
+  }
+
 
   ## Combining plots
   out <- cowplot::plot_grid(surv.plot, risk.table, nrow = 2,
@@ -326,7 +343,7 @@ std_km <- function(time, status, xlab, ylab, risktable.title, ...){
 #'
 #'@export
 std_km_group <- function(time, status, var, var.label,
-                         xlab, ylab, risktable.title,
+                         xlab, ylab, time.points, risktable.title,
                          ...){
 
   ### Data
@@ -356,15 +373,23 @@ std_km_group <- function(time, status, var, var.label,
 
   ### Formatting
   surv.plot <- surv.plot +
-    scale_x_continuous(limits = c(0, max(time))) +
     labs(x = xlab, y = ylab) + theme_bw() +
     theme(legend.position = "top") +
     scale_colour_brewer(var.label, palette = "Set1", drop = FALSE)
 
+  ### Specific time points
+  if (!is.null(time.points)){
+    surv.plot <- surv.plot + scale_x_continuous(limits = c(0, max(time)),
+                                                breaks = time.points)
+  } else {
+    surv.plot <- surv.plot + scale_x_continuous(limits = c(0, max(time)))
+  }
 
   ### Changing from proportion to percentage
   surv.plot <- surv.plot + scale_y_continuous(labels = scales::percent,
                                               limits = c(0, 1))
+
+
 
   ### Adding censor marks
   data.censor <- data.plot %>% filter(.data$n.censor > 0)
@@ -412,8 +437,14 @@ std_km_group <- function(time, status, var, var.label,
 
   ## Formatting
   risk.table <- risk.table + theme_bw() +
-    scale_x_continuous(limits = c(0, max(time))) +
     labs(x = xlab, y = "", title = risktable.title)
+
+  if (!is.null(time.points)){
+    risk.table <- risk.table + scale_x_continuous(limits = c(0, max(time)),
+                                                  breaks = time.points)
+  } else {
+    risk.table <- risk.table + scale_x_continuous(limits = c(0, max(time)))
+  }
 
 
   ## Changing y axis ticks
