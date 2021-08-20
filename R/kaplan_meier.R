@@ -77,6 +77,7 @@ nt_km <-  function(data, time, status, labels = NULL,
   plot <- list()
 
   overall <- std_fun(time, status, xlab = xlab, ylab = ylab,
+                     time.points = time.points,
                      risktable.title = risktable.title, ...)
   if (!is.null(time.points))
     aux <- tab_km(time, status, time.points, digits = digits)
