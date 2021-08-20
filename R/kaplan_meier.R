@@ -258,7 +258,7 @@ std_km <- function(time, status, xlab, ylab, time.points, risktable.title, ...){
 
   if (!is.null(time.points)){
     surv.plot <- surv.plot + scale_x_continuous(limits = c(0, max(time)),
-                                                breaks = time.points)
+                                                breaks = c(0, time.points))
   } else {
     surv.plot <- surv.plot + scale_x_continuous(limits = c(0, max(time)))
   }
@@ -303,7 +303,7 @@ std_km <- function(time, status, xlab, ylab, time.points, risktable.title, ...){
 
   if (!is.null(time.points)){
     risk.table <- risk.table + scale_x_continuous(limits = c(0, max(time)),
-                                                  breaks = time.points)
+                                                  breaks = c(0, time.points))
   } else {
     risk.table <- risk.table + scale_x_continuous(limits = c(0, max(time)))
   }
