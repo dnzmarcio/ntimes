@@ -104,7 +104,7 @@ nt_km <-  function(data, time, status, labels = NULL,
                  time.points = time.points,
                  risktable.title = risktable.title,
                  fig.height = fig.height, fig.width = fig.width,
-                 save = save, std_fun_group = std_fun_group,
+                 save = save, where = where, std_fun_group = std_fun_group,
                  ... = ...)
     if (!is.null(time.points)){
       tab <- pmap(.l = list(vars, vars.name, vars.label),
@@ -185,7 +185,7 @@ tab_km_group <- function(var, var.name, var.label, time, status, time.points, di
 
 aux_km <- function(var, var.name, var.label, time, status,
                    xlab, ylab, time.points, risktable.title,
-                   fig.height, fig.width, save, std_fun_group, ...){
+                   fig.height, fig.width, save, where, std_fun_group, ...){
 
   if (is.character(var))
     var <- as.factor(var)
