@@ -1,10 +1,12 @@
-#'Simple Logistic Regression
+#'Simple Generalized Linear Models
 #'
-#'@description Performing simple Logistic regression.
+#'@description Fit simple GLM.
 #'
 #'@param data a data frame with the variables.
 #'@param response a character value indicating the response variable.
 #'@param ...  character values indicating confounding variables.
+#'@param family a character indicating family distribution. See more \code{\link[stats]{family}}.
+#'@param robust.variance a function yielding a covariance matrix or a covariance matrix. See more \code{\link[lmtest]{coeftest}}.
 #'@param labels a list of labels with components given by their variable names.
 #'@param increment a variable named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.
 #'@param conf.level a numerical value indicating the confidence level for parameters of interest.
@@ -31,8 +33,10 @@
 #'                           labels = c("Cherbourg", "Queenstown", "Southampton")))
 #'
 #'titanic_nt %>% select(Survived, Sex, Age, Pclass, Embarked) %>%
-#'  nt_simple_logistic(response = Survived, Age,
-#'                     labels = list(Pclass = "Passanger class"))
+#'  nt_simple_glm(response = Survived, Age,
+#'                     family = binomial(link = "logit"),
+#'                     exponentiate = TRUE,
+#'                     labels = list(Pclass = "Passenger class"))
 #'
 #'@import titanic
 #'@importFrom purrr pmap map2
@@ -42,9 +46,11 @@
 #'@importFrom utils write.csv
 #'
 #'@export
-nt_simple_logistic <- function(data, response, ...,
+nt_simple_glm <- function(data, response, ...,
+                               family, robust.variance = NULL,
                                labels = NULL,
-                               increment = NULL, conf.level = 0.95,
+                               increment = NULL, exponentiate = FALSE,
+                               conf.level = 0.95,
                                format = TRUE, digits = 2, digits.p = 3,
                                save = FALSE, file = "simple_logistic"){
 
@@ -53,6 +59,7 @@ nt_simple_logistic <- function(data, response, ...,
 
   vars <- select(.data = data, -!!response)
   response <- select(.data = data, !!response)
+
   if (length(aux) > 0){
     for (i in 1:length(aux)){
       vars <- select(.data = vars, -!!aux[[i]])
@@ -82,10 +89,12 @@ nt_simple_logistic <- function(data, response, ...,
   }
 
   temp <- pmap(.l = list(vars, vars.name, vars.label),
-               .f = aux_simple_logistic,
+               .f = aux_simple_glm,
                response = response[[1]], response.label = response.label,
                add = add, add.name = add.name, add.label = add.label,
-               increment = increment, conf.level = conf.level,
+               family = family, robust.variance = robust.variance,
+               increment = increment, exponentiate = exponentiate,
+               conf.level = conf.level,
                format = format)
 
   out <- Reduce(rbind, temp)
@@ -96,10 +105,14 @@ nt_simple_logistic <- function(data, response, ...,
                           AIC = round(.data$AIC, digits),
                           BIC = round(.data$BIC, digits),
                           deviance = round(.data$deviance, digits)) %>%
-      transmute(Variable = .data$term, OR = .data$group,
-                `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
+      transmute(Variable = .data$term, Group = .data$group,
+                `Estimate (95% CI)` = ifelse(.data$estimate == 1 &
+                                              is.na(.data$conf.low) &
+                                              is.na(.data$conf.high),
+                                             "Reference",
+                                 paste0(round(.data$estimate, digits), " (",
                                  round(.data$conf.low, digits), " ; ",
-                                 round(.data$conf.high, digits), ")"),
+                                 round(.data$conf.high, digits), ")")),
                 `Wald p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
                                  as.character(round(.data$p.value, digits.p))),
                 `LR p value` = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
@@ -122,11 +135,12 @@ nt_simple_logistic <- function(data, response, ...,
   return(out)
 }
 
-aux_simple_logistic <- function(var, var.name, var.label,
-                                response, response.label,
-                                add, add.name, add.label,
-                                increment, conf.level,
-                                format){
+aux_simple_glm <- function(var, var.name, var.label,
+                           response, response.label,
+                           add, add.name, add.label,
+                           family, robust.variance,
+                           increment, exponentiate, conf.level,
+                           format){
 
   if (!is.null(add)){
     aux <- data.frame(add, var)
@@ -145,28 +159,23 @@ aux_simple_logistic <- function(var, var.name, var.label,
 
   for (i in 1:ncol(aux)){
     if (is.numeric(aux[, i])){
-      tab.levels[[i]] <- ifelse(is.null(increment[[aux.names[[i]]]]),
+      tab.levels[[names(aux.labels)[i]]] <- ifelse(is.null(increment[[aux.names[[i]]]]),
                               "every 1 unit of change",
                               paste0("every ",
                                      increment[[aux.names[i]]],
                                      " unit of change"))
     } else {
       lv <- levels(var)
-      tab.levels[[i]] <- paste0(lv[2:length(lv)], "/", lv[1])
+      tab.levels[[names(aux.labels)[i]]] <- lv[1:length(lv)] #paste0(lv[2:length(lv)], "/", lv[1])
     }
 
     tab.labels[[names(aux.labels)[i]]] <- rep(aux.labels[[i]], length(tab.levels[[i]]))
   }
 
-  out <- fit_logistic(data.model, tab.labels, tab.levels, var.label,
-                      increment[[var.name]], conf.level)
-
-  # if (any(duplicated(out$term))){
-  #   index <- which(duplicated(out$term, fromLast = TRUE))
-  #   out[(index+1):(index + length(lv) - 1), ] <- out[index:(index + length(lv) - 2), ]
-  #   out[index, 3:ncol(out)] <- NA
-  #   out[index:(index+length(lv)-1), 2] <- lv
-  # }
+  out <- fit_simple_glm(data.model, family,
+                        tab.labels, tab.levels, var.label,
+                        robust.variance, increment[[var.name]],
+                        exponentiate, conf.level)
 
   if (format){
     out$p.value.lr = ifelse(duplicated(out$term), NA, out$p.value.lr)
@@ -178,40 +187,69 @@ aux_simple_logistic <- function(var, var.name, var.label,
 
 #'@importFrom broom tidy glance
 #'@importFrom stats na.exclude glm anova
-fit_logistic <- function(data, tab.labels, tab.levels, var.label, increment, conf.level){
+#'@importFrom lmtest coeftest
+#'@importFrom stringr str_which
+fit_simple_glm <- function(data, family,
+                           tab.labels, tab.levels, var.label,
+                           robust.variance, increment,
+                           exponentiate, conf.level){
 
   data <- na.exclude(data)
 
   if (!is.null(increment))
-    #for (i in 1:length(increment)){
       data[["var"]] <- data[["var"]]/increment
-    #}
 
-  fit <- glm(response ~ ., data = data, family = "binomial")
+  fit <- glm(response ~ ., data = data, family = family)
 
-  temp <- tidy(fit, exponentiate = TRUE,
-               conf.level = conf.level,
-               conf.int = TRUE)
+  if (is.null(robust.variance)){
+    temp <- tidy(fit, exponentiate = exponentiate,
+                 conf.level = conf.level,
+                 conf.int = TRUE)
+
+  } else {
+    step <- coeftest(fit, vcov. = robust.variance)
+    temp <- tidy(step, exponentiate = exponentiate,
+                 conf.level = conf.level,
+                 conf.int = TRUE)
+  }
+
+  nlv <- lapply(tab.levels, length)
+
+  for (i in 1:length(nlv)){
+    if (nlv[[i]] > 1){
+      add.row <- str_which(temp$term, names(tab.levels)[i])[1]
+      temp <- rbind(temp[1:(add.row-1), ], NA,
+                    temp[add.row:nrow(temp), ])
+      temp[add.row, 1] <- paste0(names(tab.levels)[i], tab.levels[[i]][1])
+      temp[add.row, 2] <- 1
+    }
+
+  }
+
   temp$term <- c("(Intercept)", unlist(tab.labels))
   temp$group <- c("", unlist(tab.levels))
-  temp <- temp[-1, c(1, 8, 2, 6, 7, 5)]
+  temp <- temp[, c(1, 8, 2, 6, 7, 5)]
 
-  p.value.lr <- rep(NA, length(unique(temp$term)))
+  if (exponentiate)
+    temp <- temp[-1, ]
+
+  p.value.lr <- rep(NA, length(unique(unlist(tab.labels))))
+
   for (i in 2:ncol(data)){
     if (ncol(data) > 2){
-      fit0 <- glm(response ~ ., data = data[, -i], family = "binomial")
+      fit0 <- glm(response ~ ., data = data[, -i], family = family)
       p.value.lr[(i-1)] <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
     } else {
-      fit0 <- glm(response ~ 1, data = data, family = "binomial")
+      fit0 <- glm(response ~ 1, data = data, family = family)
       p.value.lr[(i-1)] <- anova(fit0, fit, test = "Chisq")$`Pr(>Chi)`[2]
     }
   }
 
-  aux01 <- data.frame(term = unique(temp$term), p.value.lr = p.value.lr)
+  aux01 <- data.frame(term = unique(unlist(tab.labels)), p.value.lr = p.value.lr)
   aux02 <- data.frame(n = nrow(data), glance(fit))
   aux <- merge(aux01, aux02, by = 0, all = TRUE)[-1]
 
-  out <- merge(temp, aux, by = "term", all = TRUE)
+  out <- merge(temp, aux, by = "term", all = TRUE, sort = FALSE)
 
   return(out)
 }
@@ -289,7 +327,7 @@ aux_multiple_logistic <- function(fit, ci.type, user.contrast, user.contrast.int
 
   aux <- extract_data(fit)
 
-  effect <- effect.glm(fit, fit.vars = aux, type = ci.type,
+  effect <- fit_multiple_logistic(fit, fit.vars = aux, type = ci.type,
                        user.contrast = user.contrast,
                        user.contrast.interaction = user.contrast.interaction) %>%
     mutate(term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
@@ -315,7 +353,7 @@ aux_multiple_logistic <- function(fit, ci.type, user.contrast, user.contrast.int
 }
 
 #'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
-effect.glm <- function(fit, fit.vars, type, user.contrast, user.contrast.interaction){
+fit_multiple_logistic <- function(fit, fit.vars, type, user.contrast, user.contrast.interaction){
 
   ref <- reference_df(fit)$df
   beta <- as.numeric(fit$coefficients)
