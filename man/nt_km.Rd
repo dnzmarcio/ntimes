@@ -20,7 +20,9 @@ nt_km(
   time.points = NULL,
   format = TRUE,
   digits = 2,
-  file = "survival"
+  file = "survival",
+  where = "",
+  ...
 )
 }
 \arguments{
