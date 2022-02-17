@@ -7,6 +7,7 @@
 nt_boxplot(
   data,
   group = NULL,
+  labels = NULL,
   save = FALSE,
   fig.height = 5,
   fig.width = 5,

@@ -97,7 +97,7 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
 
       temp <- test.tab$mc.test %>% select(-.data$`95% CI`, -.data$Test, -.data$Group) %>%
         pivot_wider(names_from = .data$Hypothesis,
-                     values_from = .data$`p value`, drop = TRUE)
+                     values_from = .data$`p value`)
 
       for(i in 2:ncol(temp)){
         temp[, i] <- ifelse(temp[, i] < alpha, letters[i-1], "")

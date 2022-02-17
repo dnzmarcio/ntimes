@@ -186,7 +186,7 @@ aux_compare_tg <- function(var, var.name, var.label,
 #'@param digits.p the number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character value indicating the name of output file in csv format to be saved.
-#'@param mc a logical value indicating if pairwise comparisons should be performed.
+#'@param multiple.comparisons a logical value indicating if pairwise comparisons should be performed.
 #'
 #'@details If \code{test = "automatic"}, the normality assumption will be verified by
 #'\code{norm.test} and homoscedasticity assumption will evaluate the assumption of
@@ -202,7 +202,7 @@ aux_compare_tg <- function(var, var.name, var.label,
 #'iris %>% nt_compare_mg(group = Species)
 #'
 #'@export
-nt_compare_mg <- function(data, group,
+nt_compare_mg <- function(data, group, labels = NULL,
                           norm.test = helper_sf_test,
                           var.test = helper_levene_test,
                           qt.test =
@@ -211,7 +211,8 @@ nt_compare_mg <- function(data, group,
                           contrast = "Tukey",
                           alternative = "two.sided",
                           format = TRUE, digits.p = 3, digits.ci = 2,
-                          save = FALSE, file = "nt_compare_mg", mc = FALSE){
+                          save = FALSE, file = "nt_compare_mg",
+                          multiple.comparisons = FALSE){
 
   group <- enquo(group)
 
@@ -221,27 +222,48 @@ nt_compare_mg <- function(data, group,
   vars.name <- names(vars)
   group.name <- names(group)
 
+  if (!is.null(labels)){
+    vars <- data_labeller(vars, labels)
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+    if (!is.null(group)){
+      group <- data_labeller(group, labels)
+      group.label <- extract_label(group[[1]], group.name)
+    }
+  } else {
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+    if (!is.null(group))
+      group.label <- extract_label(group[[1]], group.name)
+  }
+
   if (nlevels(fct_drop(group[[1]])) == 2)
     stop("'group' should have more than two levels.")
 
-  temp <- map2(.x = vars, .y = vars.name, .f = aux_compare_mg,
-               group = group, group.name = group.name,
+  temp <- pmap(.l = list(vars, vars.name, vars.label),
+               .f = aux_compare_mg,
+               group = group[[1]],
+               group.name = group.name,
+               group.label = group.label,
                norm.test = norm.test, var.test = var.test,
                qt.test = qt.test,
-               digits.p = digits.p, mc = mc)
+               digits.p = digits.p,
+               mc = multiple.comparisons)
 
   omnibus.test <- Reduce(rbind, temp)
 
-  if (mc){
-    aux <- omnibus.test[which(omnibus.test$p.value < 0.05), ]
-    vars.name <- aux$Variable
-    vars <- data[vars.name]
-    group.name <- unique(aux$Group)
-    group <- data[group.name]
-    test <- omnibus.test$Test
+  if (multiple.comparisons){
+    aux <- omnibus.test %>% filter(.data$p.value < 0.05)
+    vars.name <- unlist(aux$Variable)
+    vars <- data %>% select(all_of(vars.name))
+    vars.label.mc <- vars.label[vars.name]
+    group <- data %>% select(all_of(group.name))
+    test <- omnibus.test %>% pull(.data$Test)
 
-    temp <- pmap(list(vars, vars.name, test), .f = aux_compare_mc,
-                 group = group, group.name = group.name,
+    temp <- pmap(list(vars, vars.name, vars.label.mc, test),
+                 .f = aux_compare_mc,
+                 group = group,
+                 group.name = group.name, group.label = group.label,
                  alternative = alternative, contrast = contrast,
                  digits.p = digits.p, digits.ci = digits.ci)
     mc.test <- Reduce(rbind, temp)
@@ -257,6 +279,10 @@ nt_compare_mg <- function(data, group,
       if (save)
         write.csv(mc.test, file = paste0(file, "_mc_test.csv"))
     }
+
+    if (!is.null(labels))
+      omnibus.test <- omnibus.test %>%
+        mutate(Variable = str_replace_all(.data$Variable, unlist(vars.label)))
   }
 
   if (format){
@@ -268,7 +294,7 @@ nt_compare_mg <- function(data, group,
   if (save)
     write.csv(omnibus.test, file = paste0(file, "_omnibus_test.csv"))
 
-  if (!mc){
+  if (!multiple.comparisons){
     out <- list(omnibus.test = omnibus.test)
     attr(out, "ntimes") <- "multiple_groups"
   } else {
@@ -282,45 +308,42 @@ nt_compare_mg <- function(data, group,
 }
 
 
-aux_compare_mg <- function(var, var.name, group, group.name,
+aux_compare_mg <- function(var, var.name, var.label,
+                           group, group.name, group.label,
                            norm.test, var.test,
                            qt.test,
                            format, digits.p, mc){
   if (mc){
     var.label <- var.name
     group.label <- group.name
-  } else {
-    unit.label <- extract_unit(var)
-    var.label <- extract_label(var, var.name)
-    group.label <- extract_label(group, group.name)
   }
 
   if (is.numeric(var)){
     out <- dist_qt_mg(var = var,
-                         group = group[[1]],
-                         qt.test = qt.test,
-                         norm.test = norm.test,
-                         digits.p = digits.p,
-                         var.label = var.label,
-                         group.label = group.label)
+                      group = group,
+                      qt.test = qt.test,
+                      norm.test = norm.test,
+                      digits.p = digits.p,
+                      var.label = var.label,
+                      group.label = group.label)
 
   } else {
     out <- dist_ql_mg(var = var,
-                         group = group[[1]],
-                         digits.p = digits.p,
-                         var.label = var.label,
-                         group.label = group.label)
+                      group = group,
+                      digits.p = digits.p,
+                      var.label = var.label,
+                      group.label = group.label)
 
   }
 
   return(out)
 }
 
-aux_compare_mc <- function(var, var.name, omnibus.test, group, group.name,
+aux_compare_mc <- function(var, var.name, var.label,
+                           omnibus.test,
+                           group, group.name, group.label,
                            alternative, contrast, digits.p, digits.ci){
 
-  var.label <- extract_label(var, var.name)
-  group.label <- extract_label(group, group.name)
 
   if (is.numeric(var)){
     out <- dist_qt_mc(var = var,

@@ -7,6 +7,7 @@
 nt_compare_mg(
   data,
   group,
+  labels = NULL,
   norm.test = helper_sf_test,
   var.test = helper_levene_test,
   qt.test = list(helper_anova, helper_welch_anova, helper_kruskal_wallis),
@@ -17,7 +18,7 @@ nt_compare_mg(
   digits.ci = 2,
   save = FALSE,
   file = "nt_compare_mg",
-  mc = FALSE
+  multiple.comparisons = FALSE
 )
 }
 \arguments{
@@ -47,7 +48,7 @@ must be one of "two.sided", "greater" or "less".}
 
 \item{file}{a character value indicating the name of output file in csv format to be saved.}
 
-\item{mc}{a logical value indicating if pairwise comparisons should be performed.}
+\item{multiple.comparisons}{a logical value indicating if pairwise comparisons should be performed.}
 }
 \description{
 Performing comparisons among three or more groups.

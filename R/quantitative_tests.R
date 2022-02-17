@@ -220,6 +220,8 @@ dist_qt_mc <-  function(var, omnibus.test, group,
                       Test = test, p.value)
 
   }
+  rownames(out) <- NULL
+
   return(out)
 }
 
