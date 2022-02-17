@@ -79,7 +79,10 @@ nt_compare_tg <- function(data, group, labels = NULL,
       group.label <- extract_label(group[[1]], group.name)
   }
 
-  if (nlevels(fct_drop(group[[1]])) != 2)
+  if (!is.factor(group[[1]]))
+    group <- as.factor(group[[1]])
+
+  if (nlevels(group[[1]]) != 2)
     stop("'group' should have only two levels.")
   temp <- pmap(.l = list(vars, vars.name, vars.label),
                .f = aux_compare_tg,

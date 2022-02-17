@@ -107,6 +107,8 @@ aux_describe <- function(var, var.name, var.label,
     if (!is.factor(group)){
       group <- as.factor(group)
       warning(paste0("Group variable was transformed into a factor."))
+    } else {
+      group <- droplevels(group)
     }
   }
 
