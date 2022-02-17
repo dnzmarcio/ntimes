@@ -59,7 +59,7 @@ dist_qt_tg <-  function(var, var.label, group, group.label,
       upper <- result$upper
 
       alt <- switch(alternative,
-                    "two.sided" = " != ",
+                    "two.sided" = " \u2260 ",
                     "greater" = " < ",
                     "less" = " > ")
       hypothesis <- paste(lg[2], alt, lg[1])
@@ -167,7 +167,7 @@ dist_qt_mc <-  function(var, omnibus.test, group,
       test <- paste(contrast)
       dif <- as.character(rownames(sm[2]$linfct))
       alt <- switch(alternative,
-                    "two.sided" = " != ",
+                    "two.sided" = " \u2260 ",
                     "greater" = " > ",
                     "less" = " < ")
       hypothesis <- gsub(" - ", alt, dif)
@@ -203,7 +203,7 @@ dist_qt_mc <-  function(var, omnibus.test, group,
       test <- paste("Non-parametric", contrast)
       dif <- rownames(mc$Contrast)
       alt <- switch(alternative,
-                    "two.sided" = " != ",
+                    "two.sided" = " \u2260 ",
                     "greater" = " > ",
                     "less" = " < ")
       hypothesis <- gsub(" - ", alt, dif)
