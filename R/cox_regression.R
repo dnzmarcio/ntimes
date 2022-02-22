@@ -261,7 +261,7 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
   }
 
   if (class(fit) != "try-error"){
-    aux01 <- data.frame(term = unique(temp$term), p.value.lr = p.value.lr)
+    aux01 <- data.frame(p.value.lr = p.value.lr)
     zph.table <- cox.zph(fit)$table
 
     aux02 <- glance(fit) %>% select(.data$n, n.event = .data$nevent,
@@ -269,7 +269,7 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
       mutate(ph.assumption = zph.table[nrow(zph.table), 3])
 
     aux <- merge(aux01, aux02, by = 0, all = TRUE)[-1]
-    out <- merge(temp, aux, by = "term", all = TRUE)
+    out <- merge(temp, aux, by = 0, all = TRUE)[, -1]
   } else {
     out <- data.frame(term = tab.labels$var, group = NA, estimate = NA,
                       conf.low = NA, conf.high = NA, p.value = NA,

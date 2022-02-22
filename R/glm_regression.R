@@ -165,11 +165,14 @@ aux_simple_glm <- function(var, var.name, var.label,
                                      increment[[aux.names[i]]],
                                      " unit of change"))
     } else {
-      lv <- levels(var)
+      if (!is.factor(aux[, i]))
+        aux[, i] <- as.factor(aux[, i])
+
+      lv <- levels(aux[, i])
       tab.levels[[names(aux.labels)[i]]] <- lv[1:length(lv)] #paste0(lv[2:length(lv)], "/", lv[1])
     }
 
-    tab.labels[[names(aux.labels)[i]]] <- rep(aux.labels[[i]], length(tab.levels[[i]]))
+    tab.labels[[names(aux.labels)[i]]] <- rep(aux.labels[[i]], length(tab.levels[[names(aux.labels)[i]]]))
   }
 
   out <- fit_simple_glm(data.model, family,
@@ -245,11 +248,8 @@ fit_simple_glm <- function(data, family,
     }
   }
 
-  aux01 <- data.frame(term = unique(unlist(tab.labels)), p.value.lr = p.value.lr)
-  aux02 <- data.frame(n = nrow(data), glance(fit))
-  aux <- merge(aux01, aux02, by = 0, all = TRUE)[-1]
-
-  out <- merge(temp, aux, by = "term", all = TRUE, sort = FALSE)
+  aux <- data.frame(p.value.lr = p.value.lr, n = nrow(data), glance(fit))
+  out <- merge(temp, aux, by = 0, all = TRUE, sort = TRUE)[, -1]
 
   return(out)
 }
@@ -291,7 +291,8 @@ fit_simple_glm <- function(data, family,
 #'@importFrom utils write.csv
 #'@export
 nt_multiple_glm <- function(fit, exponentiate = FALSE,
-                            ci.type = "lr", user.contrast = NULL, user.contrast.interaction = NULL,
+                            ci.type = "lr",
+                            user.contrast = NULL, user.contrast.interaction = NULL,
                             format = TRUE, digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_glm"){
 
@@ -328,15 +329,18 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
 #'@importFrom stringr str_replace_all
 #'@importFrom tidyr separate
 #'@importFrom broom tidy
-aux_multiple_glm <- function(fit, exponentiate, ci.type, user.contrast, user.contrast.interaction, format){
+aux_multiple_glm <- function(fit, exponentiate, robust.variance,
+                             ci.type, user.contrast, user.contrast.interaction,
+                             format){
 
   aux <- extract_data(fit)
 
   effect <- fit_multiple_glm(fit, fit.vars = aux,
-                                  exponentiate = exponentiate,
-                                  type = ci.type,
-                                  user.contrast = user.contrast,
-                                  user.contrast.interaction = user.contrast.interaction) %>%
+                             exponentiate = exponentiate,
+                             robust.variance = robust.variance,
+                             type = ci.type,
+                             user.contrast = user.contrast,
+                             user.contrast.interaction = user.contrast.interaction) %>%
     mutate(term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
     separate(.data$term, into = c("variable", "group"), sep = ":")
 
@@ -360,7 +364,8 @@ aux_multiple_glm <- function(fit, exponentiate, ci.type, user.contrast, user.con
 }
 
 #'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
-fit_multiple_glm <- function(fit, fit.vars, exponentiate, type, user.contrast, user.contrast.interaction){
+fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
+                             type, user.contrast, user.contrast.interaction){
 
   ref <- reference_df(fit)$df
   beta <- as.numeric(fit$coefficients)
