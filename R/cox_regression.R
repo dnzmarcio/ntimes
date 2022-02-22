@@ -301,23 +301,18 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 #'library(dplyr)
 #'
 #'data(ovarian)
-#'ovarian_nt <- ovarian %>% mutate(resid.ds = ql_var(resid.ds,
-#'                                                from = 1:2,
-#'                                                to = c("no", "yes"),
-#'                                                label = "Residual Disease"),
-#'                              ecog.ps = ql_var(ecog.ps,
-#'                                               from = 1:2,
-#'                                               to = c("I", "II"),
-#'                                               label = "ECOG-PS"),
-#'                              rx = ql_var(rx,
-#'                                          from = 1:2,
-#'                                          to = c("t1", "t2"),
-#'                                          label = "Treatment"),
-#'                              age = qt_var(age,
-#'                                           label = "Age"))
+#'dt <- ovarian %>% mutate(resid.ds = factor(resid.ds,
+#'                                                levels = 1:2,
+#'                                                labels = c("no", "yes")),
+#'                              ecog.ps = factor(ecog.ps,
+#'                                               levels = 1:2,
+#'                                               labels  = c("I", "II")),
+#'                              rx = factor(rx,
+#'                                          levels = 1:2,
+#'                                          labels = c("t1", "t2")))
 #'
 #'
-#'fit <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = ovarian_nt)
+#'fit <- coxph(Surv(futime, fustat) ~ age + ecog.ps*rx, data = dt)
 #'
 #'nt_multiple_cox(fit)
 #'
