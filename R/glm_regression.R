@@ -8,7 +8,8 @@
 #'@param family a character indicating family distribution. See more \code{\link[stats]{family}}.
 #'@param robust.variance a function yielding a covariance matrix or a covariance matrix. See more \code{\link[lmtest]{coeftest}}.
 #'@param labels a list of labels with components given by their variable names.
-#'@param increment a variable named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.
+#'@param increment a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.
+#'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald})
 #'@param conf.level a numerical value indicating the confidence level for parameters of interest.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
@@ -50,7 +51,7 @@ nt_simple_glm <- function(data, response, ...,
                                family, robust.variance = NULL,
                                labels = NULL,
                                increment = NULL, exponentiate = FALSE,
-                               conf.level = 0.95,
+                               ci.type = "Wald", conf.level = 0.95,
                                format = TRUE, digits = 2, digits.p = 3,
                                save = FALSE, file = "simple_logistic"){
 
@@ -94,7 +95,7 @@ nt_simple_glm <- function(data, response, ...,
                add = add, add.name = add.name, add.label = add.label,
                family = family, robust.variance = robust.variance,
                increment = increment, exponentiate = exponentiate,
-               conf.level = conf.level,
+               conf.level = conf.level, ci.type = ci.type,
                format = format)
 
   out <- Reduce(rbind, temp)
@@ -139,7 +140,8 @@ aux_simple_glm <- function(var, var.name, var.label,
                            response, response.label,
                            add, add.name, add.label,
                            family, robust.variance,
-                           increment, exponentiate, conf.level,
+                           increment, exponentiate,
+                           conf.level, ci.type,
                            format){
 
   if (!is.null(add)){
@@ -178,7 +180,7 @@ aux_simple_glm <- function(var, var.name, var.label,
   out <- fit_simple_glm(data.model, family,
                         tab.labels, tab.levels, var.label,
                         robust.variance, increment[[var.name]],
-                        exponentiate, conf.level)
+                        exponentiate, conf.level, ci.type)
 
   if (format){
     out$p.value.lr = ifelse(duplicated(out$term), NA, out$p.value.lr)
@@ -195,7 +197,7 @@ aux_simple_glm <- function(var, var.name, var.label,
 fit_simple_glm <- function(data, family,
                            tab.labels, tab.levels, var.label,
                            robust.variance, increment,
-                           exponentiate, conf.level){
+                           exponentiate, conf.level, ci.type){
 
   data <- na.exclude(data)
 
@@ -207,6 +209,7 @@ fit_simple_glm <- function(data, family,
   if (is.null(robust.variance)){
     temp <- tidy(fit, exponentiate = exponentiate,
                  conf.level = conf.level,
+                 conf.type = ci.type,
                  conf.int = TRUE)
 
   } else {
@@ -261,7 +264,7 @@ fit_simple_glm <- function(data, family,
 #'@description Tabulating results from multivariable GLMs.
 #'
 #'@param fit a fitted model.
-#'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
+#'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald}).
 #'@param user.contrast a variable named list of numerical vectors indicating contrast for a covariate.
 #'@param user.contrast.interaction a variable named list of numerical vectors indicating a contrast for interaction.
 #'@param format a logical value indicating whether the output should be formatted.
