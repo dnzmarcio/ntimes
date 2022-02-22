@@ -434,7 +434,8 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, type, user.contrast, u
     }
   }
 
-  out[, 2:4] <- exp(out[, 2:4])
+  if (exponentiate)
+    out[, 2:4] <- exp(out[, 2:4])
   colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
   return(out)
 
