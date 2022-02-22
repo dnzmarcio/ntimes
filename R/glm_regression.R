@@ -256,9 +256,9 @@ fit_simple_glm <- function(data, family,
 
 
 
-#'Logistic regression table
+#'Multivariable Generealized Linear models
 #'
-#'@description Tabulating results from Logistic models.
+#'@description Tabulating results from multivariable GLMs.
 #'
 #'@param fit a fitted model.
 #'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
@@ -276,26 +276,28 @@ fit_simple_glm <- function(data, family,
 #'library(dplyr)
 #'
 #'data(titanic_train)
-#'dt <- titanic_train %>% mutate(Sex = ql_var(Sex,
-#'                                            from = c("male", "female"),
-#'                                            to = c("Male", "Female")),
-#'                               Pclass = ql_var(Pclass,
-#'                                               from = 1:3,
-#'                                               to = c("I", "II", "III"),
-#'                                               label = "Passenger Class"))
+#'dt <- titanic_train %>% mutate(Sex = factor(Sex,
+#'                                            levels = c("male", "female"),
+#'                                            labels = c("Male", "Female")),
+#'                               Pclass = factor(Pclass,
+#'                                               levels = 1:3,
+#'                                               labels = c("I", "II", "III"))
 #'
 #'fit <- glm(Survived ~ Age + Sex + Pclass, data = dt, family = "binomial")
 #'
-#'nt_multiple_logistic(fit)
+#'nt_multiple_glm(fit)
 #'
 #'@importFrom purrr map
 #'@importFrom utils write.csv
 #'@export
-nt_multiple_logistic <- function(fit, ci.type = "lr", user.contrast = NULL, user.contrast.interaction = NULL,
-                                 format = TRUE, digits = 2, digits.p = 3,
-                                 save = FALSE, file = "nt_multiple_logistic"){
+nt_multiple_glm <- function(fit, exponentiate = FALSE,
+                            ci.type = "lr", user.contrast = NULL, user.contrast.interaction = NULL,
+                            format = TRUE, digits = 2, digits.p = 3,
+                            save = FALSE, file = "nt_multiple_glm"){
 
-  out <- aux_multiple_logistic(fit = fit, ci.type = ci.type,
+  out <- aux_multiple_glm(fit = fit,
+                               exponentiate = exponentiate,
+                               ci.type = ci.type,
                                user.contrast = user.contrast,
                                user.contrast.interaction = user.contrast.interaction,
                                format = format)
@@ -323,15 +325,17 @@ nt_multiple_logistic <- function(fit, ci.type = "lr", user.contrast = NULL, user
 #'@importFrom stringr str_replace_all
 #'@importFrom tidyr separate
 #'@importFrom broom tidy
-aux_multiple_logistic <- function(fit, ci.type, user.contrast, user.contrast.interaction, format){
+aux_multiple_glm <- function(fit, exponentiate, ci.type, user.contrast, user.contrast.interaction, format){
 
   aux <- extract_data(fit)
 
-  effect <- fit_multiple_logistic(fit, fit.vars = aux, type = ci.type,
-                       user.contrast = user.contrast,
-                       user.contrast.interaction = user.contrast.interaction) %>%
+  effect <- fit_multiple_glm(fit, fit.vars = aux,
+                                  exponentiate = exponentiate,
+                                  type = ci.type,
+                                  user.contrast = user.contrast,
+                                  user.contrast.interaction = user.contrast.interaction) %>%
     mutate(term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
-    separate(.data$term, into = c("variable", "or"), sep = ":")
+    separate(.data$term, into = c("variable", "group"), sep = ":")
 
   if (format)
     effect <- effect %>% group_by(.data$variable) %>%
@@ -353,7 +357,7 @@ aux_multiple_logistic <- function(fit, ci.type, user.contrast, user.contrast.int
 }
 
 #'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
-fit_multiple_logistic <- function(fit, fit.vars, type, user.contrast, user.contrast.interaction){
+fit_multiple_glm <- function(fit, fit.vars, exponentiate, type, user.contrast, user.contrast.interaction){
 
   ref <- reference_df(fit)$df
   beta <- as.numeric(fit$coefficients)
@@ -379,7 +383,7 @@ fit_multiple_logistic <- function(fit, fit.vars, type, user.contrast, user.contr
       fit0 <- glm(update.formula(fit$formula,
                                  paste0(" ~ . - ", paste(term.labels[drop],
                                                          collapse = " - "))),
-                  data = na.exclude(fit.vars$data), family = "binomial")
+                  data = na.exclude(fit.vars$data), family = fit$family)
 
       contrast <- contrast_calc(fit = fit, fit0 = fit0,
                                 design.matrix = design.matrix,
@@ -407,7 +411,7 @@ fit_multiple_logistic <- function(fit, fit.vars, type, user.contrast, user.contr
 
         drop <- which(grepl(fit.vars$var[i], x = as.character(term.labels), fixed = TRUE))
         fit0 <- glm(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
-                    data = fit.vars$data, family = "binomial")
+                    data = fit.vars$data, family = fit$family)
 
         contrast <- contrast_calc(fit = fit, fit0 = fit0, design.matrix = design.matrix,
                                   beta = beta, beta.var = beta.var,
