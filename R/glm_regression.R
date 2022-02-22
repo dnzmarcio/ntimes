@@ -305,12 +305,15 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
 
   if (format)
     out$effect <- out$effect %>%
-    transmute(Variable = .data$variable, OR = .data$or,
-              `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
-                                           round(.data$conf.low, digits), " ; ",
-                                           round(.data$conf.high, digits), ")"),
-              `p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, digits.p)))) %>%
+    transmute(Variable = .data$variable, Group = .data$group,
+              `Estimate (95% CI)` = ifelse(is.na(estimate),
+                                           "Reference",
+                                           paste0(round(.data$estimate, digits), " (",
+                                                  round(.data$conf.low, digits), " ; ",
+                                                  round(.data$conf.high, digits), ")")),
+              `p value` = ifelse(is.na(.data$p.value), "",
+                                 ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
+                                        as.character(round(.data$p.value, digits.p))))) %>%
     replace_na(list(`p value` = ""))
 
   if (save)
@@ -339,8 +342,8 @@ aux_multiple_glm <- function(fit, exponentiate, ci.type, user.contrast, user.con
 
   if (format)
     effect <- effect %>% group_by(.data$variable) %>%
-    mutate(p.value. = ifelse(duplicated(.data$variable), NA, .data$p.value),
-           aux_variable = ifelse(duplicated(.data$variable), "", .data$variable)) %>%
+    #
+    mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable)) %>%
     ungroup(.data$variable) %>% select(-.data$variable) %>%
     rename(variable = .data$aux_variable)
 
@@ -390,7 +393,10 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, type, user.contrast, u
                                 beta = beta, beta.var = beta.var,
                                 type = type)
 
-      temp <- data.frame(term = temp$label, contrast)
+      temp <- data.frame(term = temp$label, rbind(NA, contrast))
+
+      if (type == "lr")
+        temp[1:2, 5] <- temp[2:1, 5]
 
       if (i > 1)
         temp <- rbind(out, temp)
@@ -417,7 +423,7 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, type, user.contrast, u
                                   beta = beta, beta.var = beta.var,
                                   type = type)
 
-        temp <- data.frame(term = temp$label, contrast)
+        temp <- data.frame(term = temp$label, rbind(NA, contrast))
 
         if (i > 1)
           temp <- rbind(out, temp)

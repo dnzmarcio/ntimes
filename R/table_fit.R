@@ -86,7 +86,8 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
                                 levels = user.contrast[[var]])
     }
 
-    label <- paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
+    label <- paste0(var, ":",contrast[[var]][1:nc])
+    #paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
 
   } else if (class(data[[var]]) == "numeric" |
              class(data[[var]]) == "integer") {
@@ -103,7 +104,8 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
       contrast[[var]] <- user.contrast[[var]]
     }
 
-    label <- paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
+    label <- paste0(var, ":", contrast[[var]][1:nc])
+      #paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
   }
 
   if (!is.null(interaction)){
@@ -132,9 +134,9 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
         }
 
         if (k == 1){
-          label <- as.character(sapply(label, function(x) paste0(x, " at ", interaction[k], " = ", lv)))
+          label <- paste0(rep(label, length(lv)), " at ", interaction[k], " = ", rep(lv, each = length(lv)))
         } else {
-          label <- as.character(sapply(label, function(x) paste0(x, ", ", interaction[k], " = ", lv)))
+          label <- paste0(rep(label, length(lv)), " at ", interaction[k], " = ", rep(lv, each = length(lv)))
         }
 
       } else if (class(data[[interaction[k]]]) == "numeric" |
@@ -154,14 +156,12 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
         }
 
         if (k == 1){
-          label <- as.character(sapply(label, function(x) paste0(x, " at ", interaction[k], " = ", round(quant, 2))))
+          label <- paste0(rep(label, length(lv)), " at ", interaction[k], " = ", rep(lv, each = length(lv)))
         } else {
-          label <- as.character(sapply(label, function(x) paste0(x, ", ", interaction[k], " = ", round(quant, 2))))
+          label <- paste0(rep(label, length(lv)), " at ", interaction[k], " = ", rep(lv, each = length(lv)))
         }
-
-      }
     }
-
+  }
     new.data <- split(contrast,  as.list(contrast)[interaction])
   } else {
     new.data <- contrast
