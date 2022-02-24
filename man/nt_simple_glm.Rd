@@ -13,6 +13,7 @@ nt_simple_glm(
   labels = NULL,
   increment = NULL,
   exponentiate = FALSE,
+  ci.type = "Wald",
   conf.level = 0.95,
   format = TRUE,
   digits = 2,
@@ -34,7 +35,9 @@ nt_simple_glm(
 
 \item{labels}{a list of labels with components given by their variable names.}
 
-\item{increment}{a variable named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
+\item{increment}{a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
+
+\item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald})}
 
 \item{conf.level}{a numerical value indicating the confidence level for parameters of interest.}
 

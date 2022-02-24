@@ -285,16 +285,17 @@ fit_simple_glm <- function(data, family,
 #'                               Pclass = factor(Pclass,
 #'                                               levels = 1:3,
 #'                                               labels = c("I", "II", "III"))
+#'                               )
 #'
 #'fit <- glm(Survived ~ Age + Sex + Pclass, data = dt, family = "binomial")
 #'
-#'nt_multiple_glm(fit)
+#'nt_multiple_glm(fit, exponentiate = TRUE)
 #'
 #'@importFrom purrr map
 #'@importFrom utils write.csv
 #'@export
 nt_multiple_glm <- function(fit, exponentiate = FALSE,
-                            ci.type = "lr",
+                            ci.type = "Wald",
                             user.contrast = NULL, user.contrast.interaction = NULL,
                             format = TRUE, digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_glm"){

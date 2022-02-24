@@ -6,7 +6,7 @@
 \usage{
 nt_multiple_cox(
   fit,
-  ci.type = "lr",
+  ci.type = "Wald",
   user.contrast = NULL,
   user.contrast.interaction = NULL,
   format = TRUE,

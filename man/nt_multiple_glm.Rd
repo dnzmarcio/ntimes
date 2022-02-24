@@ -7,7 +7,7 @@
 nt_multiple_glm(
   fit,
   exponentiate = FALSE,
-  ci.type = "lr",
+  ci.type = "Wald",
   user.contrast = NULL,
   user.contrast.interaction = NULL,
   format = TRUE,
@@ -20,7 +20,7 @@ nt_multiple_glm(
 \arguments{
 \item{fit}{a fitted model.}
 
-\item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).}
+\item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald}).}
 
 \item{user.contrast}{a variable named list of numerical vectors indicating contrast for a covariate.}
 
@@ -51,9 +51,10 @@ dt <- titanic_train \%>\% mutate(Sex = factor(Sex,
                               Pclass = factor(Pclass,
                                               levels = 1:3,
                                               labels = c("I", "II", "III"))
+                              )
 
 fit <- glm(Survived ~ Age + Sex + Pclass, data = dt, family = "binomial")
 
-nt_multiple_glm(fit)
+nt_multiple_glm(fit, exponentiate = TRUE)
 
 }

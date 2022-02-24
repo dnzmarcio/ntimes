@@ -321,7 +321,8 @@ fit_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 #'@importFrom dplyr transmute bind_rows
 #'@importFrom tidyr replace_na
 #'@export
-nt_multiple_cox <- function(fit, ci.type = "lr", user.contrast = NULL, user.contrast.interaction = NULL,
+nt_multiple_cox <- function(fit, ci.type = "Wald",
+                            user.contrast = NULL, user.contrast.interaction = NULL,
                             format = TRUE, digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 
