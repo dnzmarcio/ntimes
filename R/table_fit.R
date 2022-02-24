@@ -193,25 +193,16 @@ contrast_calc <- function(fit, fit0, design.matrix, beta, beta.var, type){
 
   if (type == "Wald"){
 
-    if (nrow(K) == 1){
-      out <- tidy(fit,
-                  conf.int = TRUE,
-                  conf.type = "Wald")[-1, c(2, 6, 7, 5)]
-      colnames(out)[2:3] <- c("lower", "upper")
+    sm <- summary(test)
+    estimate <- sm$test$coefficients
+    pred.se <- sm$test$sigma
 
-    } else {
-      sm <- summary(test)
-      estimate <- sm$test$coefficients
-      pred.se <- sm$test$sigma
+    lower <- estimate - 1.96*pred.se
+    upper <- estimate + 1.96*pred.se
+    estimate <- estimate
+    p.value <- sm$test$pvalues
 
-      lower <- estimate - 1.96*pred.se
-      upper <- estimate + 1.96*pred.se
-      estimate <- estimate
-      p.value <- sm$test$pvalues
-
-      out <- data.frame(estimate, lower, upper, p.value)
-    }
-
+    out <- data.frame(estimate, lower, upper, p.value)
 
   } else if (type == "profile") {
     ci <- confint(test)$confint
