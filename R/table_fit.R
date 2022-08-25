@@ -218,7 +218,7 @@ contrast_calc <- function(fit, fit0, design.matrix, beta, beta.var, type){
     K <- matrix(K, nrow = 1)
   test <- glht(fit, linfct = K)
 
-  if (type == "Wald"){
+  if (!is.na(pmatch(type, c("Wald", "wald")))){
 
     sm <- summary(test)
     estimate <- sm$test$coefficients
@@ -231,7 +231,7 @@ contrast_calc <- function(fit, fit0, design.matrix, beta, beta.var, type){
 
     out <- data.frame(estimate, lower, upper, p.value)
 
-  } else if (type == "profile") {
+  } else if (!is.na(pmatch(type, c("profile", "lr")))) {
     ci <- confint(test)$confint
     p.value.lr <- 1 - pchisq(-2*(logLik(fit0)[[1]] - logLik(fit)[[1]]),
                              anova(fit0, fit)$Df[2])
