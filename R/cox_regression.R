@@ -514,6 +514,7 @@ fit_multiple_cox <- function(fit, fit.vars, type,
   }
 
   out[, 2:4] <- exp(out[, 2:4])
+  rownames(out) <- NULL
   colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
 
   return(out)

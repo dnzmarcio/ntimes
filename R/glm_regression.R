@@ -48,12 +48,12 @@
 #'
 #'@export
 nt_simple_glm <- function(data, response, ...,
-                               family, robust.variance = NULL,
-                               labels = NULL,
-                               increment = NULL, exponentiate = FALSE,
-                               ci.type = "Wald", conf.level = 0.95,
-                               format = TRUE, digits = 2, digits.p = 3,
-                               save = FALSE, file = "simple_logistic"){
+                          family, robust.variance = NULL,
+                          labels = NULL,
+                          increment = NULL, exponentiate = FALSE,
+                          ci.type = "Wald", conf.level = 0.95,
+                          format = TRUE, digits = 2, digits.p = 3,
+                          save = FALSE, file = "simple_logistic"){
 
   response <- enquo(response)
   aux <- quos(...)
@@ -480,6 +480,7 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
 
   if (exponentiate)
     out[, 2:4] <- exp(out[, 2:4])
+  rownames(out) <- NULL
   colnames(out) <- c("term", "estimate", "conf.low", "conf.high", "p.value")
   return(out)
 
