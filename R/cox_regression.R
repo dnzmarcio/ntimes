@@ -193,7 +193,7 @@ aux_simple_cox <- function(var, var.name, var.label,
   }
 
   data.model <- bind_cols(time = time, status = status, var = var, add = add)
-  out <- fit_cox(data.model, tab.labels, tab.levels,
+  out <- fit_simple_cox(data.model, tab.labels, tab.levels,
                  strata.var, increment[[var.name]])
 
   if (format){
@@ -210,7 +210,7 @@ aux_simple_cox <- function(var, var.name, var.label,
 #'@importFrom dplyr select mutate
 #'@importFrom stats na.exclude update.formula anova
 #'@importFrom stringr str_replace_all
-fit_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
+fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 
   if (any(is.na(data)))
     strata.var <- strata.var[-which(is.na(data), arr.ind = TRUE)[, 1]]
@@ -362,14 +362,16 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
 #'@importFrom stringr str_replace_all
 #'@importFrom tidyr separate
 #'@importFrom broom tidy
-aux_multiple_cox <- function(fit, ci.type, user.contrast, user.contrast.interaction, format){
+aux_multiple_cox <- function(fit, ci.type,
+                             user.contrast, user.contrast.interaction,
+                             format, table.reference){
 
   aux <- extract_data(fit)
 
-  effect <- effect.coxph(fit, fit.vars = aux, type = ci.type,
+  effect <- fit_multiple_cox(fit, fit.vars = aux, type = ci.type,
                          user.contrast = user.contrast,
-                         user.contrast.interaction = user.contrast.interaction) %>%
-    mutate(term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
+                         user.contrast.interaction = user.contrast.interaction,
+                         table.reference = table.reference) %>%
     separate(.data$term, into = c("variable", "hr"), sep = ":")
 
   if (format)
@@ -394,8 +396,9 @@ aux_multiple_cox <- function(fit, ci.type, user.contrast, user.contrast.interact
 #'@importFrom stats model.matrix formula setNames anova vcov update.formula
 #'@importFrom survival coxph
 #'@importFrom stringr str_split
-effect.coxph <- function(fit, fit.vars, type,
-                         user.contrast, user.contrast.interaction){
+fit_multiple_cox <- function(fit, fit.vars, type,
+                         user.contrast, user.contrast.interaction,
+                         table.reference){
 
   ref <- reference_df(fit)$df
   beta <- as.numeric(fit$coefficients)
