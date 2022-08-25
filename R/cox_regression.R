@@ -323,7 +323,9 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 #'@export
 nt_multiple_cox <- function(fit, ci.type = "Wald",
                             user.contrast = NULL, user.contrast.interaction = NULL,
-                            format = TRUE, digits = 2, digits.p = 3,
+                            format = TRUE, table.reference = TRUE,
+                            labels = NULL,
+                            digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 
   if (class(fit) != "coxph")
@@ -347,6 +349,15 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
                                  ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
                                  as.character(round(.data$p.value, digits.p))))) %>%
     replace_na(list(`p value` = ""))
+
+  if (!is.null(labels)){
+    aux_labels <- labels
+    names(aux_labels) <- paste0("^", names(aux_labels), "$")
+
+    out$effect <- out$effect %>%
+      mutate(Variable =
+               str_replace_all(Variable, unlist(aux_labels)))
+  }
 
 
 
@@ -380,12 +391,12 @@ aux_multiple_cox <- function(fit, ci.type,
     ungroup(.data$variable) %>% select(-.data$variable) %>%
     rename(variable = .data$aux_variable)
 
-  temp <- unlist(aux$var.labels)
-  labels <- paste0(temp, " ")
-  names(labels) <- names(temp)
-  coef <- tidy(fit) %>%
-    mutate(term = str_replace_all(.data$term, labels),
-           term = sub(" $", "", x = .data$term))
+  # temp <- unlist(aux$var.labels)
+  # labels <- paste0(temp, " ")
+  # names(labels) <- names(temp)
+  # coef <- tidy(fit) %>%
+  #   mutate(term = str_replace_all(.data$term, labels),
+  #          term = sub(" $", "", x = .data$term))
 
   out <- list(effect = effect, coef = coef)
 

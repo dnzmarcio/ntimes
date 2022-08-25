@@ -297,7 +297,9 @@ fit_simple_glm <- function(data, family,
 nt_multiple_glm <- function(fit, exponentiate = FALSE,
                             ci.type = "Wald",
                             user.contrast = NULL, user.contrast.interaction = NULL,
-                            format = TRUE, digits = 2, digits.p = 3,
+                            labels = NULL,
+                            format = TRUE, table.reference = TRUE,
+                            digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_glm"){
 
   out <- aux_multiple_glm(fit = fit,
@@ -320,6 +322,15 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
                                  ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
                                         as.character(round(.data$p.value, digits.p))))) %>%
     replace_na(list(`p value` = ""))
+
+  if (!is.null(labels)){
+    aux_labels <- labels
+    names(aux_labels) <- paste0("^", names(aux_labels), "$")
+
+    out$effect <- out$effect %>%
+      mutate(Variable =
+               str_replace_all(Variable, unlist(aux_labels)))
+  }
 
   if (save)
     write.csv(out$effect, file = paste0(file, ".csv"))
@@ -344,23 +355,22 @@ aux_multiple_glm <- function(fit, exponentiate, robust.variance,
                              robust.variance = robust.variance,
                              type = ci.type,
                              user.contrast = user.contrast,
-                             user.contrast.interaction = user.contrast.interaction) %>%
-    mutate(term = str_replace_all(.data$term, unlist(aux$var.labels))) %>%
+                             user.contrast.interaction = user.contrast.interaction,
+                             table.reference = table.reference) %>%
     separate(.data$term, into = c("variable", "group"), sep = ":")
 
   if (format)
     effect <- effect %>% group_by(.data$variable) %>%
-    #
     mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable)) %>%
     ungroup(.data$variable) %>% select(-.data$variable) %>%
     rename(variable = .data$aux_variable)
 
-  temp <- unlist(aux$var.labels)
-  labels <- paste0(temp, " ")
-  names(labels) <- names(temp)
-  coef <- tidy(fit) %>%
-    mutate(term = str_replace_all(.data$term, labels),
-           term = sub(" $", "", x = .data$term))
+  # temp <- unlist(aux$var.labels)
+  # labels <- paste0(temp, " ")
+  # names(labels) <- names(temp)
+  # coef <- tidy(fit) %>%
+  #   mutate(term = str_replace_all(.data$term, labels),
+  #          term = sub(" $", "", x = .data$term))
 
   out <- list(effect = effect, coef = coef)
 
