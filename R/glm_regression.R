@@ -307,7 +307,7 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
                                ci.type = ci.type,
                                user.contrast = user.contrast,
                                user.contrast.interaction = user.contrast.interaction,
-                               format = format)
+                               format = format, table.reference = table.reference)
   ref <- reference_df(fit)$ref
 
   if (format)
@@ -346,7 +346,7 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
 #'@importFrom broom tidy
 aux_multiple_glm <- function(fit, exponentiate, robust.variance,
                              ci.type, user.contrast, user.contrast.interaction,
-                             format){
+                             format, table.reference){
 
   aux <- extract_data(fit)
 
@@ -379,7 +379,8 @@ aux_multiple_glm <- function(fit, exponentiate, robust.variance,
 
 #'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
 fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
-                             type, user.contrast, user.contrast.interaction){
+                             type, user.contrast, user.contrast.interaction,
+                             table.reference){
 
   ref <- reference_df(fit)$df
   beta <- as.numeric(fit$coefficients)
@@ -397,8 +398,11 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
     }
 
     if (all(!cond.interaction)){
-      temp <- contrast_df(data = fit.vars$data, var = fit.vars$var[i],
-                          ref = ref, user.contrast = user.contrast)
+      temp <- contrast_df(data = fit.vars$data,
+                          var = fit.vars$var[i],
+                          ref = ref,
+                          user.contrast = user.contrast,
+                          table.reference = table.reference)
       design.matrix <- model.matrix(formula(fit), data = temp$new.data)
 
       drop <- which(grepl(fit.vars$var[i], x = as.character(term.labels), fixed = TRUE))
@@ -412,7 +416,10 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
                                 beta = beta, beta.var = beta.var,
                                 type = type)
 
-      temp <- data.frame(term = temp$label, rbind(NA, contrast))
+      if (table.reference)
+        contrast <- rbind(NA, contrast)
+
+      temp <- data.frame(term = temp$label, contrast)
 
       if (type == "lr")
         temp[1:2, 5] <- temp[2:1, 5]
@@ -442,7 +449,25 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
                                   beta = beta, beta.var = beta.var,
                                   type = type)
 
-        temp <- data.frame(term = temp$label, rbind(NA, contrast))
+        if (table.reference){
+          aux.contrast <- list()
+          index <- 1
+          for (j in 1:length(temp$label)){
+
+            if (j %in% temp$seq_nl){
+              aux.contrast[[j]] <- matrix(NA, ncol = ncol(contrast))
+              colnames(aux.contrast[[j]]) <- c("estimate", "lower", "upper", "p.value")
+            } else {
+              aux.contrast[[j]] <- contrast[index, ]
+              index <- index + 1
+            }
+          }
+          contrast <- Reduce(rbind, aux.contrast)
+        }
+
+        contrast <- Reduce(rbind, aux.contrast)
+
+        temp <- data.frame(term = temp$label, contrast)
 
         if (i > 1)
           temp <- rbind(out, temp)

@@ -66,7 +66,9 @@ reference_df <- function(fit){
 
 #'@importFrom stats quantile
 contrast_df <- function(data, var, ref, user.contrast = NULL,
-                        interaction = NULL, user.contrast.interaction = NULL){
+                        interaction = NULL,
+                        user.contrast.interaction = NULL,
+                        table.reference){
 
   contrast <- ref
 
@@ -87,8 +89,12 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
                                 levels = user.contrast[[var]])
     }
 
-    label <- paste0(var, ":",contrast[[var]][1:nc])
-    #paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
+    if (table.reference){
+      label <- paste0(var, ":",contrast[[var]][1:nc])
+    } else {
+      label <- paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
+    }
+
 
   } else if (class(data[[var]]) == "numeric" |
              class(data[[var]]) == "integer") {
@@ -105,8 +111,12 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
       contrast[[var]] <- user.contrast[[var]]
     }
 
-    label <- paste0(var, ":", contrast[[var]][1:nc])
-      #paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
+    if (table.reference){
+      label <- paste0(var, ":", contrast[[var]][1:nc])
+    } else {
+      label <- paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
+    }
+
   }
 
   if (!is.null(interaction)){
@@ -134,10 +144,13 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
                                                levels = user.contrast.interaction[[interaction[k]]])
         }
 
+        if (!table.reference)
+          nc <- 1
+
         if (k == 1){
-          label <- paste0(rep(label, length(lv)), " at ", interaction[k], " = ", rep(lv, each = length(lv)))
+          label <- paste0(rep(label, nc), " at ", interaction[k], " = ", rep(lv, each = nc))
         } else {
-          label <- paste0(rep(label, length(lv)), " at ", interaction[k], " = ", rep(lv, each = length(lv)))
+          label <- paste0(rep(label, nc), " at ", interaction[k], " = ", rep(lv, each = nc))
         }
 
       } else if (class(data[[interaction[k]]]) == "numeric" |
@@ -146,20 +159,23 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
 
         if (is.null(user.contrast.interaction[[interaction[k]]])) {
           nc <- 2
-          quant <- quantile(data[[interaction[k]]], probs = c(0.25, 0.75), na.rm = TRUE)
+          lv <- quantile(data[[interaction[k]]], probs = c(0.25, 0.75), na.rm = TRUE)
           contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
-          contrast[[interaction[k]]] <- rep(quant, nrow(contrast)/nc)
+          contrast[[interaction[k]]] <- rep(lv, nrow(contrast)/nc)
         } else {
           nc <- length(user.contrast.interaction[[interaction[k]]])
-          quant <- user.contrast.interaction[[interaction[k]]]
+          lv <- user.contrast.interaction[[interaction[k]]]
           contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
           contrast[[interaction[k]]] <- rep(user.contrast.interaction[[interaction[k]]], nrow(contrast)/nc)
         }
 
+        if (!table.reference)
+          nc <- 1
+
         if (k == 1){
-          label <- paste0(rep(label, length(lv)), " at ", interaction[k], " = ", rep(lv, each = length(lv)))
+          label <- paste0(rep(label, nc), " at ", interaction[k], " = ", rep(lv, each = nc))
         } else {
-          label <- paste0(rep(label, length(lv)), " at ", interaction[k], " = ", rep(lv, each = length(lv)))
+          label <- paste0(rep(label, nc), " at ", interaction[k], " = ", rep(lv, each = nc))
         }
     }
   }
@@ -169,7 +185,17 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
   }
 
   rownames(new.data) <- NULL
-  out <- list(new.data = new.data, label = label)
+
+  if (table.reference){
+    nl <- ifelse(nlevels(data[[var]]) == 0, 2, nlevels(data[[var]]))
+    seq_nl <- seq(1, (length(label)-1), by = nl)
+    out <- list(new.data = new.data,
+                label = label,
+                seq_nl = seq_nl)
+  } else {
+    out <- list(new.data = new.data,
+                label = label)
+  }
   return(out)
 }
 
