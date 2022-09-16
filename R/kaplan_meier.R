@@ -430,7 +430,8 @@ std_km_group <- function(time, status, var, var.label,
                            group = table$strata) %>%
     tidyr::separate(.data$group, into = c("var", "group"), sep = "r=") %>%
     select(-var) %>%
-    mutate(group = factor(.data$group, levels = rev(levels(as.factor(.data$group)))))
+    mutate(group = factor(.data$group,
+                          levels = rev(levels(var))))
 
   ## Basic plot
   risk.table <- ggplot(data.table, aes_string(x = "time", y = "group")) +
