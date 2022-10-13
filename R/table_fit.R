@@ -148,9 +148,9 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
           nc <- 1
 
         if (k == 1){
-          label <- paste0(rep(label, nc), " at ", interaction[k], " = ", rep(lv, each = nc))
+          label <- paste0(rep(label, nc), " at ", interaction[k], " = ", rep(lv, each = length(label)))
         } else {
-          label <- paste0(rep(label, nc), " at ", interaction[k], " = ", rep(lv, each = nc))
+          label <- paste0(rep(label, nc), " at ", interaction[k], " = ", rep(lv, each = length(label)))
         }
 
       } else if (class(data[[interaction[k]]]) == "numeric" |
