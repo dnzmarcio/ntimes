@@ -66,10 +66,14 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
         mutate(Variable = as.character(.data$Variable))
 
       tab <- left_join(descriptive.tab, test.tab, by = "Variable")
-      out <- tab %>% mutate(`p value` =
-                              ifelse(.data$`p value` < 0.001, "< 0.001",
-                                     round(.data$`p value`, digits)))  %>%
-        replace_na(list(`p value` = ""))
+      out <- tab %>%
+        mutate(`p value` =
+                 ifelse(is.na(.data$`p value`), " ",
+                        ifelse(.data$`p value` < 0.001, "< 0.001",
+                               round(.data$`p value`, digits)
+                        )
+                 )
+        )
 
       if (save)
         write.csv(out, file = paste0(file, ".csv"))

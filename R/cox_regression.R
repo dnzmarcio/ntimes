@@ -338,7 +338,7 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
                           table.reference = table.reference)
   ref <- reference_df(fit)$ref
 
-  if (format)
+  if (format){
     out$effect <-  out$effect %>%
     transmute(Variable = .data$variable, HR = .data$hr,
               `Estimate (95% CI)` = ifelse(is.na(estimate),
@@ -359,7 +359,16 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
       mutate(Variable =
                str_replace_all(Variable, unlist(aux_labels)))
   }
+  } else {
+    if (!is.null(labels)){
+      aux_labels <- labels
+      names(aux_labels) <- paste0("^", names(aux_labels), "$")
 
+      out$effect <- out$effect %>%
+        mutate(Variable =
+                 str_replace_all(variable, unlist(aux_labels)))
+    }
+  }
 
 
   if (save)
