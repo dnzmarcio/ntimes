@@ -79,8 +79,10 @@ nt_compare_tg <- function(data, group, labels = NULL,
       group.label <- extract_label(group[[1]], group.name)
   }
 
-  if (!is.factor(group[[1]]))
+  if (!is.factor(group[[1]])){
     group <- as.factor(group[[1]])
+    warning(paste(group.label, "was transformed into a factor."))
+  }
 
   if (nlevels(group[[1]]) != 2)
     stop("'group' should have only two levels.")
