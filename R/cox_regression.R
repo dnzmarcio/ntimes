@@ -236,7 +236,7 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
         } else {
           fit0 <- coxph(Surv(time, status) ~ 1, data = data[, -i])
         }
-        p.value.lr[(i-2)] <- anova(fit0, fit, test = "Chisq")$`P(>|Chi|)`[2]
+        p.value.lr[(i-2)] <- anova(fit0, fit, test = "Chisq")$`Pr(>|Chi|)`[2]
       }
     }
   } else {
@@ -255,7 +255,7 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
         } else {
           fit0 <- coxph(Surv(time, status) ~ strata(strata.var) + 1, data = data[, -i])
         }
-        p.value.lr[(i-2)] <- anova(fit0, fit, test = "Chisq")$`P(>|Chi|)`[2]
+        p.value.lr[(i-2)] <- anova(fit0, fit, test = "Chisq")$`Pr(>|Chi|)`[2]
       }
     }
   }
