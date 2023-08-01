@@ -28,7 +28,6 @@
 #'@param file a character value indicating the name of output file in csv format to be saved.
 #'
 #'@examples
-#'library(maggritr)
 #'data(iris)
 #'
 #'iris |> filter(Species != "setosa") |>

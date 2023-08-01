@@ -59,7 +59,6 @@ the difference between the two groups.}
 Performing comparisons between two groups.
 }
 \examples{
-library(maggritr)
 data(iris)
 
 iris |> filter(Species != "setosa") |>
