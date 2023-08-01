@@ -35,6 +35,21 @@ keep_levels <- function(x, y){
   return(x)
 }
 
+data_labeller <- function(data, labels){
+
+  aux_label <- function(x, y){
+    attributes(x)$label <- y
+    return(x)
+  }
+
+  var.names <- colnames(data)
+  names(labels) <- paste0("^",  names(labels), "$")
+  labels <- str_replace_all(var.names, unlist(labels))
+
+  out <- bind_cols(map2(.x = data, .y = labels, .f = aux_label))
+  return(out)
+}
+
 #https://stackoverflow.com/questions/19410108/cleaning-up-factor-levels-collapsing-multiple-levels-labels
 recode_labels <- function(x, code, labels) {
 
