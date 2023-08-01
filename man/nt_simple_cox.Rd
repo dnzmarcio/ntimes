@@ -53,10 +53,9 @@ Performing simple Cox regression.
 \examples{
 library(survival)
 library(dplyr)
-library(magrittr)
 data(ovarian)
 
-ovarian_nt <- ovarian \%>\% mutate(resid.ds = factor(resid.ds,
+ovarian_nt <- ovarian |> mutate(resid.ds = factor(resid.ds,
                                                   levels = 1:2,
                                                   labels = c("no", "yes")),
                              ecog.ps = factor(ecog.ps,
@@ -65,7 +64,7 @@ ovarian_nt <- ovarian \%>\% mutate(resid.ds = factor(resid.ds,
                              rx =factor(rx,
                                          levels = 1:2,
                                          labels = c("t1", "t2")))
-ovarian_nt \%>\% nt_simple_cox(time = futime, status = fustat,
+ovarian_nt |> nt_simple_cox(time = futime, status = fustat,
                             labels = list(resid.ds = "Residual Disease",
                                           ecog.ps = "ECOG-PS",
                                           rx = "Treatment",

@@ -50,9 +50,8 @@ See \code{\link[ggplot2]{geom_boxplot}}, \code{\link{std_boxplot}} and
 \code{\link{std_boxplot_group}}.
 }
 \examples{
-library(magrittr)
 data(iris)
 
-iris \%>\% nt_boxplot(group = Species)
+iris |> nt_boxplot(group = Species)
 
 }

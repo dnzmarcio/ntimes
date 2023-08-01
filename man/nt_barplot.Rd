@@ -53,13 +53,12 @@ See \code{\link[ggplot2]{geom_bar}}, \code{\link{std_barplot}} and
 }
 \examples{
 library(dplyr)
-library(magrittr)
 data(iris)
 
-vars <- iris \%>\%
+vars <- iris |>
 transmute(Species = Species,
          Sepal.Length.C = ifelse(Sepal.Length > 5, "> 5", "<= 5"),
          Sepal.Width.C = ifelse(Sepal.Width > 3.5, "> 3.5", "<= 3.5"))
-vars \%>\% nt_barplot(group = Species)
+vars |> nt_barplot(group = Species)
 
 }

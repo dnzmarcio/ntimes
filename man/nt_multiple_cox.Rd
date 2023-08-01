@@ -10,6 +10,8 @@ nt_multiple_cox(
   user.contrast = NULL,
   user.contrast.interaction = NULL,
   format = TRUE,
+  table.reference = TRUE,
+  labels = NULL,
   digits = 2,
   digits.p = 3,
   save = FALSE,
@@ -40,11 +42,10 @@ Tabulating results from fitted Proportional Hazards Cox models.
 }
 \examples{
 library(survival)
-library(magrittr)
 library(dplyr)
 
 data(ovarian)
-dt <- ovarian \%>\% mutate(resid.ds = factor(resid.ds,
+dt <- ovarian |> mutate(resid.ds = factor(resid.ds,
                                                levels = 1:2,
                                                labels = c("no", "yes")),
                              ecog.ps = factor(ecog.ps,

@@ -51,9 +51,8 @@ See \code{\link[ggplot2]{geom_dotplot}}, \code{\link{std_dotplot}} and
 \code{\link{std_dotplot_group}}.
 }
 \examples{
-library(magrittr)
 data(iris)
 
-iris \%>\% nt_dotplot(group = Species, binwidth = 0.1)
+iris |> nt_dotplot(group = Species, binwidth = 0.1)
 
 }

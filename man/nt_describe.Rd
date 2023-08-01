@@ -10,7 +10,7 @@ nt_describe(
   labels = NULL,
   measures_qt = list(helper_mean_sd, helper_median_iqr, helper_median_range,
     helper_missing),
-  measures_ql = list(helper_perc_count),
+  measures_ql = list(helper_count_perc),
   digits = 2,
   save = FALSE,
   file = "descriptive_analysis",
@@ -52,7 +52,7 @@ For qualitative variables, percentage (frequency) is calculated using
 \examples{
 data(iris)
 
-iris \%>\% nt_describe(group = Species,
+iris |> nt_describe(group = Species,
                     labels = list(Sepal.Length = "Sepal Length",
                                   Sepal.Width = "Sepal Width",
                                   Petal.Length = "Petal Length",

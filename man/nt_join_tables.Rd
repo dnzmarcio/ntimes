@@ -34,9 +34,8 @@ Join tables resulting from other functions of the package \code{ntimes}.
 }
 \examples{
 library(dplyr)
-library(magrittr)
 
-iris_nt <- iris \%>\% filter(Species != "versicolor") \%>\%
+iris_nt <- iris |> filter(Species != "versicolor") |>
 mutate(Species = droplevels(Species))
 tab01 <- nt_describe(iris_nt, group = Species)
 tab02 <- nt_compare_tg(iris_nt, group = Species)

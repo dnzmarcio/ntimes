@@ -62,8 +62,8 @@ Performing comparisons between two groups.
 library(maggritr)
 data(iris)
 
-iris \%>\% filter(Species != "setosa") \%>\%
- mutate(Species = as.factor(Species)) \%>\%
+iris |> filter(Species != "setosa") |>
+ mutate(Species = as.factor(Species)) |>
  nt_compare_tg(group = Species,
                labels = list(Sepal.Length = "Sepal Length",
                              Sepal.Width = "Sepal Width",

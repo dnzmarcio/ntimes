@@ -78,11 +78,11 @@ See \code{\link{std_km}} and \code{\link{std_km_group}}.
 library(survival)
 data(lung)
 
-lung_nt <- lung \%>\% mutate(sex = factor(sex, levels = 1:2,
+lung_nt <- lung |> mutate(sex = factor(sex, levels = 1:2,
                                     labels = c("Female", "Male")),
-                       ph.ecog = as.factor(ph.ecog)) \%>\%
+                       ph.ecog = as.factor(ph.ecog)) |>
                        select(sex, ph.ecog, time, status)
-lung_nt \%>\% nt_km(time = time, status = status,
+lung_nt |> nt_km(time = time, status = status,
                  labels = list(sex = "Sex", ph.ecog = "ECOG"))
 
 }

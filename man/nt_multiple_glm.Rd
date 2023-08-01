@@ -10,7 +10,9 @@ nt_multiple_glm(
   ci.type = "Wald",
   user.contrast = NULL,
   user.contrast.interaction = NULL,
+  labels = NULL,
   format = TRUE,
+  table.reference = TRUE,
   digits = 2,
   digits.p = 3,
   save = FALSE,
@@ -45,7 +47,7 @@ library(magrittr)
 library(dplyr)
 
 data(titanic_train)
-dt <- titanic_train \%>\% mutate(Sex = factor(Sex,
+dt <- titanic_train |> mutate(Sex = factor(Sex,
                                            levels = c("male", "female"),
                                            labels = c("Male", "Female")),
                               Pclass = factor(Pclass,

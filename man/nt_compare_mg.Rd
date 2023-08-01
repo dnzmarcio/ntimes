@@ -62,9 +62,8 @@ if only normality is satisfied, then \code{qt.test[[2]]}; if only homoscedastici
 or neither assumptions, then \code{qt.test[[3]]}.
 }
 \examples{
-library(magrittr)
 data(iris)
 
-iris \%>\% nt_compare_mg(group = Species)
+iris |> nt_compare_mg(group = Species)
 
 }

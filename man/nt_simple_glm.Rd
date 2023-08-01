@@ -56,11 +56,10 @@ Fit simple GLM.
 }
 \examples{
 library(titanic)
-library(magrittr)
 library(dplyr)
 
 data(titanic_train)
-titanic_nt <- titanic_train \%>\%
+titanic_nt <- titanic_train |>
  mutate(Sex = factor(Sex,
                      levels = c("male", "female"),
                      labels = c("Male", "Female")),
@@ -71,7 +70,7 @@ titanic_nt <- titanic_train \%>\%
                           levels = c("C", "Q", "S"),
                           labels = c("Cherbourg", "Queenstown", "Southampton")))
 
-titanic_nt \%>\% select(Survived, Sex, Age, Pclass, Embarked) \%>\%
+titanic_nt |> select(Survived, Sex, Age, Pclass, Embarked) |>
  nt_simple_glm(response = Survived, Age,
                     family = binomial(link = "logit"),
                     exponentiate = TRUE,
