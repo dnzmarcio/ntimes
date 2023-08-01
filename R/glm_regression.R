@@ -18,11 +18,10 @@
 #'@param file a character indicating the name of output file in csv format to be saved.
 #'@examples
 #'library(titanic)
-#'library(magrittr)
 #'library(dplyr)
 #'
 #'data(titanic_train)
-#'titanic_nt <- titanic_train %>%
+#'titanic_nt <- titanic_train |>
 #'  mutate(Sex = factor(Sex,
 #'                      levels = c("male", "female"),
 #'                      labels = c("Male", "Female")),
@@ -33,7 +32,7 @@
 #'                           levels = c("C", "Q", "S"),
 #'                           labels = c("Cherbourg", "Queenstown", "Southampton")))
 #'
-#'titanic_nt %>% select(Survived, Sex, Age, Pclass, Embarked) %>%
+#'titanic_nt |> select(Survived, Sex, Age, Pclass, Embarked) |>
 #'  nt_simple_glm(response = Survived, Age,
 #'                     family = binomial(link = "logit"),
 #'                     exponentiate = TRUE,
@@ -101,11 +100,11 @@ nt_simple_glm <- function(data, response, ...,
   out <- Reduce(rbind, temp)
 
   if (format){
-    out <- out %>% mutate(null.deviance = round(.data$null.deviance, digits),
+    out <- out |> mutate(null.deviance = round(.data$null.deviance, digits),
                           logLik = round(.data$logLik, digits),
                           AIC = round(.data$AIC, digits),
                           BIC = round(.data$BIC, digits),
-                          deviance = round(.data$deviance, digits)) %>%
+                          deviance = round(.data$deviance, digits)) |>
       transmute(Variable = .data$term, Group = .data$group,
                 `Estimate (95% CI)` = ifelse(.data$estimate == 1 &
                                               is.na(.data$conf.low) &
@@ -120,9 +119,9 @@ nt_simple_glm <- function(data, response, ...,
                                         as.character(round(.data$p.value.lr, digits.p))),
                 n = .data$n, null.deviance = .data$null.deviance,
                 logLik = .data$logLik, AIC = .data$AIC, BIC = .data$BIC,
-                deviance = .data$deviance) %>%
+                deviance = .data$deviance) |>
       mutate(`Estimate (95% CI)` =
-               recode(.data$`Estimate (95% CI)`, `NA (NA ; NA)` = "Reference")) %>%
+               recode(.data$`Estimate (95% CI)`, `NA (NA ; NA)` = "Reference")) |>
       replace_na(list(`Wald p value` = "", `LR p value` = "",
                       n = "", null.deviance = "", df.null = "",
                       logLik = "", AIC = "", BIC = "",
@@ -279,7 +278,7 @@ fit_simple_glm <- function(data, family,
 #'library(dplyr)
 #'
 #'data(titanic_train)
-#'dt <- titanic_train %>% mutate(Sex = factor(Sex,
+#'dt <- titanic_train |> mutate(Sex = factor(Sex,
 #'                                            levels = c("male", "female"),
 #'                                            labels = c("Male", "Female")),
 #'                               Pclass = factor(Pclass,
@@ -311,7 +310,7 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
   ref <- reference_df(fit)$ref
 
   if (format)
-    out$effect <- out$effect %>%
+    out$effect <- out$effect |>
     transmute(Variable = .data$variable, Group = .data$group,
               `Estimate (95% CI)` = ifelse(is.na(estimate),
                                            "Reference",
@@ -320,14 +319,14 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
                                                   round(.data$conf.high, digits), ")")),
               `p value` = ifelse(is.na(.data$p.value), "",
                                  ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                        as.character(round(.data$p.value, digits.p))))) %>%
+                                        as.character(round(.data$p.value, digits.p))))) |>
     replace_na(list(`p value` = ""))
 
   if (!is.null(labels)){
     aux_labels <- labels
     names(aux_labels) <- paste0("^", names(aux_labels), "$")
 
-    out$effect <- out$effect %>%
+    out$effect <- out$effect |>
       mutate(Variable =
                str_replace_all(Variable, unlist(aux_labels)))
   }
@@ -356,19 +355,19 @@ aux_multiple_glm <- function(fit, exponentiate, robust.variance,
                              type = ci.type,
                              user.contrast = user.contrast,
                              user.contrast.interaction = user.contrast.interaction,
-                             table.reference = table.reference) %>%
+                             table.reference = table.reference) |>
     separate(.data$term, into = c("variable", "group"), sep = ":")
 
   if (format)
-    effect <- effect %>% group_by(.data$variable) %>%
-    mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable)) %>%
-    ungroup(.data$variable) %>% select(-.data$variable) %>%
+    effect <- effect |> group_by(.data$variable) |>
+    mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable)) |>
+    ungroup(.data$variable) |> select(-.data$variable) |>
     rename(variable = .data$aux_variable)
 
   # temp <- unlist(aux$var.labels)
   # labels <- paste0(temp, " ")
   # names(labels) <- names(temp)
-  # coef <- tidy(fit) %>%
+  # coef <- tidy(fit) |>
   #   mutate(term = str_replace_all(.data$term, labels),
   #          term = sub(" $", "", x = .data$term))
 

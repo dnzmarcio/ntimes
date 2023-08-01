@@ -10,9 +10,8 @@
 #'@param file a character value indicating the name of output file in csv format to be saved.
 #'@examples
 #'library(dplyr)
-#'library(magrittr)
 #'
-#'iris_nt <- iris %>% filter(Species != "versicolor") %>%
+#'iris_nt <- iris |> filter(Species != "versicolor") |>
 #'mutate(Species = droplevels(Species))
 #'tab01 <- nt_describe(iris_nt, group = Species)
 #'tab02 <- nt_compare_tg(iris_nt, group = Species)
@@ -60,13 +59,13 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
       if (!any(names(test.tab) == "p value"))
         stop("'test.tab' does not have any column 'p value'.")
 
-      test.tab <- test.tab %>% mutate(Variable = as.character(.data$Variable)) %>%
+      test.tab <- test.tab |> mutate(Variable = as.character(.data$Variable)) |>
         select(.data$Variable, .data$`p value`)
-      descriptive.tab <- descriptive.tab %>%
+      descriptive.tab <- descriptive.tab |>
         mutate(Variable = as.character(.data$Variable))
 
       tab <- left_join(descriptive.tab, test.tab, by = "Variable")
-      out <- tab %>%
+      out <- tab |>
         mutate(`p value` =
                  ifelse(is.na(.data$`p value`), " ",
                         ifelse(.data$`p value` < 0.001, "< 0.001",
@@ -79,27 +78,27 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
         write.csv(out, file = paste0(file, ".csv"))
     } else if (attr(test.tab, "ntimes") == "multiple_groups"){
 
-      test.tab <- test.tab$omnibus.test %>%
-        mutate(Variable = as.character(.data$Variable)) %>%
+      test.tab <- test.tab$omnibus.test |>
+        mutate(Variable = as.character(.data$Variable)) |>
         select(.data$Variable, .data$`p value`)
-      descriptive.tab <- descriptive.tab %>%
+      descriptive.tab <- descriptive.tab |>
         mutate(Variable = as.character(.data$Variable))
 
       tab <- left_join(descriptive.tab, test.tab, by = "Variable")
-      out <- tab %>% mutate(`p value` =
+      out <- tab |> mutate(`p value` =
                               ifelse(.data$`p value` < 0.001, "< 0.001",
-                                     round(.data$`p value`, digits)))  %>%
+                                     round(.data$`p value`, digits)))  |>
         replace_na(list(`p value` = ""))
 
       if (save)
         write.csv(out, file = paste0(file, ".csv"))
     } else if (attr(test.tab, "ntimes") == "multiple_comparisons"){
 
-      aux <- test.tab$omnibus.test %>%
-        mutate(Variable = as.character(.data$Variable)) %>%
+      aux <- test.tab$omnibus.test |>
+        mutate(Variable = as.character(.data$Variable)) |>
         select(.data$Variable, .data$`p value`)
 
-      temp <- test.tab$mc.test %>% select(-.data$`95% CI`, -.data$Test, -.data$Group) %>%
+      temp <- test.tab$mc.test |> select(-.data$`95% CI`, -.data$Test, -.data$Group) |>
         pivot_wider(names_from = .data$Hypothesis,
                      values_from = .data$`p value`)
 
@@ -107,13 +106,13 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
         temp[, i] <- ifelse(temp[, i] < alpha, letters[i-1], "")
       }
 
-      mc <- temp %>% unite(col = "Comparisons", -.data$Variable, sep = "")
+      mc <- temp |> unite(col = "Comparisons", -.data$Variable, sep = "")
 
       test.tab <- left_join(aux, mc, by = "Variable")
-      tab <- left_join(descriptive.tab, test.tab, by = "Variable") %>%
+      tab <- left_join(descriptive.tab, test.tab, by = "Variable") |>
         mutate(`p value` =
                  ifelse(.data$`p value` < 0.001, "< 0.001",
-                        round(.data$`p value`, digits))) %>%
+                        round(.data$`p value`, digits))) |>
         replace_na(list(`p value` = "", Comparisons = ""))
       comparisons <- setNames(names(temp[-1]), letters[1:(ncol(temp)-1)])
 
@@ -127,9 +126,9 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
   }
 
   if (attr(tab.x, "ntimes") == "descriptive" & attr(tab.y, "ntimes") == "descriptive"){
-    tab.x <- tab.x %>% mutate(id = 1:nrow(tab.x))
-    tab.y <- tab.y %>% mutate(id = 1:nrow(tab.y))
-    tab <- left_join(tab.x, tab.y, by = c("id", "Variable")) %>% select(-id)
+    tab.x <- tab.x |> mutate(id = 1:nrow(tab.x))
+    tab.y <- tab.y |> mutate(id = 1:nrow(tab.y))
+    tab <- left_join(tab.x, tab.y, by = c("id", "Variable")) |> select(-id)
     temp <- str_split(colnames(tab), ":")
     colnames(tab)[3:4] <- c(temp[[3]][2], temp[[4]][2])
 

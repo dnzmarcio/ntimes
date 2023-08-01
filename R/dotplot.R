@@ -25,10 +25,9 @@
 #'\code{var}.
 #'
 #'@examples
-#'library(magrittr)
 #'data(iris)
 #'
-#'iris %>% nt_dotplot(group = Species, binwidth = 0.1)
+#'iris |> nt_dotplot(group = Species, binwidth = 0.1)
 #'
 #'@import ggplot2 dplyr
 #'@importFrom rlang enquo quo_is_null

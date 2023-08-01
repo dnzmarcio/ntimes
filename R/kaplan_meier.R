@@ -35,11 +35,11 @@
 #'library(survival)
 #'data(lung)
 #'
-#'lung_nt <- lung %>% mutate(sex = factor(sex, levels = 1:2,
+#'lung_nt <- lung |> mutate(sex = factor(sex, levels = 1:2,
 #'                                     labels = c("Female", "Male")),
-#'                        ph.ecog = as.factor(ph.ecog)) %>%
+#'                        ph.ecog = as.factor(ph.ecog)) |>
 #'                        select(sex, ph.ecog, time, status)
-#'lung_nt %>% nt_km(time = time, status = status,
+#'lung_nt |> nt_km(time = time, status = status,
 #'                  labels = list(sex = "Sex", ph.ecog = "ECOG"))
 #'
 #'@import ggplot2
@@ -47,7 +47,6 @@
 #'@importFrom dplyr select mutate
 #'@importFrom utils write.csv
 #'@importFrom purrr map2
-#'@importFrom magrittr %>%
 #'
 #'@export
 nt_km <-  function(data, time, status, labels = NULL,
@@ -122,15 +121,15 @@ nt_km <-  function(data, time, status, labels = NULL,
 
   if (!is.null(time.points)){
     if (format){
-      tab <-  tab  %>%
+      tab <-  tab  |>
         rename(Variable = .data$variable,
                Group = .data$group,
-               Time = .data$time) %>%
+               Time = .data$time) |>
         mutate(`Survival (CI 95%)` =
                  paste0(round(.data$survival, digits),
                         " (", round(.data$lower, digits),
-                        " - ", round(.data$upper, digits), ")")) %>%
-        select(-.data$survival, -.data$lower, -.data$upper) %>%
+                        " - ", round(.data$upper, digits), ")")) |>
+        select(-.data$survival, -.data$lower, -.data$upper) |>
         select(.data$Time, .data$Variable, .data$Group, .data$`Survival (CI 95%)`)
     }
 
@@ -164,7 +163,6 @@ tab_km <- function(time, status, time.points, digits){
 #'@importFrom tidyr separate
 #'@importFrom dplyr mutate
 #'@importFrom rlang .data
-#'@importFrom magrittr %>%
 tab_km_group <- function(var, var.name, var.label, time, status, time.points, digits){
 
   data.model <- data.frame(time, status)
@@ -175,8 +173,8 @@ tab_km_group <- function(var, var.name, var.label, time, status, time.points, di
                     strata = temp$strata,
                     survival = temp$surv,
                     lower = temp$lower,
-                    upper = temp$upper) %>%
-    separate(.data$strata, into = c("variable", "group"), sep = "=") %>%
+                    upper = temp$upper) |>
+    separate(.data$strata, into = c("variable", "group"), sep = "=") |>
     mutate(variable = var.label)
 
   return(out)
@@ -232,7 +230,6 @@ aux_km <- function(var, var.name, var.label, time, status,
 #'@importFrom broom tidy
 #'@importFrom dplyr bind_rows
 #'@importFrom cowplot plot_grid
-#'@importFrom magrittr %>%
 #'
 #'@export
 std_km <- function(time, status, xlab, ylab, time.points, risktable.title, ...){
@@ -268,7 +265,7 @@ std_km <- function(time, status, xlab, ylab, time.points, risktable.title, ...){
     scale_y_continuous(labels = scales::percent, limits = c(0, 1))
 
   ### Adding censor marks
-  data.censor <- data.plot %>% filter(.data$n.censor > 0)
+  data.censor <- data.plot |> filter(.data$n.censor > 0)
   surv.plot <- surv.plot +
     geom_point(data = data.censor,
                aes_string(x = "time", y = "estimate"),
@@ -340,7 +337,6 @@ std_km <- function(time, status, xlab, ylab, time.points, risktable.title, ...){
 #'@importFrom scales percent
 #'@importFrom stats pchisq
 #'@importFrom cowplot plot_grid
-#'@importFrom magrittr %>%
 #'
 #'@export
 std_km_group <- function(time, status, var, var.label,
@@ -357,14 +353,14 @@ std_km_group <- function(time, status, var, var.label,
                           conf.high = 1, conf.low = 1,
                           group = levels(var))
 
-  data.plot <- broom::tidy(fit) %>%
-    tidyr::separate(.data$strata, into = c("var", "group"), sep = "r=") %>%
+  data.plot <- broom::tidy(fit) |>
+    tidyr::separate(.data$strata, into = c("var", "group"), sep = "r=") |>
     select(-var)
-  data.plot <- bind_rows(first.row, data.plot) %>%
+  data.plot <- bind_rows(first.row, data.plot) |>
     mutate(conf.high =
              ifelse(is.na(.data$conf.high), .data$estimate, .data$conf.high),
            conf.low =
-             ifelse(is.na(.data$conf.low), .data$estimate, .data$conf.low)) %>%
+             ifelse(is.na(.data$conf.low), .data$estimate, .data$conf.low)) |>
     mutate(group = factor(.data$group, levels = levels(var)))
 
   ### Basic plot
@@ -393,7 +389,7 @@ std_km_group <- function(time, status, var, var.label,
 
 
   ### Adding censor marks
-  data.censor <- data.plot %>% filter(.data$n.censor > 0)
+  data.censor <- data.plot |> filter(.data$n.censor > 0)
   surv.plot <- surv.plot +
     geom_point(data = data.censor,
                aes_string(x = "time", y = "estimate"), shape = 124)
@@ -427,9 +423,9 @@ std_km_group <- function(time, status, var, var.label,
   table <- summary(fit, times = x.ticks)
   data.table <- data.frame(time = table$time,
                            n.risk = table$n.risk,
-                           group = table$strata) %>%
-    tidyr::separate(.data$group, into = c("var", "group"), sep = "r=") %>%
-    select(-var) %>%
+                           group = table$strata) |>
+    tidyr::separate(.data$group, into = c("var", "group"), sep = "r=") |>
+    select(-var) |>
     mutate(group = factor(.data$group,
                           levels = rev(levels(var))))
 

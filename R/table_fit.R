@@ -13,7 +13,6 @@ extract_data <- function(fit){
   temp <- eval(fit$call$data)
   data <- get_all_vars(formula(fit), temp)
   var.names <- colnames(data)
-  # var.labels <- mapply(extract_label, data, var.names, SIMPLIFY = FALSE)
 
   # It is not clear the use of the code below.
   #suppressWarnings(data <- data[!apply(is.na(data), 1, any), , drop = FALSE])
@@ -29,7 +28,6 @@ extract_data <- function(fit){
     var <- var[-(attr(terms(fit),"specials")$random - 1)]
 
   out <- list(data = droplevels(data), var = var)
-  #, var.labels = var.labels
 
   return(out)
 }

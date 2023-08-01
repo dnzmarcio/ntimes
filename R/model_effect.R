@@ -18,13 +18,13 @@ nt_model_effect.cox <- function(fit, ci.type = "lr",
     ref <- reference_df(fit)$ref
 
     if (format)
-      out$effect <-  out$effect %>%
+      out$effect <-  out$effect |>
       transmute(Variable = .data$variable, HR = .data$hr,
                 'Estimate (95% CI)' = paste0(round(.data$estimate, digits), " (",
                                              round(.data$conf.low, digits), " ; ",
                                              round(.data$conf.high, digits), ")"),
                 'p value LR' = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
-                                      as.character(round(.data$p.value.lr, digits.p)))) %>%
+                                      as.character(round(.data$p.value.lr, digits.p)))) |>
       replace_na(list('p value LR' = ""))
 
     if (save)
@@ -49,13 +49,13 @@ nt_model_effect.glm <- function(fit, ci.type = "lr",
     ref <- reference_df(fit)$ref
 
     if (format)
-      out$effect <- out$effect %>%
+      out$effect <- out$effect |>
       transmute(Variable = .data$variable, OR = .data$or,
                 'Estimate (95% CI)' = paste0(round(.data$estimate, digits), " (",
                                              round(.data$conf.low, digits), " ; ",
                                              round(.data$conf.high, digits), ")"),
                 'p value LR' = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
-                                      as.character(round(.data$p.value.lr, digits.p)))) %>%
+                                      as.character(round(.data$p.value.lr, digits.p)))) |>
       replace_na(list('p value LR' = ""))
   }
 

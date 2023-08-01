@@ -24,7 +24,7 @@
 #'@examples
 #'data(iris)
 #'
-#'iris %>% nt_describe(group = Species,
+#'iris |> nt_describe(group = Species,
 #'                     labels = list(Sepal.Length = "Sepal Length",
 #'                                   Sepal.Width = "Sepal Width",
 #'                                   Petal.Length = "Petal Length",
@@ -33,7 +33,6 @@
 #'@importFrom purrr pmap
 #'@importFrom dplyr filter select
 #'@importFrom utils write.csv
-#'@importFrom magrittr %>%
 #'@importFrom rlang := .data quo_is_null enquo
 #'@importFrom tibble tibble
 #'

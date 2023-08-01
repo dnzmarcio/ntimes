@@ -31,8 +31,8 @@
 #'library(maggritr)
 #'data(iris)
 #'
-#'iris %>% filter(Species != "setosa") %>%
-#'  mutate(Species = as.factor(Species)) %>%
+#'iris |> filter(Species != "setosa") |>
+#'  mutate(Species = as.factor(Species)) |>
 #'  nt_compare_tg(group = Species,
 #'                labels = list(Sepal.Length = "Sepal Length",
 #'                              Sepal.Width = "Sepal Width",
@@ -105,9 +105,9 @@ nt_compare_tg <- function(data, group, labels = NULL,
   out <- Reduce(rbind, temp)
 
   if (format){
-    out <- out %>% mutate('95% CI' =
+    out <- out |> mutate('95% CI' =
                             paste0("(", .data$Lower, " ; ",
-                                   .data$Upper, ")")) %>%
+                                   .data$Upper, ")")) |>
       select(.data$Variable, .data$Group, .data$Hypothesis,
              .data$Test, .data$`95% CI`, `p value` = .data$`p.value`)
   }
@@ -198,10 +198,9 @@ aux_compare_tg <- function(var, var.name, var.label,
 #'or neither assumptions, then \code{qt.test[[3]]}.
 #'
 #'@examples
-#'library(magrittr)
 #'data(iris)
 #'
-#'iris %>% nt_compare_mg(group = Species)
+#'iris |> nt_compare_mg(group = Species)
 #'
 #'@export
 nt_compare_mg <- function(data, group, labels = NULL,
@@ -255,12 +254,12 @@ nt_compare_mg <- function(data, group, labels = NULL,
   omnibus.test <- Reduce(rbind, temp)
 
   if (multiple.comparisons){
-    aux <- omnibus.test %>% filter(.data$p.value < 0.05)
+    aux <- omnibus.test |> filter(.data$p.value < 0.05)
     vars.name <- unlist(aux$Variable)
-    vars <- data %>% select(all_of(vars.name))
+    vars <- data |> select(all_of(vars.name))
     vars.label.mc <- vars.label[vars.name]
-    group <- data %>% select(all_of(group.name))
-    test <- omnibus.test %>% pull(.data$Test)
+    group <- data |> select(all_of(group.name))
+    test <- omnibus.test |> pull(.data$Test)
 
     temp <- pmap(list(vars, vars.name, vars.label.mc, test),
                  .f = aux_compare_mc,
@@ -271,10 +270,10 @@ nt_compare_mg <- function(data, group, labels = NULL,
     mc.test <- Reduce(rbind, temp)
 
     if (format){
-      mc.test <- mc.test %>%
+      mc.test <- mc.test |>
         mutate('95% CI' =
                  paste0("(", .data$Lower, " ; ",
-                        .data$Upper, ")"),) %>%
+                        .data$Upper, ")"),) |>
         select(.data$Variable, .data$Group, .data$Hypothesis,
                .data$Test, .data$`95% CI`, `p value` = .data$`p.value`)
 
@@ -283,12 +282,12 @@ nt_compare_mg <- function(data, group, labels = NULL,
     }
 
     if (!is.null(labels))
-      omnibus.test <- omnibus.test %>%
+      omnibus.test <- omnibus.test |>
         mutate(Variable = str_replace_all(.data$Variable, unlist(vars.label)))
   }
 
   if (format){
-    omnibus.test <- omnibus.test %>%
+    omnibus.test <- omnibus.test |>
       select(.data$Variable, .data$Group, .data$Test, .data$Hypothesis,
              `p value` = .data$`p.value`)
   }

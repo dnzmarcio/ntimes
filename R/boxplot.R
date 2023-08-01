@@ -25,10 +25,9 @@
 #'\code{var}.
 #'
 #'@examples
-#'library(magrittr)
 #'data(iris)
 #'
-#'iris %>% nt_boxplot(group = Species)
+#'iris |> nt_boxplot(group = Species)
 #'
 #'@import ggplot2 dplyr
 #'@importFrom rlang enquo quo_is_null

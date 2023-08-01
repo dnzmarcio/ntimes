@@ -101,7 +101,6 @@ data_labeller <- function(data, labels){
 #'
 #'@examples
 #'library(dplyr)
-#'library(magrittr)
 #'data(iris)
 #'
 #'iris_nt <- iris %>% mutate(Species = ql_var(Species,
@@ -156,7 +155,6 @@ ql_var <- function(var, from = NULL, to = NULL, order = NULL, label = NULL){
 #'
 #'@examples
 #'library(dplyr)
-#'library(magrittr)
 #'data(iris)
 #'
 #'iris_nt <- iris %>%

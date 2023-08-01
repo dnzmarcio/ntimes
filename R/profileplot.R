@@ -153,9 +153,9 @@ aux_profileplot <- function(var, var.name, var.label,
 std_profileplot <- function(var, time, var.label, time.label){
 
   ### Data
-  dp <- data.frame(var, time) %>%
-    na.exclude() %>%
-    group_by(time) %>%
+  dp <- data.frame(var, time) |>
+    na.exclude() |>
+    group_by(time) |>
     summarize(mean = mean(var, na.rm = TRUE),
               se = sd(var, na.rm = TRUE)/sqrt(n()))
 
@@ -198,9 +198,9 @@ std_profileplot <- function(var, time, var.label, time.label){
 std_profileplot_group <- function(var, time, group, var.label, time.label, group.label){
 
   ### Data
-  dp <- data.frame(time, group, var) %>%
-    na.exclude() %>%
-    group_by(group, time) %>%
+  dp <- data.frame(time, group, var) |>
+    na.exclude() |>
+    group_by(group, time) |>
     summarize(mean = mean(var, na.rm = TRUE),
               se = sd(var, na.rm = TRUE)/sqrt(n()))
 

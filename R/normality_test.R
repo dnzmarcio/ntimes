@@ -13,11 +13,10 @@
 #'@return \code{plot} a Quantile-Quantile plot.
 #'
 #'@examples
-#'library(magrittr)
 #'data(iris)
 #'
-#'iris %>% select(-Species) %>% nt_norm_test()
-#'iris %>% nt_norm_test(group = Species)
+#'iris |> select(-Species) |> nt_norm_test()
+#'iris |> nt_norm_test(group = Species)
 #'
 #'@importFrom purrr map2
 #'@importFrom tidyr pivot_longer
@@ -44,17 +43,17 @@ nt_norm_test <- function(data, group = NULL, norm.test = helper_sf_test){
   vars.label <- map2(vars, vars.name, extract_label)
 
   if (!is.null(group.var)){
-    tab <- data %>%
-      pivot_longer(cols = -{{group}}, names_to = "Variable", values_to = "value") %>%
-      group_by(.data$Variable, {{group}}) %>%
-      summarise(p.value = norm.test(.data$value)$p.value) %>%
+    tab <- data |>
+      pivot_longer(cols = -{{group}}, names_to = "Variable", values_to = "value") |>
+      group_by(.data$Variable, {{group}}) |>
+      summarise(p.value = norm.test(.data$value)$p.value) |>
       rename(Group = {{group}}, 'p value' = .data$p.value)
 
   } else {
-    tab <- vars %>%
-      pivot_longer(cols = everything(), names_to = "Variable", values_to = "value") %>%
-      group_by(.data$Variable) %>%
-      summarise(p.value = norm.test(.data$value)$p.value) %>%
+    tab <- vars |>
+      pivot_longer(cols = everything(), names_to = "Variable", values_to = "value") |>
+      group_by(.data$Variable) |>
+      summarise(p.value = norm.test(.data$value)$p.value) |>
       rename('p value' = .data$p.value)
   }
 
@@ -106,7 +105,7 @@ qq_plot <-  function(var, var.label,
     group <- paste(group.label, group, sep = ": ")
     group <- as.factor(group)
     data_plot <- data.frame(var, group)
-    data_qqline <- data_plot %>% group_by(group) %>%
+    data_qqline <- data_plot |> group_by(group) |>
       summarise(slope = qqline_slope(var),
                 int = qqline_int(var))
 

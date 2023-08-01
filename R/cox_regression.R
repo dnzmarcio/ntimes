@@ -19,10 +19,9 @@
 #'@examples
 #'library(survival)
 #'library(dplyr)
-#'library(magrittr)
 #'data(ovarian)
 #'
-#'ovarian_nt <- ovarian %>% mutate(resid.ds = factor(resid.ds,
+#'ovarian_nt <- ovarian |> mutate(resid.ds = factor(resid.ds,
 #'                                                   levels = 1:2,
 #'                                                   labels = c("no", "yes")),
 #'                              ecog.ps = factor(ecog.ps,
@@ -31,7 +30,7 @@
 #'                              rx =factor(rx,
 #'                                          levels = 1:2,
 #'                                          labels = c("t1", "t2")))
-#'ovarian_nt %>% nt_simple_cox(time = futime, status = fustat,
+#'ovarian_nt |> nt_simple_cox(time = futime, status = fustat,
 #'                             labels = list(resid.ds = "Residual Disease",
 #'                                           ecog.ps = "ECOG-PS",
 #'                                           rx = "Treatment",
@@ -98,10 +97,10 @@ nt_simple_cox <- function(data, time, status, ...,
   status <- as.numeric(as.factor(status[[1]])) - 1
 
   fit <- survfit(Surv(time, status) ~ 1)
-  survival <- tidy(fit) %>% select(-.data$std.error) %>%
+  survival <- tidy(fit) |> select(-.data$std.error) |>
     mutate(estimate = round(100*.data$estimate, digits),
            conf.low = round(100*.data$conf.low, digits),
-           conf.high = round(100*.data$conf.high, digits)) %>%
+           conf.high = round(100*.data$conf.high, digits)) |>
     transmute(Time = .data$time, .data$n.risk, .data$n.event, .data$n.censor,
               `Survival (95% CI)` = paste0(.data$estimate, " (",
                                            .data$conf.low, " ; ",
@@ -118,10 +117,10 @@ nt_simple_cox <- function(data, time, status, ...,
   cox <- bind_rows(temp)
 
   if (format) {
-    cox <- cox %>% mutate(concordance = round(.data$concordance, digits),
+    cox <- cox |> mutate(concordance = round(.data$concordance, digits),
                           r.squared = round(.data$r.squared, digits),
                           AIC = round(.data$AIC, digits),
-                          ph.assumption = round(.data$ph.assumption, digits.p)) %>%
+                          ph.assumption = round(.data$ph.assumption, digits.p)) |>
       transmute(Variable = .data$term,  HR = .data$group,
                 `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
                                  round(.data$conf.low, digits), " ; ",
@@ -132,7 +131,7 @@ nt_simple_cox <- function(data, time, status, ...,
                                  as.character(round(.data$p.value.lr, digits.p))),
                 n = .data$n, n.event = .data$n.event,
                 concordance = .data$concordance, r.squared = .data$r.squared,
-                AIC = .data$AIC, ph.assumption  = .data$ph.assumption) %>%
+                AIC = .data$AIC, ph.assumption  = .data$ph.assumption) |>
       replace_na(list(`Wald p value` = "", `LR p value` = ""))
   }
 
@@ -147,7 +146,6 @@ nt_simple_cox <- function(data, time, status, ...,
 }
 
 #'@importFrom purrr map
-#'@importFrom magrittr %>%
 #'@importFrom stats setNames
 #'@importFrom dplyr mutate bind_cols
 #'@importFrom rlang .data
@@ -264,8 +262,8 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
     aux01 <- data.frame(p.value.lr = p.value.lr)
     zph.table <- cox.zph(fit)$table
 
-    aux02 <- glance(fit) %>% select(.data$n, n.event = .data$nevent,
-                                  .data$concordance, .data$r.squared, .data$AIC) %>%
+    aux02 <- glance(fit) |> select(.data$n, n.event = .data$nevent,
+                                  .data$concordance, .data$r.squared, .data$AIC) |>
       mutate(ph.assumption = zph.table[nrow(zph.table), 3])
 
     aux <- merge(aux01, aux02, by = 0, all = TRUE)[-1]
@@ -297,11 +295,10 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 #'@param file a character indicating the name of output file in csv format to be saved.
 #'
 #'@examples library(survival)
-#'library(magrittr)
 #'library(dplyr)
 #'
 #'data(ovarian)
-#'dt <- ovarian %>% mutate(resid.ds = factor(resid.ds,
+#'dt <- ovarian |> mutate(resid.ds = factor(resid.ds,
 #'                                                levels = 1:2,
 #'                                                labels = c("no", "yes")),
 #'                              ecog.ps = factor(ecog.ps,
@@ -339,7 +336,7 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
   ref <- reference_df(fit)$ref
 
   if (format){
-    out$effect <-  out$effect %>%
+    out$effect <-  out$effect |>
     transmute(Variable = .data$variable, HR = .data$hr,
               `Estimate (95% CI)` = ifelse(is.na(estimate),
                                            "Reference",
@@ -348,14 +345,14 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
                                                   round(.data$conf.high, digits), ")")),
               `p value` = ifelse(is.na(.data$p.value), "",
                                  ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, digits.p))))) %>%
+                                 as.character(round(.data$p.value, digits.p))))) |>
     replace_na(list(`p value` = ""))
 
   if (!is.null(labels)){
     aux_labels <- labels
     names(aux_labels) <- paste0("^", names(aux_labels), "$")
 
-    out$effect <- out$effect %>%
+    out$effect <- out$effect |>
       mutate(Variable =
                str_replace_all(Variable, unlist(aux_labels)))
   }
@@ -364,7 +361,7 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
       aux_labels <- labels
       names(aux_labels) <- paste0("^", names(aux_labels), "$")
 
-      out$effect <- out$effect %>%
+      out$effect <- out$effect |>
         mutate(Variable =
                  str_replace_all(variable, unlist(aux_labels)))
     }
@@ -392,19 +389,19 @@ aux_multiple_cox <- function(fit, ci.type,
   effect <- fit_multiple_cox(fit, fit.vars = aux, type = ci.type,
                          user.contrast = user.contrast,
                          user.contrast.interaction = user.contrast.interaction,
-                         table.reference = table.reference) %>%
+                         table.reference = table.reference) |>
     separate(.data$term, into = c("variable", "hr"), sep = ":")
 
   if (format)
-    effect <- effect %>% group_by(.data$variable) %>%
-    mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable)) %>%
-    ungroup(.data$variable) %>% select(-.data$variable) %>%
+    effect <- effect |> group_by(.data$variable) |>
+    mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable)) |>
+    ungroup(.data$variable) |> select(-.data$variable) |>
     rename(variable = .data$aux_variable)
 
   # temp <- unlist(aux$var.labels)
   # labels <- paste0(temp, " ")
   # names(labels) <- names(temp)
-  # coef <- tidy(fit) %>%
+  # coef <- tidy(fit) |>
   #   mutate(term = str_replace_all(.data$term, labels),
   #          term = sub(" $", "", x = .data$term))
 

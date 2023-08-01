@@ -27,14 +27,13 @@
 #'
 #'@examples
 #'library(dplyr)
-#'library(magrittr)
 #'data(iris)
 #'
-#'vars <- iris %>%
+#'vars <- iris |>
 #'transmute(Species = Species,
 #'          Sepal.Length.C = ifelse(Sepal.Length > 5, "> 5", "<= 5"),
 #'          Sepal.Width.C = ifelse(Sepal.Width > 3.5, "> 3.5", "<= 3.5"))
-#'vars %>% nt_barplot(group = Species)
+#'vars |> nt_barplot(group = Species)
 #'
 #'@import ggplot2 dplyr
 #'@importFrom rlang enquo quo_is_null
@@ -129,8 +128,8 @@ std_barplot <- function(var, var.label, ylab){
 
   ### Data
   data_plot <- data.frame(var = var)
-  data_plot <- stats::na.omit(data_plot) %>%
-    count(var = factor(.data$var)) %>%
+  data_plot <- stats::na.omit(data_plot) |>
+    count(var = factor(.data$var)) |>
     mutate(perc = round(prop.table(.data$n) * 100, 2),
            label = paste0(round(.data$perc, 2), '%', " (", .data$n, ")"))
 
@@ -175,9 +174,9 @@ std_barplot_group <- function(var, group, var.label, group.label, ylab){
 
   ### Data
   data_plot <- data.frame(var = var, group = group)
-  data_plot <- stats::na.omit(data_plot) %>%
-    count(group = factor(.data$group), var = factor(.data$var)) %>%
-    group_by(.data$group) %>%
+  data_plot <- stats::na.omit(data_plot) |>
+    count(group = factor(.data$group), var = factor(.data$var)) |>
+    group_by(.data$group) |>
     mutate(perc = round(prop.table(.data$n) * 100, 2),
            label = paste0(round(.data$perc, 2), '%', " (", .data$n, ")"))
 
