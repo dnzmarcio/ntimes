@@ -157,6 +157,47 @@ helper_perc_count <- function(var, digits, ...){
   out <- list(name = lh, value = perc_count)
 }
 
+#'Frequencies and percentages
+#'
+#'@description It calculates percentages and frequencies, concatenating them to
+#'present on a table.
+#'
+#'@param var a numeric vector.
+#'@param digits a numeric value specifying the number of digits to present the results.
+#'
+#'@details This function can be modified by the user,
+#'but input and output should be kept the same.
+#'
+#'@return a list with the first element \code{name} as the measure name and the
+#'second element as the \code{value} for a given variable.
+#'
+#'@importFrom forcats fct_explicit_na
+#'@export
+helper_count_perc <- function(var, digits, ...){
+
+  ldots <- list(...)
+
+  h <- fct_explicit_na(var, na_level = "Missing")
+  lh <- levels(h)
+
+  count <- tapply(h, h, length)
+  count <- ifelse(is.na(count), 0, count)
+  n <- length(h)
+  perc <- 100*prop.table(count)
+  perc <- ifelse(!is.finite(perc), NA, format(round(perc, digits), nsmall = digits))
+
+  perc_count <- paste0(count, " (", perc, ")")
+
+  if (!("Missing" %in% lh)){
+    lh <- c(lh, "Missing")
+    perc_count <- c(perc_count, "0 (0)")
+  }
+
+  lh <- paste0("\t ", lh)
+
+  out <- list(name = lh, value = perc_count)
+}
+
 #'Percentages and frequencies
 #'
 #'@description It calculates percentages and frequencies, concatenating them to
