@@ -26,8 +26,8 @@
 #'
 #'@examples
 #'data(iris)
-#'
-#'iris |> nt_dotplot(group = Species, binwidth = 0.1)
+#'iris |> nt_dotplot(binwidth = 0.05)
+#'iris |> nt_dotplot(group = Species, binwidth = 0.05)
 #'
 #'@import ggplot2 dplyr
 #'@importFrom rlang enquo quo_is_null
@@ -123,6 +123,7 @@ aux_dotplot <- function(var, var.name, binwidth, group, group.name,
 #'@return a ggplot object.
 #'
 #'@importFrom stats median
+#'@importFrom rlang .data
 #'
 #'@export
 std_dotplot <- function(var, binwidth, var.label){
@@ -131,7 +132,7 @@ std_dotplot <- function(var, binwidth, var.label){
   data_plot <- data.frame(var = var)
 
   ### Basic Plot
-  out <- ggplot(data_plot, aes(y = "var", x = NA)) +
+  out <- ggplot(data_plot, aes(y = .data$var, x = NA)) +
     geom_dotplot(binaxis = "y", stackdir = "center",
                  method = "histodot",
                  fill = "grey80",
@@ -145,7 +146,7 @@ std_dotplot <- function(var, binwidth, var.label){
     labs(y = var.label)
 
   ### Adding summary
-  out <- out + stat_summary(fun.y = stats::median, geom = "crossbar", width = 0.5)
+  out <- out + stat_summary(fun = stats::median, geom = "crossbar", width = 0.5)
 
   return(out)
 }
@@ -167,6 +168,7 @@ std_dotplot <- function(var, binwidth, var.label){
 #'@return a ggplot object.
 #'
 #'@importFrom stats median
+#'@importFrom rlang .data
 #'
 #'@export
 std_dotplot_group <- function(var, group, binwidth, var.label, group.label){
@@ -176,7 +178,7 @@ std_dotplot_group <- function(var, group, binwidth, var.label, group.label){
 
   ### Basic Plot
   out <- ggplot(data_plot,
-                aes_string(y = "var", x = "group", fill = "group")) +
+                aes(y = .data$var, x = .data$group, fill = .data$group)) +
     geom_dotplot(binaxis = "y", stackdir = "center", method = "histodot",
                  fill = "grey80",
                  binwidth = binwidth)
@@ -188,8 +190,7 @@ std_dotplot_group <- function(var, group, binwidth, var.label, group.label){
     theme(legend.position = "none")
 
   ### Adding summary
-  out <- out + stat_summary(aes_string(ymax = "..y..", ymin = "..y.."),
-                            fun.y = stats::median,
+  out <- out + stat_summary(fun = stats::median,
                             geom = "errorbar", width = 0.5, size = 2)
 
   return(out)

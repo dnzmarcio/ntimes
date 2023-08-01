@@ -52,7 +52,7 @@ See \code{\link[ggplot2]{geom_dotplot}}, \code{\link{std_dotplot}} and
 }
 \examples{
 data(iris)
-
-iris |> nt_dotplot(group = Species, binwidth = 0.1)
+iris |> nt_dotplot(binwidth = 0.05)
+iris |> nt_dotplot(group = Species, binwidth = 0.05)
 
 }
