@@ -2,26 +2,20 @@
 % Please edit documentation in R/helpers.R
 \name{helper_levene_test}
 \alias{helper_levene_test}
-\title{Percentages and frequencies}
+\title{Helper for Levene test}
 \usage{
 helper_levene_test(x, g, paired)
 }
 \arguments{
 \item{x}{a numeric vector.}
 
-\item{g}{a numeric value specifying the number of digits to present the results.}
+\item{g}{a factor.}
 
 \item{paired}{a logical value.}
 }
 \value{
-a list with the first element \code{name} as the measure name and the
-second element as the \code{value} for a given variable.
+a list indicating the test and its p-value.
 }
 \description{
-It calculates percentages and frequencies, concatenating them to
-present on a table.
-}
-\details{
-This function can be modified by the user,
-but input and output should be kept the same.
+It performs the Levene test to test homoscedasticity.
 }

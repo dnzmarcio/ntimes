@@ -10,6 +10,8 @@ helper_median_iqr(var, digits, ...)
 \item{var}{a numeric vector.}
 
 \item{digits}{a numeric value specifying the number of digits to present the results.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a list with the first element \code{name} as the measure name and the

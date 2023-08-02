@@ -20,7 +20,7 @@ nt_describe(
 \arguments{
 \item{data}{a data frame with the variables.}
 
-\item{group}{an optional  with the group variable.}
+\item{group}{a character value indicating the group variable.}
 
 \item{labels}{a list of labels with components given by their variable names.}
 
@@ -33,6 +33,8 @@ nt_describe(
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character indicating the name of output file in csv format to be saved.}
+
+\item{...}{a list with additional arguments to be passed to the helper functions.}
 }
 \value{
 a data frame with summary for all variables by group.

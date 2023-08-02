@@ -26,12 +26,14 @@
 #'@param digits.p the number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character value indicating the name of output file in csv format to be saved.
+#'@param ... a list with additional arguments to be passed to the helper functions.
 #'
 #'@examples
 #'data(iris)
+#'library(dplyr)
 #'
 #'iris |> filter(Species != "setosa") |>
-#'  mutate(Species = as.factor(Species)) |>
+#'  mutate(Species = droplevels(Species)) |>
 #'  nt_compare_tg(group = Species,
 #'                labels = list(Sepal.Length = "Sepal Length",
 #'                              Sepal.Width = "Sepal Width",
@@ -175,6 +177,7 @@ aux_compare_tg <- function(var, var.name, var.label,
 #'
 #'@param data a data frame with the variables.
 #'@param group a data frame with the group variable.
+#'@param labels a list of labels with components given by their variable names.
 #'@param norm.test a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.
 #'@param var.test a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_levene_test}.
 #'@param qt.test a list of functions for three possible cases: (1) normality and homoscedasticity,

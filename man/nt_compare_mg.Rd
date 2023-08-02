@@ -26,6 +26,8 @@ nt_compare_mg(
 
 \item{group}{a data frame with the group variable.}
 
+\item{labels}{a list of labels with components given by their variable names.}
+
 \item{norm.test}{a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.}
 
 \item{var.test}{a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_levene_test}.}

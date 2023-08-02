@@ -4,13 +4,14 @@
 #'qualitative variables in a publishable format.
 #'
 #'@param data a data frame with the variables.
-#'@param group an optional  with the group variable.
+#'@param group a character value indicating the group variable.
 #'@param labels a list of labels with components given by their variable names.
 #'@param measures_qt a list of functions to summarise quantitative variables. See more in details.
 #'@param measures_ql a list of functions to summarise qualitative variables. See more in details.
 #'@param digits a numeric value specifying the number of digits to present the results.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character indicating the name of output file in csv format to be saved.
+#'@param ... a list with additional arguments to be passed to the helper functions.
 #'
 #'@details For quantitative variables, mean +/- sd, median (quantile 0.25 - quantile 0.75),
 #'median (minimum - maximum) and number of missing observations are calculated using the

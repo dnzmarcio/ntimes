@@ -9,8 +9,7 @@ helper_missing(var, ...)
 \arguments{
 \item{var}{a numeric vector.}
 
-\item{digits}{a numeric value specifying the number of digits to present the
-results. It is not used for the number of missing observations.}
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a list with the first element \code{name} as the measure name and the

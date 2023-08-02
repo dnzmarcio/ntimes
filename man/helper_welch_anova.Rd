@@ -2,22 +2,21 @@
 % Please edit documentation in R/helpers.R
 \name{helper_welch_anova}
 \alias{helper_welch_anova}
-\title{Percentages and frequencies}
+\title{Helper for Welch's Analysis of Variance}
 \usage{
 helper_welch_anova(x, g)
 }
 \arguments{
 \item{x}{a numeric vector.}
 
-\item{g}{a numeric value specifying the number of digits to present the results.}
+\item{g}{a factor.}
 }
 \value{
-a list with the first element \code{name} as the measure name and the
-second element as the \code{value} for a given variable.
+a list with \code{test} indicating the test that was
+performed and its respective \code{p.value}.
 }
 \description{
-It calculates percentages and frequencies, concatenating them to
-present on a table.
+It performs the Welch's Analysis of Variance.
 }
 \details{
 This function can be modified by the user,

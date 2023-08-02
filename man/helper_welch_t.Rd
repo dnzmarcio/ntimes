@@ -2,14 +2,14 @@
 % Please edit documentation in R/helpers.R
 \name{helper_welch_t}
 \alias{helper_welch_t}
-\title{Helper for Student's t-test}
+\title{Helper for Welch's t-test}
 \usage{
 helper_welch_t(x, g, paired, alternative, conf.level)
 }
 \arguments{
 \item{x}{a numeric vector.}
 
-\item{g}{a numeric vector.}
+\item{g}{a factor.}
 
 \item{paired}{a logical value.}
 
@@ -18,12 +18,12 @@ helper_welch_t(x, g, paired, alternative, conf.level)
 \item{conf.level}{a numeric value.}
 }
 \value{
-a list with the first element \code{test} as the measure name and the
-second element as the \code{p.value} for a given variable.
+a list with \code{test} indicating the test that was
+performed, its respective \code{p.value} and \code{lower} and \code{upper}
+limits of the confidence interval for the effect size considered in the test.
 }
 \description{
-It calculates percentages and frequencies, concatenating them to
-present on a table.
+It performs the Welch's t-test.
 }
 \details{
 This function can be modified by the user,

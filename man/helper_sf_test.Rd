@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{helper_sf_test}
 \alias{helper_sf_test}
-\title{Percentages and frequencies}
+\title{Helper for Shapiro Francia test for Normality}
 \usage{
 helper_sf_test(x)
 }
@@ -10,14 +10,8 @@ helper_sf_test(x)
 \item{x}{a numeric vector.}
 }
 \value{
-a list with the first element \code{name} as the measure name and the
-second element as the \code{value} for a given variable.
+a list indicating the test and its p-value.
 }
 \description{
-It calculates percentages and frequencies, concatenating them to
-present on a table.
-}
-\details{
-This function can be modified by the user,
-but input and output should be kept the same.
+It performs the Shapiro-Francia to test the assumption of normality.
 }

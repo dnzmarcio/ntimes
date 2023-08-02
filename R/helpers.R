@@ -5,6 +5,7 @@
 #'
 #'@param var a numeric vector.
 #'@param digits a numeric value specifying the number of digits to present the results.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
@@ -33,6 +34,7 @@ helper_mean_sd <- function(var, digits, ...){
 #'
 #'@param var a numeric vector.
 #'@param digits a numeric value specifying the number of digits to present the results.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
@@ -66,6 +68,7 @@ helper_median_iqr <- function(var, digits, ...){
 #'
 #'@param var a numeric vector.
 #'@param digits a numeric value specifying the number of digits to present the results.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
@@ -96,8 +99,7 @@ helper_median_range <- function(var, digits, ...){
 #'@description It calculates the number of missing observations.
 #'
 #'@param var a numeric vector.
-#'@param digits a numeric value specifying the number of digits to present the
-#'results. It is not used for the number of missing observations.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
@@ -123,6 +125,7 @@ helper_missing <- function(var, ...){
 #'
 #'@param var a numeric vector.
 #'@param digits a numeric value specifying the number of digits to present the results.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
@@ -164,6 +167,7 @@ helper_perc_count <- function(var, digits, ...){
 #'
 #'@param var a numeric vector.
 #'@param digits a numeric value specifying the number of digits to present the results.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
@@ -198,18 +202,13 @@ helper_count_perc <- function(var, digits, ...){
   out <- list(name = lh, value = perc_count)
 }
 
-#'Percentages and frequencies
+#'Helper for Shapiro Francia test for Normality
 #'
-#'@description It calculates percentages and frequencies, concatenating them to
-#'present on a table.
+#'@description It performs the Shapiro-Francia to test the assumption of normality.
 #'
 #'@param x a numeric vector.
 #'
-#'@details This function can be modified by the user,
-#'but input and output should be kept the same.
-#'
-#'@return a list with the first element \code{name} as the measure name and the
-#'second element as the \code{value} for a given variable.
+#'@return a list indicating the test and its p-value.
 #'
 #'@importFrom nortest sf.test
 #'@export
@@ -221,20 +220,15 @@ helper_sf_test <-  function(x){
   out <- list(test = test, p.value = p.value)
 }
 
-#'Percentages and frequencies
+#'Helper for Levene test
 #'
-#'@description It calculates percentages and frequencies, concatenating them to
-#'present on a table.
+#'@description It performs the Levene test to test homoscedasticity.
 #'
 #'@param x a numeric vector.
-#'@param g a numeric value specifying the number of digits to present the results.
+#'@param g a factor.
 #'@param paired a logical value.
 #'
-#'@details This function can be modified by the user,
-#'but input and output should be kept the same.
-#'
-#'@return a list with the first element \code{name} as the measure name and the
-#'second element as the \code{value} for a given variable.
+#'@return a list indicating the test and its p-value.
 #'
 #'@importFrom tidyr drop_na
 #'@importFrom lawstat levene.test
@@ -254,19 +248,18 @@ helper_levene_test <- function(x, g, paired){
   out <- list(test = test, p.value = p.value)
 }
 
-#'Percentages and frequencies
+#'Helper for Analysis of Variance
 #'
-#'@description It calculates percentages and frequencies, concatenating them to
-#'present on a table.
+#'@description It performs the Analysis of Variance.
 #'
 #'@param x a numeric vector.
-#'@param g a numeric value specifying the number of digits to present the results.
+#'@param g a factor.
 #'
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
 #'
-#'@return a list with the first element \code{name} as the measure name and the
-#'second element as the \code{value} for a given variable.
+#'@return a list with \code{test} indicating the test that was
+#'performed and its respective \code{p.value}.
 #'
 #'@export
 helper_anova <- function(x, g){
@@ -279,19 +272,18 @@ helper_anova <- function(x, g){
   out <- list(test = test, p.value = p.value)
 }
 
-#'Percentages and frequencies
+#'Helper for Welch's Analysis of Variance
 #'
-#'@description It calculates percentages and frequencies, concatenating them to
-#'present on a table.
+#'@description It performs the Welch's Analysis of Variance.
 #'
 #'@param x a numeric vector.
-#'@param g a numeric value specifying the number of digits to present the results.
+#'@param g a factor.
 #'
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
 #'
-#'@return a list with the first element \code{name} as the measure name and the
-#'second element as the \code{value} for a given variable.
+#'@return a list with \code{test} indicating the test that was
+#'performed and its respective \code{p.value}.
 #'
 #'@export
 helper_welch_anova <- function(x, g){
@@ -304,19 +296,18 @@ helper_welch_anova <- function(x, g){
   out <- list(test = test, p.value = p.value)
 }
 
-#'Percentages and frequencies
+#'Helper for Kruskal-Wallis test
 #'
-#'@description It calculates percentages and frequencies, concatenating them to
-#'present on a table.
+#'@description It performs the Kruskal-Wallis test.
 #'
 #'@param x a numeric vector.
-#'@param g a numeric value specifying the number of digits to present the results.
+#'@param g a factor.
 #'
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
 #'
-#'@return a list with the first element \code{name} as the measure name and the
-#'second element as the \code{value} for a given variable.
+#'@return a list with \code{test} indicating the test that was
+#'performed and its respective \code{p.value}.
 #'
 #'@export
 helper_kruskal_wallis <- function(x, g){
@@ -331,11 +322,10 @@ helper_kruskal_wallis <- function(x, g){
 
 #'Helper for Student's t-test
 #'
-#'@description It calculates percentages and frequencies, concatenating them to
-#'present on a table.
+#'@description It performs Student's t-test.
 #'
 #'@param x a numeric vector.
-#'@param g a numeric vector.
+#'@param g a factor.
 #'@param paired a logical value.
 #'@param alternative a character value.
 #'@param conf.level a numeric value.
@@ -343,8 +333,9 @@ helper_kruskal_wallis <- function(x, g){
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
 #'
-#'@return a list with the first element \code{test} as the measure name and the
-#'second element as the \code{p.value} for a given variable.
+#'@return a list with \code{test} indicating the test that was
+#'performed, its respective \code{p.value} and \code{lower} and \code{upper}
+#'limits of the confidence interval for the effect size considered in the test.
 #'
 #'@export
 helper_student_t <- function(x, g, paired, alternative, conf.level){
@@ -365,13 +356,12 @@ helper_student_t <- function(x, g, paired, alternative, conf.level){
               lower = lower, upper = upper)
 }
 
-#'Helper for Student's t-test
+#'Helper for Welch's t-test
 #'
-#'@description It calculates percentages and frequencies, concatenating them to
-#'present on a table.
+#'@description It performs the Welch's t-test.
 #'
 #'@param x a numeric vector.
-#'@param g a numeric vector.
+#'@param g a factor.
 #'@param paired a logical value.
 #'@param alternative a character value.
 #'@param conf.level a numeric value.
@@ -379,8 +369,9 @@ helper_student_t <- function(x, g, paired, alternative, conf.level){
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
 #'
-#'@return a list with the first element \code{test} as the measure name and the
-#'second element as the \code{p.value} for a given variable.
+#'@return a list with \code{test} indicating the test that was
+#'performed, its respective \code{p.value} and \code{lower} and \code{upper}
+#'limits of the confidence interval for the effect size considered in the test.
 #'
 #'@export
 helper_welch_t <- function(x, g, paired, alternative, conf.level){
@@ -401,13 +392,12 @@ helper_welch_t <- function(x, g, paired, alternative, conf.level){
               lower = lower, upper = upper)
 }
 
-#'Helper for Student's t-test
+#'Helper for Mann-Whitney test
 #'
-#'@description It calculates percentages and frequencies, concatenating them to
-#'present on a table.
+#'@description It performs the Mann-Whitney test.
 #'
 #'@param x a numeric vector.
-#'@param g a numeric vector.
+#'@param g a factor.
 #'@param paired a logical value.
 #'@param alternative a character value.
 #'@param conf.level a numeric value.
@@ -415,8 +405,9 @@ helper_welch_t <- function(x, g, paired, alternative, conf.level){
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
 #'
-#'@return a list with the first element \code{test} as the measure name and the
-#'second element as the \code{p.value} for a given variable.
+#'@return a list with \code{test} indicating the test that was
+#'performed, its respective \code{p.value} and \code{lower} and \code{upper}
+#'limits of the confidence interval for the effect size considered in the test.
 #'
 #'@export
 helper_mann_whitney <- function(x, g, paired, alternative, conf.level){
@@ -437,13 +428,12 @@ helper_mann_whitney <- function(x, g, paired, alternative, conf.level){
 
 }
 
-#'Helper for Student's t-test
+#'Helper for Brunner-Munzel t-test
 #'
-#'@description It calculates percentages and frequencies, concatenating them to
-#'present on a table.
+#'@description It performs the Brunner-Munzel t-test.
 #'
 #'@param x a numeric vector.
-#'@param g a numeric vector.
+#'@param g a factor.
 #'@param paired a logical value.
 #'@param alternative a character value.
 #'@param conf.level a numeric value.
@@ -451,8 +441,9 @@ helper_mann_whitney <- function(x, g, paired, alternative, conf.level){
 #'@details This function can be modified by the user,
 #'but input and output should be kept the same.
 #'
-#'@return a list with the first element \code{test} as the measure name and the
-#'second element as the \code{p.value} for a given variable.
+#'@return a list with \code{test} indicating the test that was
+#'performed, its respective \code{p.value} and \code{lower} and \code{upper}
+#'limits of the confidence interval for the effect size considered in the test.
 #'
 #'@export
 helper_brunner_munzel <- function(x, g, alternative, paired, conf.level){

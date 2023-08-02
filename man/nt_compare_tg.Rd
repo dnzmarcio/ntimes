@@ -54,12 +54,15 @@ the difference between the two groups.}
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character value indicating the name of output file in csv format to be saved.}
+
+\item{...}{a list with additional arguments to be passed to the helper functions.}
 }
 \description{
 Performing comparisons between two groups.
 }
 \examples{
 data(iris)
+library(dplyr)
 
 iris |> filter(Species != "setosa") |>
  mutate(Species = as.factor(Species)) |>

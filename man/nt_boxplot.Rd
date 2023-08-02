@@ -20,6 +20,8 @@ nt_boxplot(
 
 \item{group}{an optional data frame with the group variable.}
 
+\item{labels}{a list of labels with components given by their variable names.}
+
 \item{save}{a logical value indicating whether the output
 should be saved as a jpeg file.}
 
