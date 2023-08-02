@@ -161,17 +161,15 @@ std_profileplot <- function(var, time, var.label, time.label){
 
 
   ### Basic Plot
-  out <- ggplot(dp, aes(x = time, y = mean)) +
+  out <- ggplot(dp, aes(x = .data$time, y = .data$mean)) +
     geom_point(position = position_dodge(0.05)) +
-    geom_line(aes(group = randomization),
-              position = position_dodge(0.05)) +
-    geom_errorbar(aes(ymin = mean-se,
-                      ymax = mean+se), width=.2,
+    geom_errorbar(aes(ymin = .data$mean-.data$se,
+                      ymax = .data$mean+.data$se), width=.2,
                   position = position_dodge(0.05))
 
   ### Formatting
   out <- out +
-    labs(y = var_label, x = time.label) +
+    labs(y = var.label, x = time.label) +
     theme_classic()
 
   return(out)
@@ -205,12 +203,12 @@ std_profileplot_group <- function(var, time, group, var.label, time.label, group
               se = sd(var, na.rm = TRUE)/sqrt(n()))
 
   ### Basic plot
-  out <- ggplot(dp, aes(x = time, color = group, y = mean)) +
+  out <- ggplot(dp, aes(x = .data$time, color = .data$group, y = .data$mean)) +
     geom_point(position = position_dodge(0.05)) +
     geom_line(aes(group = group),
               position = position_dodge(0.05)) +
-    geom_errorbar(aes(ymin = mean-se,
-                      ymax = mean+se), width=.2,
+    geom_errorbar(aes(ymin = .data$mean-.data$se,
+                      ymax = .data$mean+.data$se), width=.2,
                   position = position_dodge(0.05))
 
   ### Formatting

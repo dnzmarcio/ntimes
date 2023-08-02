@@ -312,7 +312,7 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
   if (format)
     out$effect <- out$effect |>
     transmute(Variable = .data$variable, Group = .data$group,
-              `Estimate (95% CI)` = ifelse(is.na(estimate),
+              `Estimate (95% CI)` = ifelse(is.na(.data$estimate),
                                            "Reference",
                                            paste0(round(.data$estimate, digits), " (",
                                                   round(.data$conf.low, digits), " ; ",
@@ -328,7 +328,7 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
 
     out$effect <- out$effect |>
       mutate(Variable =
-               str_replace_all(Variable, unlist(aux_labels)))
+               str_replace_all(.data$Variable, unlist(aux_labels)))
   }
 
   if (save)
@@ -371,7 +371,7 @@ aux_multiple_glm <- function(fit, exponentiate, robust.variance,
   #   mutate(term = str_replace_all(.data$term, labels),
   #          term = sub(" $", "", x = .data$term))
 
-  out <- list(effect = effect, coef = coef)
+  out <- list(effect = effect)
 
   return(out)
 }

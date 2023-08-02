@@ -45,7 +45,7 @@ nt_model_effect.glm <- function(fit, ci.type = "lr",
 
   if (fit$family[[1]] == "binomial"){
 
-    out <- aux_multiple_logistic(fit, format, ci.type)
+    out <- aux_multiple_glm(fit, format, ci.type)
     ref <- reference_df(fit)$ref
 
     if (format)

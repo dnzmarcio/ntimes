@@ -338,7 +338,7 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
   if (format){
     out$effect <-  out$effect |>
     transmute(Variable = .data$variable, HR = .data$hr,
-              `Estimate (95% CI)` = ifelse(is.na(estimate),
+              `Estimate (95% CI)` = ifelse(is.na(.data$estimate),
                                            "Reference",
                                            paste0(round(.data$estimate, digits), " (",
                                                   round(.data$conf.low, digits), " ; ",
@@ -354,7 +354,7 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
 
     out$effect <- out$effect |>
       mutate(Variable =
-               str_replace_all(Variable, unlist(aux_labels)))
+               str_replace_all(.data$Variable, unlist(aux_labels)))
   }
   } else {
     if (!is.null(labels)){
@@ -363,7 +363,7 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
 
       out$effect <- out$effect |>
         mutate(Variable =
-                 str_replace_all(variable, unlist(aux_labels)))
+                 str_replace_all(.data$variable, unlist(aux_labels)))
     }
   }
 
@@ -394,7 +394,8 @@ aux_multiple_cox <- function(fit, ci.type,
 
   if (format)
     effect <- effect |> group_by(.data$variable) |>
-    mutate(aux_variable = ifelse(duplicated(.data$variable), "", .data$variable)) |>
+    mutate(aux_variable = ifelse(duplicated(.data$variable), "",
+                                 .data$variable)) |>
     ungroup(.data$variable) |> select(-.data$variable) |>
     rename(variable = .data$aux_variable)
 
@@ -405,7 +406,7 @@ aux_multiple_cox <- function(fit, ci.type,
   #   mutate(term = str_replace_all(.data$term, labels),
   #          term = sub(" $", "", x = .data$term))
 
-  out <- list(effect = effect, coef = coef)
+  out <- list(effect = effect)
 
   return(out)
 }
