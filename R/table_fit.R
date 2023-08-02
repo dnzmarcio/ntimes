@@ -63,6 +63,7 @@ reference_df <- function(fit){
 }
 
 #'@importFrom stats quantile
+#'@importFrom methods is
 contrast_df <- function(data, var, ref, user.contrast = NULL,
                         interaction = NULL,
                         user.contrast.interaction = NULL,
@@ -70,9 +71,9 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
 
   contrast <- ref
 
-  if (class(data[[var]]) == "factor" | class(data[[var]]) == "character"){
+  if (any(is(data[[var]]) == "factor") | any(is(data[[var]]) == "character")){
 
-    if(class(data[[var]]) == "character")
+    if(any(is(data[[var]]) == "character"))
       data[[var]] <- as.factor(data[[var]])
 
     if (is.null(user.contrast[[var]])) {
@@ -94,8 +95,8 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
     }
 
 
-  } else if (class(data[[var]]) == "numeric" |
-             class(data[[var]]) == "integer") {
+  } else if (any(is(data[[var]]) == "numeric") |
+             any(is(data[[var]]) == "integer")) {
 
 
     if (is.null(user.contrast[[var]])) {
@@ -121,10 +122,10 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
 
     for(k in 1:length(interaction)){
 
-      if (class(data[[interaction[k]]]) == "factor" |
-          class(data[[interaction[k]]]) == "character"){
+      if (any(is(data[[interaction[k]]]) == "factor") |
+          any(is(data[[interaction[k]]]) == "character")){
 
-        if(class(data[[var]]) == "character")
+        if(any(is(data[[var]]) == "character"))
           data[[interaction[k]]] <- as.factor(data[[interaction[k]]])
 
         if (is.null(user.contrast.interaction[[interaction[k]]])) {
@@ -151,8 +152,8 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
           label <- paste0(rep(label, nc), " at ", interaction[k], " = ", rep(lv, each = length(label)))
         }
 
-      } else if (class(data[[interaction[k]]]) == "numeric" |
-                 class(data[[interaction[k]]]) == "integer") {
+      } else if (any(is(data[[interaction[k]]]) == "numeric") |
+                 any(is(data[[interaction[k]]]) == "integer")) {
 
 
         if (is.null(user.contrast.interaction[[interaction[k]]])) {

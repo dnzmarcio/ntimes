@@ -1,6 +1,7 @@
 #'@importFrom forcats fct_drop
 #'@importFrom dplyr bind_cols
 #'@importFrom stats prop.test fisher.test chisq.test mcnemar.test mantelhaen.test
+#'@importFrom methods is
 dist_ql_tg <-  function(var, group,
                         alternative,
                         conf.level, paired,
@@ -22,13 +23,13 @@ dist_ql_tg <-  function(var, group,
     } else {
       result <- try(stats::fisher.test(tab), silent = TRUE)
 
-      if (class(result) != "try-error"){
+      if (any(is(result) != "try-error")){
         p.value <- result$p.value
 
         if (max(dim(tab)) == 2){
           pt <- try(stats::prop.test(tab, conf.level = conf.level), silent = TRUE)
 
-          if (class(pt) != "try-error"){
+          if (any(is(pt) != "try-error")){
             lower <- pt$conf.int[[1]]
             upper <- pt$conf.int[[2]]
             test <- "Fisher's Exact"
@@ -47,7 +48,7 @@ dist_ql_tg <-  function(var, group,
         result <- try(stats::chisq.test(tab), silent = TRUE)
         lower <- NA
         upper <- NA
-        if (class(result) != "try-error"){
+        if (any(is(result) != "try-error")){
           p.value <- result$p.value
           test <- "Chi-Square"
         } else {
@@ -106,13 +107,13 @@ dist_ql_mg <-  function(var, group,
   } else {
     result <- try(stats::fisher.test(tab), silent = TRUE)
 
-    if (class(result) != "try-error"){
+    if (any(is(result) != "try-error")){
       p.value <- result$p.value
       test <- "Fisher's exact test"
     } else {
       result <- try(stats::chisq.test(tab), silent = TRUE)
 
-      if (class(result) != "try-error"){
+      if (any(is(result) != "try-error")){
         p.value <- result$p.value
         test <- "Chi-square test"
       } else {

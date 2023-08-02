@@ -208,6 +208,7 @@ aux_simple_cox <- function(var, var.name, var.label,
 #'@importFrom dplyr select mutate
 #'@importFrom stats na.exclude update.formula anova
 #'@importFrom stringr str_replace_all
+#'@importFrom methods is
 fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 
   if (any(is.na(data)))
@@ -220,7 +221,7 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
   if (is.null(strata.var)){
     fit <- try(coxph(Surv(time, status) ~ ., data = data), silent = TRUE)
 
-    if (class(fit) != "try-error"){
+    if (any(is(fit) != "try-error")){
       temp <- tidy(fit, exponentiate = TRUE, conf.int = TRUE)
       temp$term <- unlist(tab.labels)
       temp$group <- unlist(tab.levels)
@@ -240,7 +241,7 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
   } else {
     fit <- try(coxph(Surv(time, status) ~ strata(strata.var) + ., data = data), silent = TRUE)
 
-    if (class(fit) != "try-error"){
+    if (any(is(fit) != "try-error")){
       temp <- tidy(fit, exponentiate = TRUE, conf.int = TRUE)
       temp$term <- unlist(tab.labels)
       temp$group <- unlist(tab.levels)
@@ -258,7 +259,7 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
     }
   }
 
-  if (class(fit) != "try-error"){
+  if (is(fit) != "try-error"){
     aux01 <- data.frame(p.value.lr = p.value.lr)
     zph.table <- cox.zph(fit)$table
 
@@ -317,6 +318,7 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 #'@importFrom utils write.csv
 #'@importFrom dplyr transmute bind_rows
 #'@importFrom tidyr replace_na
+#'@importFrom methods is
 #'@export
 nt_multiple_cox <- function(fit, ci.type = "Wald",
                             user.contrast = NULL, user.contrast.interaction = NULL,
@@ -325,7 +327,7 @@ nt_multiple_cox <- function(fit, ci.type = "Wald",
                             digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 
-  if (class(fit) != "coxph")
+  if (any(is(fit) != "coxph"))
     stop("fit object is not a coxph class")
 
   out <- aux_multiple_cox(fit = fit, ci.type = ci.type,

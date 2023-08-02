@@ -13,13 +13,13 @@ dist_qt_tg <-  function(var, var.label, group, group.label,
     # Checking normality
     aux <- function(x){
       result <- try(norm.test(x), silent = TRUE)
-      out <- ifelse(class(result) == "try-error", 0, result$p.value)
+      out <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
     }
     p.norm <- tapply(data.test$x, data.test$g, aux)
 
     # Checking homoscedasticity
     result <- try(var.test(x = data.test$x, g = data.test$g, paired = paired), silent = TRUE)
-    p.var <- ifelse(class(result) == "try-error", 0, result$p.value)
+    p.var <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
 
     # Possible cases
     if (all(p.norm > 0.05)) {
@@ -52,7 +52,7 @@ dist_qt_tg <-  function(var, var.label, group, group.label,
       }
     }
 
-    if (class(result) != "try-error"){
+    if (any(is(result) != "try-error")){
       test <- result$test
       p.value <- result$p.value
       lower <- result$lower
@@ -105,13 +105,13 @@ dist_qt_mg <-  function(var, group,
     # Checking normality
     aux <- function(x){
       result <- try(norm.test(x), silent = TRUE)
-      out <- ifelse(class(result) == "try-error", 0, result$p.value)
+      out <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
     }
     p.norm <- tapply(data.test$x, data.test$g, aux)
 
     # Checking homocedasticity
     result <- try(var.test(x = data.test$x, g = data.test$g, paired = FALSE), silent = TRUE)
-    p.var <- ifelse(class(result) == "try-error", 0, result$p.value)
+    p.var <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
 
     if (all(p.norm > 0.05)) {
       if (p.var > 0.05) {
@@ -123,7 +123,7 @@ dist_qt_mg <-  function(var, group,
       result <- try(qt.test[[3]](data.test$x, data.test$g), silent = TRUE)
     }
 
-    if (class(result) != "try-error"){
+    if (any(is(result) != "try-error")){
       test <- result$test
       p.value <- result$p.value
       hypothesis <- "At least one group is different"
@@ -150,6 +150,7 @@ dist_qt_mg <-  function(var, group,
 #'@importFrom multcomp glht mcp
 #'@importFrom nparcomp nparcomp
 #'@importFrom stats confint aov
+#'@importFrom methods is
 dist_qt_mc <-  function(var, omnibus.test, group,
                         alternative, contrast,
                         digits.p, digits.ci,
@@ -162,7 +163,7 @@ dist_qt_mc <-  function(var, omnibus.test, group,
     mc <- try(glht(av, linfct = mcp(g = contrast), alternative = alternative),
               silent = TRUE)
 
-    if (class(mc) != "try.error") {
+    if (any(is(mc) != "try.error")) {
       sm <- summary(mc)
       test <- paste(contrast)
       dif <- as.character(rownames(sm[2]$linfct))
@@ -195,7 +196,7 @@ dist_qt_mc <-  function(var, omnibus.test, group,
                         plot.simci = FALSE, info = FALSE),
                silent = TRUE)
 
-    if (class(mc) != "try.error") {
+    if (any(is(mc) != "try.error")) {
       p.value <- round(mc$Analysis[,6], 3)
       lower <- ifelse(mc$Analysis[, 3] < 0, 0, round(mc$Analysis[, 3], 2))
       upper <- ifelse(mc$Analysis[, 4] > 1, 1, round(mc$Analysis[, 4], 2))
