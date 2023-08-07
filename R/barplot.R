@@ -15,6 +15,7 @@
 #'@param std_fun_group a function to plot a dotplot when \code{group}
 #'is provided. It must follow the same structure of
 #'\code{\link{std_barplot_group}}.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details The functions \code{\link{std_barplot}} and
 #'\code{\link{std_barplot_group}} are stardard functions that can be
@@ -42,10 +43,11 @@
 #'@importFrom purrr map2
 #'
 #'@export
-nt_barplot <-  function(data, group = NULL, ylab = "Percent (%)",
+nt_barplot <-  function(data, group = NULL,
+                        labels = NULL, ylab = "Percent (%)",
                         save = FALSE, fig.height = 5, fig.width = 5,
                         std_fun = std_barplot,
-                        std_fun_group = std_barplot_group) {
+                        std_fun_group = std_barplot_group, ...) {
 
   group <- enquo(group)
 
@@ -60,16 +62,37 @@ nt_barplot <-  function(data, group = NULL, ylab = "Percent (%)",
   }
   vars.name <- names(vars)
 
+  if (!is.null(labels)){
+    vars <- data_labeller(vars, labels)
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+
+    if (!is.null(group)){
+      group <- data_labeller(group, labels)
+      group.label <- extract_label(group[[1]], group.name)
+    }
+
+  } else {
+    vars.label <- map2(.x = vars, .y = as.list(vars.name),
+                       .f = extract_label)
+
+    if (!is.null(group)){
+      group.label <- extract_label(group, group.name)
+    }
+  }
+
   out <- map2(.x = vars, .y = vars.name, .f = aux_barplot,
               group = group, group.name = group.name, ylab = ylab,
               fig.height = fig.height, fig.width = fig.width, save = save,
-              std_fun = std_fun, std_fun_group = std_fun_group)
+              std_fun = std_fun, std_fun_group = std_fun_group,
+              ... = ...)
 
   return(out)
 }
 
 aux_barplot <- function(var, var.name, group, group.name, ylab,
-                        fig.height, fig.width, save, std_fun, std_fun_group){
+                        fig.height, fig.width, save,
+                        std_fun, std_fun_group, ...){
 
   out <- list()
   var.label <- extract_label(var, var.name)
@@ -77,7 +100,8 @@ aux_barplot <- function(var, var.name, group, group.name, ylab,
   if (is.null(group)) {
     gp <- std_fun(var = var,
                   var.label = var.label,
-                  ylab = ylab)
+                  ylab = ylab,
+                  ... = ...)
 
     if(save)
       gp <- gp + ggsave(filename = paste0("bar_", var.name, ".jpeg"),
@@ -92,7 +116,8 @@ aux_barplot <- function(var, var.name, group, group.name, ylab,
                         group = group[[1]],
                         group.label = group.label,
                         var.label = var.label,
-                        ylab = ylab)
+                        ylab = ylab,
+                        ... = ...)
 
     if (save)
       gp <- gp + ggsave(filename =
@@ -114,6 +139,7 @@ aux_barplot <- function(var, var.name, group, group.name, ylab,
 #'@param var a character vector.
 #'@param var.label a character value specifying the variable label.
 #'@param ylab a character value specifying the y axis label.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function defines the standard barplot without groups to be
 #'plotted by the function \code{\link{nt_barplot}}. It can be modified by the
@@ -125,7 +151,7 @@ aux_barplot <- function(var, var.name, group, group.name, ylab,
 #'@importFrom dplyr count mutate
 #'
 #'@export
-std_barplot <- function(var, var.label, ylab){
+std_barplot <- function(var, var.label, ylab, ...){
 
   ### Data
   data_plot <- data.frame(var = var)
@@ -160,6 +186,7 @@ std_barplot <- function(var, var.label, ylab){
 #'@param var.label a character value specifying the variable label.
 #'@param group.label a character value specifying the group label.
 #'@param ylab a character value specifying the y axis label.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function defines the standard barplot with groups to be plotted
 #'by the function \code{\link{nt_barplot}}. It can be modified by the user.
@@ -171,7 +198,7 @@ std_barplot <- function(var, var.label, ylab){
 #'@importFrom dplyr count group_by mutate
 #'
 #'@export
-std_barplot_group <- function(var, group, var.label, group.label, ylab){
+std_barplot_group <- function(var, group, var.label, group.label, ylab, ...){
 
   ### Data
   data_plot <- data.frame(var = var, group = group)

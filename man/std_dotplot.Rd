@@ -4,7 +4,7 @@
 \alias{std_dotplot}
 \title{Standard dotplot}
 \usage{
-std_dotplot(var, binwidth, var.label)
+std_dotplot(var, binwidth, var.label, ...)
 }
 \arguments{
 \item{var}{a numeric vector.}
@@ -12,6 +12,8 @@ std_dotplot(var, binwidth, var.label)
 \item{binwidth}{a numerical value specifying the bin width.}
 
 \item{var.label}{a character value specifying the variable label.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a ggplot object.

@@ -4,7 +4,7 @@
 \alias{std_boxplot_group}
 \title{Standard boxplot by group}
 \usage{
-std_boxplot_group(var, group, var.label, group.label)
+std_boxplot_group(var, group, var.label, group.label, ...)
 }
 \arguments{
 \item{var}{a numeric vector.}
@@ -14,6 +14,8 @@ std_boxplot_group(var, group, var.label, group.label)
 \item{var.label}{a character value specifying the variable label.}
 
 \item{group.label}{a character value specifying the group label.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a ggplot object.

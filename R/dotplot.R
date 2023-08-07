@@ -14,6 +14,7 @@
 #'@param std_fun_group a function to plot a dotplot when \code{group}
 #'is provided. It must follow the same structure of the function
 #'\code{\link{std_dotplot_group}}.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details The functions std_dotplot and std_dotplot_group can be
 #'modified by the user in order to customize the dotplots a prior.
@@ -38,7 +39,7 @@
 nt_dotplot <-  function(data, group = NULL, binwidth = 1,
                         save = FALSE, fig.height = 5, fig.width = 5,
                         std_fun = std_dotplot,
-                        std_fun_group = std_dotplot_group) {
+                        std_fun_group = std_dotplot_group, ...) {
 
   group <- enquo(group)
 
@@ -61,13 +62,15 @@ nt_dotplot <-  function(data, group = NULL, binwidth = 1,
   out <- pmap(.l = L, .f = aux_dotplot,
               group = group, group.name = group.name,
               fig.height = fig.height, fig.width = fig.width, save = save,
-              std_fun = std_fun, std_fun_group = std_fun_group)
+              std_fun = std_fun, std_fun_group = std_fun_group,
+              ... = ...)
 
   return(out)
 }
 
 aux_dotplot <- function(var, var.name, binwidth, group, group.name,
-                        fig.height, fig.width, save, std_fun, std_fun_group){
+                        fig.height, fig.width, save,
+                        std_fun, std_fun_group, ...){
 
   out <- list()
   var.label <- extract_label(var, var.name)
@@ -79,7 +82,8 @@ aux_dotplot <- function(var, var.name, binwidth, group, group.name,
   if (is.null(group)) {
     gp <- std_fun(var = var,
                   var.label = var.label,
-                  binwidth = binwidth)
+                  binwidth = binwidth,
+                  ... = ...)
 
     if(save)
       gp <- gp + ggsave(filename = paste0("dot_", var.name, ".jpeg"),
@@ -94,7 +98,8 @@ aux_dotplot <- function(var, var.name, binwidth, group, group.name,
                         group = group[[1]],
                         var.label = var.label,
                         group.label = group.label,
-                        binwidth = binwidth)
+                        binwidth = binwidth,
+                        ... = ...)
 
     if (save)
       gp <- gp + ggsave(filename =  paste0("dot_", group.name, "_",
@@ -115,6 +120,7 @@ aux_dotplot <- function(var, var.name, binwidth, group, group.name,
 #'@param var a numeric vector.
 #'@param var.label a character value specifying the variable label.
 #'@param binwidth a numerical value specifying the bin width.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function defines the standard dotplot without groups to be
 #'plotted by the function \code{\link{nt_dotplot}}. It can be modified by
@@ -126,7 +132,7 @@ aux_dotplot <- function(var, var.name, binwidth, group, group.name,
 #'@importFrom rlang .data
 #'
 #'@export
-std_dotplot <- function(var, binwidth, var.label){
+std_dotplot <- function(var, binwidth, var.label, ...){
 
   ### Data
   data_plot <- data.frame(var = var)
@@ -160,6 +166,7 @@ std_dotplot <- function(var, binwidth, var.label){
 #'@param var.label a character value specifying the variable label.
 #'@param group.label a character value specifying the group label.
 #'@param binwidth a numerical value specifying the bin width.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function defines the standard dotplot with groups to be
 #'plotted by the function \code{\link{nt_dotplot}}. It can be modified by
@@ -171,7 +178,8 @@ std_dotplot <- function(var, binwidth, var.label){
 #'@importFrom rlang .data
 #'
 #'@export
-std_dotplot_group <- function(var, group, binwidth, var.label, group.label){
+std_dotplot_group <- function(var, group, binwidth,
+                              var.label, group.label, ...){
 
   ### Data
   data_plot <- data.frame(var = var, group = group)

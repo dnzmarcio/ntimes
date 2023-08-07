@@ -39,6 +39,8 @@ It must follow the same structure of \code{\link{std_barplot}}.}
 \item{std_fun_group}{a function to plot a dotplot when \code{group}
 is provided. It must follow the same structure of
 \code{\link{std_barplot_group}}.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a list of ggplot objects with each item named by the column names from

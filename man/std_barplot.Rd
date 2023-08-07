@@ -4,7 +4,7 @@
 \alias{std_barplot}
 \title{Standard barplot}
 \usage{
-std_barplot(var, var.label, ylab)
+std_barplot(var, var.label, ylab, ...)
 }
 \arguments{
 \item{var}{a character vector.}
@@ -12,6 +12,8 @@ std_barplot(var, var.label, ylab)
 \item{var.label}{a character value specifying the variable label.}
 
 \item{ylab}{a character value specifying the y axis label.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a ggplot object.

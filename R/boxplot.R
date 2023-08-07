@@ -14,6 +14,7 @@
 #'@param std_fun_group a function to plot a boxplot when \code{group}
 #'is provided. It must follow the same structure of
 #'\code{\link{std_boxplot_group}}.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details The functions \code{\link{std_boxplot}} and
 #'\code{\link{std_boxplot_group}} can be modified by the user in order to
@@ -39,7 +40,8 @@
 nt_boxplot <-  function(data, group = NULL, labels = NULL,
                         save = FALSE, fig.height = 5, fig.width = 5,
                         std_fun = std_boxplot,
-                        std_fun_group = std_boxplot_group){
+                        std_fun_group = std_boxplot_group,
+                        ...){
 
   group <- enquo(group)
 
@@ -78,19 +80,22 @@ nt_boxplot <-  function(data, group = NULL, labels = NULL,
               .f = aux_boxplot,
               group = group, group.name = group.name, group.label = group.label,
               fig.height = fig.height, fig.width = fig.width, save = save,
-              std_fun = std_fun, std_fun_group = std_fun_group)
+              std_fun = std_fun, std_fun_group = std_fun_group,
+              ... = ...)
 
   return(out)
 }
 
 aux_boxplot <- function(var, var.name, var.label, group, group.name, group.label,
-                        fig.height, fig.width, save, std_fun, std_fun_group){
+                        fig.height, fig.width, save,
+                        std_fun, std_fun_group, ...){
 
   out <- list()
 
   if (is.null(group)) {
     gp <- std_fun(var = var,
-                  var.label = var.label)
+                  var.label = var.label,
+                  ... = ...)
 
     if(save)
       gp <- gp + ggsave(filename = paste0("box_", var.name, ".jpeg"),
@@ -102,7 +107,8 @@ aux_boxplot <- function(var, var.name, var.label, group, group.name, group.label
     gp <- std_fun_group(var = var,
                         group = group[[1]],
                         group.label = group.label,
-                        var.label = var.label)
+                        var.label = var.label,
+                        ... = ...)
 
     if (save)
       gp <- gp + ggsave(filename = paste0("box_", group.name, "_",
@@ -123,6 +129,7 @@ aux_boxplot <- function(var, var.name, var.label, group, group.name, group.label
 #'
 #'@param var a numeric vector.
 #'@param var.label a character value specifying the variable label.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function defines the standard boxplot without groups to be
 #'plotted by the function \code{\link{nt_boxplot}}. It can be modified by the
@@ -131,7 +138,7 @@ aux_boxplot <- function(var, var.name, var.label, group, group.name, group.label
 #'@return a ggplot object.
 #'
 #'@export
-std_boxplot <- function(var, var.label){
+std_boxplot <- function(var, var.label, ...){
 
   ### Data
   data_plot <- data.frame(var = var)
@@ -161,6 +168,7 @@ std_boxplot <- function(var, var.label){
 #'@param group a character vector.
 #'@param var.label a character value specifying the variable label.
 #'@param group.label a character value specifying the group label.
+#'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function defines the standard boxplot with groups to be plotted
 #'by the function \code{\link{nt_boxplot}}. It can be modified by the user.
@@ -169,7 +177,7 @@ std_boxplot <- function(var, var.label){
 #'@return a ggplot object.
 #'
 #'@export
-std_boxplot_group <- function(var, group, var.label, group.label){
+std_boxplot_group <- function(var, group, var.label, group.label, ...){
 
   ### Data
   data_plot <- data.frame(var = var, group = group)

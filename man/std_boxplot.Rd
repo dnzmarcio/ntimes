@@ -4,12 +4,14 @@
 \alias{std_boxplot}
 \title{Standard boxplot}
 \usage{
-std_boxplot(var, var.label)
+std_boxplot(var, var.label, ...)
 }
 \arguments{
 \item{var}{a numeric vector.}
 
 \item{var.label}{a character value specifying the variable label.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a ggplot object.

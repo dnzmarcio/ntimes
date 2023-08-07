@@ -12,7 +12,8 @@ nt_boxplot(
   fig.height = 5,
   fig.width = 5,
   std_fun = std_boxplot,
-  std_fun_group = std_boxplot_group
+  std_fun_group = std_boxplot_group,
+  ...
 )
 }
 \arguments{
@@ -35,6 +36,8 @@ It must follow the same structure of \code{\link{std_boxplot}}.}
 \item{std_fun_group}{a function to plot a boxplot when \code{group}
 is provided. It must follow the same structure of
 \code{\link{std_boxplot_group}}.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a list of ggplot objects with each item named by the column names from

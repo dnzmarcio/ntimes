@@ -4,7 +4,7 @@
 \alias{std_barplot_group}
 \title{Standard barplot by group}
 \usage{
-std_barplot_group(var, group, var.label, group.label, ylab)
+std_barplot_group(var, group, var.label, group.label, ylab, ...)
 }
 \arguments{
 \item{var}{a character vector.}
@@ -16,6 +16,8 @@ std_barplot_group(var, group, var.label, group.label, ylab)
 \item{group.label}{a character value specifying the group label.}
 
 \item{ylab}{a character value specifying the y axis label.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a ggplot object.

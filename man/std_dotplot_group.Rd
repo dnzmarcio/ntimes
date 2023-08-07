@@ -4,7 +4,7 @@
 \alias{std_dotplot_group}
 \title{Standard dotplot by group}
 \usage{
-std_dotplot_group(var, group, binwidth, var.label, group.label)
+std_dotplot_group(var, group, binwidth, var.label, group.label, ...)
 }
 \arguments{
 \item{var}{a numeric vector.}
@@ -16,6 +16,8 @@ std_dotplot_group(var, group, binwidth, var.label, group.label)
 \item{var.label}{a character value specifying the variable label.}
 
 \item{group.label}{a character value specifying the group label.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a ggplot object.
