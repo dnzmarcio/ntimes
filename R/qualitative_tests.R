@@ -32,7 +32,7 @@ dist_ql_tg <-  function(var, group,
           if (any(is(pt) != "try-error")){
             lower <- pt$conf.int[[1]]
             upper <- pt$conf.int[[2]]
-            test <- "Fisher's Exact"
+            test <- "Fisher's exact test"
           } else {
             lower <- NA
             upper <- NA
@@ -50,7 +50,7 @@ dist_ql_tg <-  function(var, group,
         upper <- NA
         if (any(is(result) != "try-error")){
           p.value <- result$p.value
-          test <- "Chi-Square"
+          test <- "Chi-Square test"
         } else {
           p.value <- NA
           test <- NA
@@ -68,7 +68,8 @@ dist_ql_tg <-  function(var, group,
     tab <- table(data.test$x, data.test$g)
     result <- mcnemar.test(tab)
     p.value <- result$p.value
-    test <- ifelse(max(dim(tab)) == 2, "McNemar test", "McNemar-Bowker test")
+    test <- ifelse(max(dim(tab)) == 2, "McNemar test",
+                   "McNemar-Bowker test")
     lower <- NA
     upper <- NA
     hypothesis <- "Marginal Homogeneity"
