@@ -439,7 +439,9 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
     } else {
       for (k in which(cond.interaction)){
 
-        interaction.vars <- fit.vars$var[sapply(fit.vars$var, grepl, x = as.character(interaction[k]), fixed = TRUE)]
+        interaction.vars <- fit.vars$var[sapply(fit.vars$var, grepl,
+                                                x = as.character(interaction[k]),
+                                                fixed = TRUE)]
         others <- interaction.vars[interaction.vars != fit.vars$var[i]]
         temp <- contrast_df(data = fit.vars$data, var = fit.vars$var[i],
                             ref = ref, user.contrast = user.contrast,
