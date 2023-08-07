@@ -12,7 +12,7 @@ std_km_group(
   xlab,
   ylab,
   time.points,
-  risktable.title,
+  risk.table,
   ...
 )
 }
@@ -28,6 +28,12 @@ std_km_group(
 \item{xlab}{a character value specifying the x axis label.}
 
 \item{ylab}{a character value specifying the y axis label.}
+
+\item{time.points}{a numeric vector of time points to evaluate the survival curves.}
+
+\item{risk.table}{a logical value indicating whether the risk table should be calculated.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a ggplot object.

@@ -11,17 +11,16 @@ nt_km(
   labels = NULL,
   xlab = "Time",
   ylab = "Survival",
-  risktable.title = "n at risk",
+  time.points = NULL,
+  risk.table = TRUE,
   save = FALSE,
   fig.height = 5,
   fig.width = 5,
   std_fun = std_km,
   std_fun_group = std_km_group,
-  time.points = NULL,
   format = TRUE,
   digits = 2,
   file = "survival",
-  where = "",
   ...
 )
 }
@@ -38,6 +37,10 @@ nt_km(
 
 \item{ylab}{a character value specifying the y axis label.}
 
+\item{time.points}{a numeric vector of time points to evaluate the survival curves.}
+
+\item{risk.table}{a logical value indicating whether the risk table should be calculated.}
+
 \item{save}{a logical value indicating whether the output
 should be saved as a jpeg file.}
 
@@ -52,13 +55,13 @@ It must follow the same structure of \code{\link{std_barplot}}.}
 is provided. It must follow the same structure of
 \code{\link{std_barplot_group}}.}
 
-\item{time.points}{a numeric vector of time points to evaluate the survival curves.}
-
 \item{format}{a logical value indicating whether the output should be formatted.}
 
 \item{digits}{a numerical value defining of digits to present the results.}
 
 \item{file}{a character indicating the name of output file in csv format to be saved.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a list of ggplot objects with each item named by the column names from

@@ -4,7 +4,7 @@
 \alias{std_km}
 \title{Standard Kaplan-Meier curve}
 \usage{
-std_km(time, status, xlab, ylab, time.points, risktable.title, ...)
+std_km(time, status, xlab, ylab, time.points, risk.table, ...)
 }
 \arguments{
 \item{time}{a numeric vector.}
@@ -14,6 +14,12 @@ std_km(time, status, xlab, ylab, time.points, risktable.title, ...)
 \item{xlab}{a character value specifying the x axis label.}
 
 \item{ylab}{a character value specifying the y axis label.}
+
+\item{time.points}{a numeric vector of time points to evaluate the survival curves.}
+
+\item{risk.table}{a logical value indicating whether the risk table should be calculated.}
+
+\item{...}{additional input arguments that may be used when creating your own function.}
 }
 \value{
 a ggplot object.
