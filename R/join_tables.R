@@ -125,12 +125,13 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
     }
   }
 
-  if (attr(tab.x, "ntimes") == "descriptive" & attr(tab.y, "ntimes") == "descriptive"){
+  if (attr(tab.x, "ntimes") == "descriptive" &
+      attr(tab.y, "ntimes") == "descriptive"){
     tab.x <- tab.x |> mutate(id = 1:nrow(tab.x))
     tab.y <- tab.y |> mutate(id = 1:nrow(tab.y))
-    tab <- left_join(tab.x, tab.y, by = c("id", "Variable")) |> select(-id)
-    temp <- str_split(colnames(tab), ":")
-    colnames(tab)[3:4] <- c(temp[[3]][2], temp[[4]][2])
+    tab <- left_join(tab.x, tab.y, by = c("id", "Variable")) |>
+      select(-id)
+    temp <- str_split(colnames(tab), ": ")
 
     if (save){
       write.csv(out, file = paste0(file, ".csv"))
