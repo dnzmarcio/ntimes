@@ -119,11 +119,15 @@ nt_simple_glm <- function(data, response, ...,
                                  as.character(round(.data$p.value, digits.p))),
                 `LR p value` = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
                                         as.character(round(.data$p.value.lr, digits.p))),
-                n = .data$n, null.deviance = .data$null.deviance,
-                logLik = .data$logLik, AIC = .data$AIC, BIC = .data$BIC,
-                deviance = .data$deviance) |>
+                n = as.character(.data$n),
+                null.deviance = as.character(.data$null.deviance),
+                logLik = as.character(.data$logLik),
+                AIC = as.character(.data$AIC),
+                BIC = as.character(.data$BIC),
+                deviance =as.character(.data$deviance)) |>
       mutate(`Estimate (95% CI)` =
-               recode(.data$`Estimate (95% CI)`, `NA (NA ; NA)` = "Reference")) |>
+               recode(.data$`Estimate (95% CI)`,
+                      `NA (NA ; NA)` = "Reference")) |>
       replace_na(list(`Wald p value` = "", `LR p value` = "",
                       n = "", null.deviance = "", df.null = "",
                       logLik = "", AIC = "", BIC = "",
