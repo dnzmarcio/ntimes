@@ -232,6 +232,7 @@ helper_sf_test <-  function(x){
 #'
 #'@importFrom tidyr drop_na
 #'@importFrom lawstat levene.test
+#'@importFrom PairedData levene.Var.test.paired
 #'@export
 helper_levene_test <- function(x, g, paired){
 
