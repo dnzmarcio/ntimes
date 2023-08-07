@@ -24,6 +24,7 @@ Kolmogorov-Smirnov, Cramer-vonMises, and Pearson normality tests
 for several variables. In addition, it also plots a Quantile-Quantile plot and a histogram.
 }
 \examples{
+library(dplyr)
 data(iris)
 
 iris |> select(-Species) |> nt_norm_test()

@@ -18,7 +18,7 @@ nt_boxplot(
 \arguments{
 \item{data}{a data frame with the variables.}
 
-\item{group}{an optional data frame with the group variable.}
+\item{group}{a character value indicating the group variable.}
 
 \item{labels}{a list of labels with components given by their variable names.}
 

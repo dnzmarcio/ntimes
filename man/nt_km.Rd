@@ -75,6 +75,7 @@ The plots also can be modified a posterior as a regular ggplot object.
 See \code{\link{std_km}} and \code{\link{std_km_group}}.
 }
 \examples{
+library(dplyr)
 library(survival)
 data(lung)
 

@@ -32,6 +32,7 @@
 #'\code{var}.
 #'
 #'@examples
+#'library(dplyr)
 #'library(survival)
 #'data(lung)
 #'

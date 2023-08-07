@@ -7,11 +7,12 @@
 #'@param ...  character values indicating confounding variables.
 #'@param family a character indicating family distribution. See more \code{\link[stats]{family}}.
 #'@param robust.variance a function yielding a covariance matrix or a covariance matrix. See more \code{\link[lmtest]{coeftest}}.
-#'@param labels a list of labels with components given by their variable names.
 #'@param increment a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.
 #'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald})
 #'@param conf.level a numerical value indicating the confidence level for parameters of interest.
+#'@param exponentiate a logical value indicating whether coefficients should be exponentiated.
 #'@param format a logical value indicating whether the output should be formatted.
+#'@param labels a list of labels with components given by their variable names.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
@@ -48,10 +49,11 @@
 #'@export
 nt_simple_glm <- function(data, response, ...,
                           family, robust.variance = NULL,
-                          labels = NULL,
-                          increment = NULL, exponentiate = FALSE,
+                          increment = NULL,
                           ci.type = "Wald", conf.level = 0.95,
-                          format = TRUE, digits = 2, digits.p = 3,
+                          exponentiate = FALSE,
+                          format = TRUE, labels = NULL,
+                          digits = 2, digits.p = 3,
                           save = FALSE, file = "simple_logistic"){
 
   response <- enquo(response)
@@ -258,15 +260,18 @@ fit_simple_glm <- function(data, family,
 
 
 
-#'Multivariable Generealized Linear models
+#'Multivariable Generalized Linear models
 #'
 #'@description Tabulating results from multivariable GLMs.
 #'
-#'@param fit a fitted model.
+#'@param fit a glm object.
+#'@param exponentiate a logical value indicating whether coefficients should be exponentiated.
 #'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald}).
 #'@param user.contrast a variable named list of numerical vectors indicating contrast for a covariate.
 #'@param user.contrast.interaction a variable named list of numerical vectors indicating a contrast for interaction.
+#'@param table.reference a logical value indicating whether the output should be presented with a line indicating the reference category.
 #'@param format a logical value indicating whether the output should be formatted.
+#'@param labels a list of labels with components given by their variable names.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
@@ -274,7 +279,6 @@ fit_simple_glm <- function(data, family,
 #'
 #'@examples
 #'library(titanic)
-#'library(magrittr)
 #'library(dplyr)
 #'
 #'data(titanic_train)
@@ -296,8 +300,8 @@ fit_simple_glm <- function(data, family,
 nt_multiple_glm <- function(fit, exponentiate = FALSE,
                             ci.type = "Wald",
                             user.contrast = NULL, user.contrast.interaction = NULL,
-                            labels = NULL,
-                            format = TRUE, table.reference = TRUE,
+                            table.reference = TRUE,
+                            format = TRUE, labels = NULL,
                             digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_glm"){
 

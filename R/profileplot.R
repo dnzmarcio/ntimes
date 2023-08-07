@@ -3,7 +3,9 @@
 #'@description Plot profile plot for several variables.
 #'
 #'@param data a data frame with the variables.
-#'@param group an optional data frame with the group variable.
+#'@param group a character value indicating the group variable.
+#'@param time a character value indicating the time variable.
+#'@param labels a list of labels with components given by their variable names.
 #'@param save a logical value indicating whether the output
 #'should be saved as a jpeg file.
 #'@param fig.height a numeric value indicating the height (in) of the file.
@@ -181,7 +183,7 @@ std_profileplot <- function(var, time, var.label, time.label){
 #'
 #'@param var a numeric vector.
 #'@param group a character vector.
-#'@param time a numeric vector of factor.
+#'@param time a numeric vector.
 #'@param var.label a character value specifying the variable label.
 #'@param time.label a character value specifying the time label.
 #'@param group.label a character value specifying the group label.

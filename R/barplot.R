@@ -3,7 +3,8 @@
 #'@description Plot barplot for several variables.
 #'
 #'@param data a data frame with the variables.
-#'@param group an optional data frame with the group variable.
+#'@param group a character value indicating the group variable.
+#'@param labels a list of labels with components given by their variable names.
 #'@param ylab a character value specifying the y axis label.
 #'@param save a logical value indicating whether the output
 #'should be saved as a jpeg file.

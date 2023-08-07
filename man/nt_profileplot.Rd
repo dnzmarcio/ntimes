@@ -19,7 +19,11 @@ nt_profileplot(
 \arguments{
 \item{data}{a data frame with the variables.}
 
-\item{group}{an optional data frame with the group variable.}
+\item{time}{a character value indicating the time variable.}
+
+\item{group}{a character value indicating the group variable.}
+
+\item{labels}{a list of labels with components given by their variable names.}
 
 \item{save}{a logical value indicating whether the output
 should be saved as a jpeg file.}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/glm_regression.R
 \name{nt_multiple_glm}
 \alias{nt_multiple_glm}
-\title{Multivariable Generealized Linear models}
+\title{Multivariable Generalized Linear models}
 \usage{
 nt_multiple_glm(
   fit,
@@ -10,9 +10,9 @@ nt_multiple_glm(
   ci.type = "Wald",
   user.contrast = NULL,
   user.contrast.interaction = NULL,
-  labels = NULL,
-  format = TRUE,
   table.reference = TRUE,
+  format = TRUE,
+  labels = NULL,
   digits = 2,
   digits.p = 3,
   save = FALSE,
@@ -20,7 +20,9 @@ nt_multiple_glm(
 )
 }
 \arguments{
-\item{fit}{a fitted model.}
+\item{fit}{a glm object.}
+
+\item{exponentiate}{a logical value indicating whether coefficients should be exponentiated.}
 
 \item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald}).}
 
@@ -28,7 +30,11 @@ nt_multiple_glm(
 
 \item{user.contrast.interaction}{a variable named list of numerical vectors indicating a contrast for interaction.}
 
+\item{table.reference}{a logical value indicating whether the output should be presented with a line indicating the reference category.}
+
 \item{format}{a logical value indicating whether the output should be formatted.}
+
+\item{labels}{a list of labels with components given by their variable names.}
 
 \item{digits}{a numerical value defining of digits to present the results.}
 
@@ -43,7 +49,6 @@ Tabulating results from multivariable GLMs.
 }
 \examples{
 library(titanic)
-library(magrittr)
 library(dplyr)
 
 data(titanic_train)

@@ -65,7 +65,7 @@ data(iris)
 library(dplyr)
 
 iris |> filter(Species != "setosa") |>
- mutate(Species = as.factor(Species)) |>
+ mutate(Species = droplevels(Species)) |>
  nt_compare_tg(group = Species,
                labels = list(Sepal.Length = "Sepal Length",
                              Sepal.Width = "Sepal Width",

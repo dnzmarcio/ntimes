@@ -10,12 +10,12 @@ nt_simple_glm(
   ...,
   family,
   robust.variance = NULL,
-  labels = NULL,
   increment = NULL,
-  exponentiate = FALSE,
   ci.type = "Wald",
   conf.level = 0.95,
+  exponentiate = FALSE,
   format = TRUE,
+  labels = NULL,
   digits = 2,
   digits.p = 3,
   save = FALSE,
@@ -33,15 +33,17 @@ nt_simple_glm(
 
 \item{robust.variance}{a function yielding a covariance matrix or a covariance matrix. See more \code{\link[lmtest]{coeftest}}.}
 
-\item{labels}{a list of labels with components given by their variable names.}
-
 \item{increment}{a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
 
 \item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald})}
 
 \item{conf.level}{a numerical value indicating the confidence level for parameters of interest.}
 
+\item{exponentiate}{a logical value indicating whether coefficients should be exponentiated.}
+
 \item{format}{a logical value indicating whether the output should be formatted.}
+
+\item{labels}{a list of labels with components given by their variable names.}
 
 \item{digits}{a numerical value defining of digits to present the results.}
 

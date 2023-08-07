@@ -9,8 +9,8 @@ nt_multiple_cox(
   ci.type = "Wald",
   user.contrast = NULL,
   user.contrast.interaction = NULL,
-  format = TRUE,
   table.reference = TRUE,
+  format = TRUE,
   labels = NULL,
   digits = 2,
   digits.p = 3,
@@ -19,7 +19,7 @@ nt_multiple_cox(
 )
 }
 \arguments{
-\item{fit}{a fitted model.}
+\item{fit}{a coxph object.}
 
 \item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).}
 
@@ -27,7 +27,11 @@ nt_multiple_cox(
 
 \item{user.contrast.interaction}{a variable named list of numerical vectors indicating a contrast for interaction.}
 
+\item{table.reference}{a logical value indicating whether the output should be presented with a line indicating the reference category.}
+
 \item{format}{a logical value indicating whether the output should be formatted.}
+
+\item{labels}{a list of labels with components given by their variable names.}
 
 \item{digits}{a numerical value defining of digits to present the results.}
 

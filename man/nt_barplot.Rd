@@ -7,18 +7,22 @@
 nt_barplot(
   data,
   group = NULL,
+  labels = NULL,
   ylab = "Percent (\%)",
   save = FALSE,
   fig.height = 5,
   fig.width = 5,
   std_fun = std_barplot,
-  std_fun_group = std_barplot_group
+  std_fun_group = std_barplot_group,
+  ...
 )
 }
 \arguments{
 \item{data}{a data frame with the variables.}
 
-\item{group}{an optional data frame with the group variable.}
+\item{group}{a character value indicating the group variable.}
+
+\item{labels}{a list of labels with components given by their variable names.}
 
 \item{ylab}{a character value specifying the y axis label.}
 

@@ -9,7 +9,7 @@ std_profileplot_group(var, time, group, var.label, time.label, group.label)
 \arguments{
 \item{var}{a numeric vector.}
 
-\item{time}{a numeric vector of factor.}
+\item{time}{a numeric vector.}
 
 \item{group}{a character vector.}
 

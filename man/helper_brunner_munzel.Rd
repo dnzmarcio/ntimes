@@ -4,16 +4,16 @@
 \alias{helper_brunner_munzel}
 \title{Helper for Brunner-Munzel t-test}
 \usage{
-helper_brunner_munzel(x, g, alternative, paired, conf.level)
+helper_brunner_munzel(x, g, paired, alternative, conf.level)
 }
 \arguments{
 \item{x}{a numeric vector.}
 
 \item{g}{a factor.}
 
-\item{alternative}{a character value.}
-
 \item{paired}{a logical value.}
+
+\item{alternative}{a character value.}
 
 \item{conf.level}{a numeric value.}
 }

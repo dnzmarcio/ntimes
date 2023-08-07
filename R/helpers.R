@@ -446,7 +446,7 @@ helper_mann_whitney <- function(x, g, paired, alternative, conf.level){
 #'limits of the confidence interval for the effect size considered in the test.
 #'
 #'@export
-helper_brunner_munzel <- function(x, g, alternative, paired, conf.level){
+helper_brunner_munzel <- function(x, g, paired, alternative, conf.level){
 
   data.test <- data.frame(x, g)
 

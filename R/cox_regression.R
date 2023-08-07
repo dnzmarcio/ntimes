@@ -285,17 +285,20 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 #'
 #'@description Tabulating results from fitted Proportional Hazards Cox models.
 #'
-#'@param fit a fitted model.
+#'@param fit a coxph object.
 #'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
 #'@param user.contrast a variable named list of numerical vectors indicating contrast for a covariate.
 #'@param user.contrast.interaction a variable named list of numerical vectors indicating a contrast for interaction.
+#'@param table.reference a logical value indicating whether the output should be presented with a line indicating the reference category.
 #'@param format a logical value indicating whether the output should be formatted.
+#'@param labels a list of labels with components given by their variable names.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits.p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character indicating the name of output file in csv format to be saved.
 #'
-#'@examples library(survival)
+#'@examples
+#'library(survival)
 #'library(dplyr)
 #'
 #'data(ovarian)
@@ -320,10 +323,12 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 #'@importFrom tidyr replace_na
 #'@importFrom methods is
 #'@export
-nt_multiple_cox <- function(fit, ci.type = "Wald",
-                            user.contrast = NULL, user.contrast.interaction = NULL,
-                            format = TRUE, table.reference = TRUE,
-                            labels = NULL,
+nt_multiple_cox <- function(fit,
+                            ci.type = "Wald",
+                            user.contrast = NULL,
+                            user.contrast.interaction = NULL,
+                            table.reference = TRUE,
+                            format = TRUE, labels = NULL,
                             digits = 2, digits.p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 

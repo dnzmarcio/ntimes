@@ -13,6 +13,7 @@
 #'@return \code{plot} a Quantile-Quantile plot.
 #'
 #'@examples
+#'library(dplyr)
 #'data(iris)
 #'
 #'iris |> select(-Species) |> nt_norm_test()
