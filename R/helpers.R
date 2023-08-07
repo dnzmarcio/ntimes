@@ -133,13 +133,13 @@ helper_missing <- function(var, ...){
 #'@return a list with the first element \code{name} as the measure name and the
 #'second element as the \code{value} for a given variable.
 #'
-#'@importFrom forcats fct_explicit_na
+#'@importFrom forcats fct_na_value_to_level
 #'@export
 helper_perc_count <- function(var, digits, ...){
 
   ldots <- list(...)
 
-  h <- fct_explicit_na(var, na_level = "Missing")
+  h <- fct_na_value_to_level(var, level = "Missing")
   lh <- levels(h)
 
   count <- tapply(h, h, length)
@@ -175,13 +175,13 @@ helper_perc_count <- function(var, digits, ...){
 #'@return a list with the first element \code{name} as the measure name and the
 #'second element as the \code{value} for a given variable.
 #'
-#'@importFrom forcats fct_explicit_na
+#'@importFrom forcats fct_na_value_to_level
 #'@export
 helper_count_perc <- function(var, digits, ...){
 
   ldots <- list(...)
 
-  h <- fct_explicit_na(var, na_level = "Missing")
+  h <- fct_na_value_to_level(var, level = "Missing")
   lh <- levels(h)
 
   count <- tapply(h, h, length)
