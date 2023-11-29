@@ -33,18 +33,18 @@
 #'@importFrom purrr map2
 #'
 #'@export
-nt_profileplot <-  function(data, time = NULL, group = NULL, labels = NULL,
-                        save = FALSE, fig.height = 5, fig.width = 5,
-                        std_fun = std_profileplot,
-                        std_fun_group = std_profileplot_group){
+nt_profileplot <-  function(data, time = NULL, group = NULL,
+                            labels = NULL,
+                            save = FALSE, fig.height = 5, fig.width = 5,
+                            std_fun = std_profileplot,
+                            std_fun_group = std_profileplot_group, ...){
 
   group <- enquo(group)
   time <- enquo(time)
-  group_time <- list(group, time)
+  #group_time <- list(group, time)
 
   if (!quo_is_null(group)){
-    vars <- select(.data = data, -!!group)
-    vars <- select(.data = vars, -!!time)
+    vars <- select(.data = data, -!!group, -!!time)
     group <- select(.data = data, !!group)
     time <- select(.data = data, !!time)
     group.name <- names(group)
@@ -91,7 +91,8 @@ nt_profileplot <-  function(data, time = NULL, group = NULL, labels = NULL,
               group = group, group.name = group.name, group.label = group.label,
               time = time, time.name = time.name, time.label = time.label,
               fig.height = fig.height, fig.width = fig.width, save = save,
-              std_fun = std_fun, std_fun_group = std_fun_group)
+              std_fun = std_fun, std_fun_group = std_fun_group,
+              ... = ...)
 
   return(out)
 }
@@ -99,7 +100,8 @@ nt_profileplot <-  function(data, time = NULL, group = NULL, labels = NULL,
 aux_profileplot <- function(var, var.name, var.label,
                             group, group.name, group.label,
                             time, time.name, time.label,
-                            fig.height, fig.width, save, std_fun, std_fun_group){
+                            fig.height, fig.width, save, std_fun, std_fun_group,
+                            ...){
 
   out <- list()
 
@@ -107,7 +109,8 @@ aux_profileplot <- function(var, var.name, var.label,
     gp <- std_fun(var = var,
                   time = time,
                   var.label = var.label,
-                  time.label = time.label)
+                  time.label = time.label,
+                  ...)
 
     if(save)
       gp <- gp + ggsave(filename = paste0("profile_", var.name, ".jpeg"),
@@ -121,7 +124,8 @@ aux_profileplot <- function(var, var.name, var.label,
                         group = group[[1]],
                         var.label = var.label,
                         group.label = group.label,
-                        time.label = time.label)
+                        time.label = time.label,
+                        ...)
 
     if (save)
       gp <- gp + ggsave(filename = paste0("profile_", group.name, "_",
@@ -152,7 +156,7 @@ aux_profileplot <- function(var, var.name, var.label,
 #'@return a ggplot object.
 #'
 #'@export
-std_profileplot <- function(var, time, var.label, time.label){
+std_profileplot <- function(var, time, var.label, time.label, ...){
 
   ### Data
   dp <- data.frame(var, time) |>
@@ -195,7 +199,9 @@ std_profileplot <- function(var, time, var.label, time.label){
 #'@return a ggplot object.
 #'
 #'@export
-std_profileplot_group <- function(var, time, group, var.label, time.label, group.label){
+std_profileplot_group <- function(var, time, group,
+                                  var.label, time.label, group.label,
+                                  ...){
 
   ### Data
   dp <- data.frame(time, group, var) |>
