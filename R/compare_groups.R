@@ -81,7 +81,7 @@ nt_compare_tg <- function(data, group, labels = NULL,
   }
 
   if (!is.factor(group[[1]])){
-    group <- as.factor(group[[1]])
+    group[[1]] <- as.factor(group[[1]])
     warning(paste(group.label, "was transformed into a factor."))
   }
 
