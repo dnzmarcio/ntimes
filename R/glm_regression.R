@@ -149,6 +149,10 @@ aux_simple_glm <- function(var, var.name, var.label,
                            conf.level, ci.type,
                            format){
 
+  if (is.factor(var)){
+    var <- droplevels(var)
+  }
+
   if (!is.null(add)){
     aux <- data.frame(add, var)
     aux.labels <- c(add.label, var = var.label)
@@ -270,7 +274,8 @@ fit_simple_glm <- function(data, family,
 #'
 #'@param fit a glm object.
 #'@param exponentiate a logical value indicating whether coefficients should be exponentiated.
-#'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald}).
+#'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{wald}).
+#'@param contrast.qt a character indicating whether is one-unit change (\code{one-unit}), quartiles (\code{quartiles}) or provided by the user (\code{user}).
 #'@param user.contrast a variable named list of numerical vectors indicating contrast for a covariate.
 #'@param user.contrast.interaction a variable named list of numerical vectors indicating a contrast for interaction.
 #'@param table.reference a logical value indicating whether the output should be presented with a line indicating the reference category.
@@ -302,7 +307,7 @@ fit_simple_glm <- function(data, family,
 #'@importFrom utils write.csv
 #'@export
 nt_multiple_glm <- function(fit, exponentiate = FALSE,
-                            ci.type = "Wald",
+                            ci.type = "Wald", contrast.qt = "one-unit",
                             user.contrast = NULL, user.contrast.interaction = NULL,
                             table.reference = TRUE,
                             format = TRUE, labels = NULL,
@@ -312,6 +317,7 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
   out <- aux_multiple_glm(fit = fit,
                                exponentiate = exponentiate,
                                ci.type = ci.type,
+                               contrast.qt = contrast.qt,
                                user.contrast = user.contrast,
                                user.contrast.interaction = user.contrast.interaction,
                                format = format, table.reference = table.reference)
@@ -352,7 +358,8 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
 #'@importFrom tidyr separate
 #'@importFrom broom tidy
 aux_multiple_glm <- function(fit, exponentiate, robust.variance,
-                             ci.type, user.contrast, user.contrast.interaction,
+                             ci.type, contrast.qt,
+                             user.contrast, user.contrast.interaction,
                              format, table.reference){
 
   aux <- extract_data(fit)
@@ -361,9 +368,11 @@ aux_multiple_glm <- function(fit, exponentiate, robust.variance,
                              exponentiate = exponentiate,
                              robust.variance = robust.variance,
                              type = ci.type,
+                             contrast.qt = contrast.qt,
                              user.contrast = user.contrast,
                              user.contrast.interaction = user.contrast.interaction,
-                             table.reference = table.reference) |>
+                             table.reference = table.reference)
+  effect <- effect |>
     separate(.data$term, into = c("variable", "group"), sep = ":")
 
   if (format)
@@ -379,14 +388,17 @@ aux_multiple_glm <- function(fit, exponentiate, robust.variance,
   #   mutate(term = str_replace_all(.data$term, labels),
   #          term = sub(" $", "", x = .data$term))
 
-  out <- list(effect = effect)
+  coef <- summary(fit)
+
+  out <- list(effect = effect, coef = coef)
 
   return(out)
 }
 
 #'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
 fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
-                             type, user.contrast, user.contrast.interaction,
+                             type, contrast.qt,
+                             user.contrast, user.contrast.interaction,
                              table.reference){
 
   ref <- reference_df(fit)$df
@@ -408,6 +420,7 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
       temp <- contrast_df(data = fit.vars$data,
                           var = fit.vars$var[i],
                           ref = ref,
+                          contrast.qt = contrast.qt,
                           user.contrast = user.contrast,
                           table.reference = table.reference)
       design.matrix <- model.matrix(formula(fit), data = temp$new.data)
@@ -423,7 +436,8 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
                                 beta = beta, beta.var = beta.var,
                                 type = type)
 
-      if (table.reference)
+      aux <- grep("one-unit change", temp$label)
+      if (table.reference & length(aux) == 0)
         contrast <- rbind(NA, contrast)
 
       temp <- data.frame(term = temp$label, contrast)

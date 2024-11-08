@@ -64,7 +64,8 @@ reference_df <- function(fit){
 
 #'@importFrom stats quantile
 #'@importFrom methods is
-contrast_df <- function(data, var, ref, user.contrast = NULL,
+contrast_df <- function(data, var, ref, contrast.qt,
+                        user.contrast = NULL,
                         interaction = NULL,
                         user.contrast.interaction = NULL,
                         table.reference){
@@ -99,22 +100,40 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
              any(is(data[[var]]) == "integer")) {
 
 
-    if (is.null(user.contrast[[var]])) {
+    if (contrast.qt == "quantiles") {
       nc <- 2
       contrast <- contrast[rep(1, nc), ]
       quant <- quantile(data[[var]], probs = c(0.25, 0.75), na.rm = TRUE)
       contrast[[var]] <- round(quant, 2)
-    } else {
+
+    } else if (contrast.qt == "one-unit"){
+      nc <- 2
+      contrast <- contrast[rep(1, nc), ]
+      quant <- c(data[[var]][1], (data[[var]][1] + 1))
+      contrast[[var]] <- quant
+
+    } else if (contrast.qt == "user" & !is.null(user.contrast[[var]])){
       nc <- length(user.contrast[[var]])
       contrast <- contrast[rep(1, nc), ]
       contrast[[var]] <- user.contrast[[var]]
+
+    } else if (contrast.qt == "user" & is.null(user.contrast[[var]])){
+      stop('contrast.qt = "user" but user.contrast not found!')
     }
 
-    if (table.reference){
-      label <- paste0(var, ":", contrast[[var]][1:nc])
+    if (contrast.qt == "one-unit"){
+      label <- paste0(var, ":", "one-unit change")
+
     } else {
-      label <- paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
+
+      if (table.reference ){
+        label <- paste0(var, ":", contrast[[var]][1:nc])
+      } else {
+        label <- paste0(var, ":", contrast[[var]][2:nc], "/", contrast[[var]][1])
+      }
     }
+
+
 
   }
 
@@ -129,12 +148,15 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
           data[[interaction[k]]] <- as.factor(data[[interaction[k]]])
 
         if (is.null(user.contrast.interaction[[interaction[k]]])) {
+
           nc <- nlevels(data[[interaction[k]]])
           lv <- levels(data[[interaction[k]]])
           contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
           contrast[[interaction[k]]] <- rep(lv, nrow(contrast)/nc)
           contrast[[interaction[k]]] <- factor(contrast[[interaction[k]]], levels = lv)
-        } else {
+
+          } else {
+
           nc <- length(user.contrast.interaction[[interaction[k]]])
           lv <- user.contrast.interaction[[interaction[k]]]
           contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
@@ -156,16 +178,31 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
                  any(is(data[[interaction[k]]]) == "integer")) {
 
 
-        if (is.null(user.contrast.interaction[[interaction[k]]])) {
+        if (contrast.qt == "quantiles") {
+
           nc <- 2
           lv <- quantile(data[[interaction[k]]], probs = c(0.25, 0.75), na.rm = TRUE)
           contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
           contrast[[interaction[k]]] <- rep(lv, nrow(contrast)/nc)
-        } else {
+
+        } else if (contrast.qt == "one-unit"){
+
+          nc <- 2
+          lv <- c(data[[var]][1], (data[[var]][1] + 1))
+          contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
+          contrast[[interaction[k]]] <- rep(lv, nrow(contrast)/nc)
+
+        }  else if (contrast.qt == "user" &
+                    !is.null(user.contrast.interaction[[interaction[k]]])){
+
           nc <- length(user.contrast.interaction[[interaction[k]]])
           lv <- user.contrast.interaction[[interaction[k]]]
           contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
           contrast[[interaction[k]]] <- rep(user.contrast.interaction[[interaction[k]]], nrow(contrast)/nc)
+
+        } else if (contrast.qt == "user" &
+                   is.null(user.contrast.interaction[[interaction[k]]])){
+          stop('contrast.qt = "user" but user.contrast.interaction not found!')
         }
 
         if (!table.reference)
@@ -186,8 +223,11 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
   rownames(new.data) <- NULL
 
   if (table.reference){
-    nl <- ifelse(nlevels(data[[var]]) == 0, 2, nlevels(data[[var]]))
-    seq_nl <- seq(1, (length(label)-1), by = nl)
+    nl <- ifelse(nlevels(data[[var]]) == 0,
+                 ifelse(contrast.qt == "one-unit", 1, 2),
+                 nlevels(data[[var]]))
+    tmp <- ifelse(length(label) > 1, (length(label)-1), 1)
+    seq_nl <- seq(1, tmp, by = nl)
     out <- list(new.data = new.data,
                 label = label,
                 seq_nl = seq_nl)
@@ -201,7 +241,7 @@ contrast_df <- function(data, var, ref, user.contrast = NULL,
 #'@importFrom multcomp glht
 #'@importFrom stats confint
 #'@importFrom stats logLik
-contrast_calc <- function(fit, fit0, design.matrix, beta, beta.var, type){
+contrast_calc <- function(fit, fit0 = NULL, design.matrix, beta, beta.var, type){
 
   contrast_aux <- function(design.matrix){
     out <- sweep(design.matrix, 2, design.matrix[1, ])
