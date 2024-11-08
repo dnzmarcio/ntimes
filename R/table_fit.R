@@ -100,7 +100,7 @@ contrast_df <- function(data, var, ref, contrast.qt,
              any(is(data[[var]]) == "integer")) {
 
 
-    if (contrast.qt == "quantiles") {
+    if (contrast.qt == "quartiles") {
       nc <- 2
       contrast <- contrast[rep(1, nc), ]
       quant <- quantile(data[[var]], probs = c(0.25, 0.75), na.rm = TRUE)
@@ -178,7 +178,7 @@ contrast_df <- function(data, var, ref, contrast.qt,
                  any(is(data[[interaction[k]]]) == "integer")) {
 
 
-        if (contrast.qt == "quantiles") {
+        if (contrast.qt == "quartiles") {
 
           nc <- 2
           lv <- quantile(data[[interaction[k]]], probs = c(0.25, 0.75), na.rm = TRUE)
