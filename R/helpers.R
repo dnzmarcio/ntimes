@@ -342,7 +342,8 @@ helper_kruskal_wallis <- function(x, g){
 helper_student_t <- function(x, g, paired, alternative, conf.level){
 
   data.test <- data.frame(x, g)
-  result <- stats::t.test(data.test$x ~ data.test$g,
+  result <- stats::t.test(x = data.test$x[data.test$g == levels(data.test$g)[1]],
+                          y = data.test$x[data.test$g == levels(data.test$g)[2]],
                           var.equal = TRUE,
                           alternative = alternative,
                           paired = paired,
@@ -378,7 +379,8 @@ helper_student_t <- function(x, g, paired, alternative, conf.level){
 helper_welch_t <- function(x, g, paired, alternative, conf.level){
 
   data.test <- data.frame(x, g)
-  result <- stats::t.test(data.test$x ~ data.test$g,
+  result <- stats::t.test(x = data.test$x[data.test$g == levels(data.test$g)[1]],
+                          y = data.test$x[data.test$g == levels(data.test$g)[2]],
                           var.equal = FALSE,
                           alternative = alternative,
                           paired = paired,
@@ -414,7 +416,8 @@ helper_welch_t <- function(x, g, paired, alternative, conf.level){
 helper_mann_whitney <- function(x, g, paired, alternative, conf.level){
 
   data.test <- data.frame(x, g)
-  result <- stats::wilcox.test(data.test$x ~ data.test$g,
+  result <- stats::wilcox.test(x = data.test$x[data.test$g == levels(data.test$g)[1]],
+                               y = data.test$x[data.test$g == levels(data.test$g)[2]],
                                alternative = alternative,
                                paired = paired, conf.int = TRUE,
                                conf.level = conf.level)
