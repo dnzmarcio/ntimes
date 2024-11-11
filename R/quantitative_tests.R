@@ -151,14 +151,14 @@ dist_qt_mg <-  function(var, group,
 #'@importFrom nparcomp nparcomp
 #'@importFrom stats confint aov
 #'@importFrom methods is
-dist_qt_mc <-  function(var, omnibus.test, group,
+dist_qt_mc <-  function(var, omnibus_test, group,
                         alternative, contrast,
                         digits_p, digits_ci,
                         var_label, group_label) {
 
   data_test <- data.frame(x = var, g = group)
 
-  if(omnibus.test == "ANOVA" | omnibus.test == "Welch's ANOVA"){
+  if(omnibus_test == "ANOVA" | omnibus_test == "Welch's ANOVA"){
     av <- aov(x ~ g, data = data_test)
     mc <- try(glht(av, linfct = mcp(g = contrast), alternative = alternative),
               silent = TRUE)
