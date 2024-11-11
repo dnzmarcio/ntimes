@@ -156,7 +156,7 @@ tab_km <- function(time, status, time_points, digits){
 
   data_model <- data.frame(time, status)
   fit <- survfit(Surv(time, status) ~ 1, data = data_model)
-  temp <- summary(fit, times = time_points)
+  temp <- summary(fit, times = time_points, extend = TRUE)
 
   out <- data.frame(variable = "Overall",
                     group = NA, time = temp$time, survival = temp$surv,
@@ -174,7 +174,7 @@ tab_km_group <- function(var, var.name, var_label,
 
   data_model <- data.frame(time, status)
   fit <- survfit(Surv(time, status) ~ var, data = data_model)
-  temp <- summary(fit, times = time_points)
+  temp <- summary(fit, times = time_points, extend = TRUE)
 
   out <- data.frame(strata = temp$strata,
                     time = temp$time,
@@ -354,7 +354,7 @@ std_km <- function(time, status, xlab, ylab,
   if (risk_table){
     ## Data
     x_ticks <- ggplot_build(surv_plot)$layout$panel_params[[1]]$x$breaks
-    table <- summary(fit, times = x_ticks)
+    table <- summary(fit, times = x_ticks, extend = TRUE)
     data_table <- data.frame(time = table$time, n.risk = table$n.risk)
 
     ## Basic plot
@@ -565,7 +565,7 @@ std_km_group <- function(time, status, var, var_label,
   if (risk_table){
   ## Data
     x_ticks <- ggplot_build(surv_plot)$layout$panel_params[[1]]$x$breaks
-    table <- summary(fit, times = x_ticks)
+    table <- summary(fit, times = x_ticks, extend = TRUE)
     data_table <- data.frame(time = table$time,
                              n_risk = table$n.risk,
                              group = table$strata) |>
