@@ -54,7 +54,8 @@
 #'@export
 nt_km <-  function(data, time, status, labels = NULL,
                    xlab = "Time", ylab = "Survival",
-                   time.points = NULL, risk.table = TRUE,
+                   time.points = NULL,
+                   risk.table = TRUE, survival.table = NULL,
                    save = FALSE, fig.height = 5, fig.width = 5,
                    std_fun = std_km,
                    std_fun_group = std_km_group,
@@ -80,7 +81,8 @@ nt_km <-  function(data, time, status, labels = NULL,
 
   overall <- std_fun(time, status, xlab = xlab, ylab = ylab,
                      time.points = time.points,
-                     risk.table = risk.table, ...)
+                     risk.table = risk.table,
+                     survival.table = survival.table, ...)
   if (!is.null(time.points))
     aux <- tab_km(time, status, time.points, digits = digits)
 
@@ -105,6 +107,7 @@ nt_km <-  function(data, time, status, labels = NULL,
                  xlab = xlab, ylab = ylab,
                  time.points = time.points,
                  risk.table = risk.table,
+                 survival.table = survival.table,
                  fig.height = fig.height, fig.width = fig.width,
                  save = save, where = where, std_fun_group = std_fun_group,
                  ... = ...)
@@ -128,12 +131,12 @@ nt_km <-  function(data, time, status, labels = NULL,
         rename(Variable = .data$variable,
                Group = .data$group,
                Time = .data$time) |>
-        mutate(`Survival (CI 95%)` =
+        mutate(`Survival (95% CI)` =
                  paste0(round(.data$survival, digits),
                         " (", round(.data$lower, digits),
                         " - ", round(.data$upper, digits), ")")) |>
         select(-.data$survival, -.data$lower, -.data$upper) |>
-        select(.data$Time, .data$Variable, .data$Group, .data$`Survival (CI 95%)`)
+        select(.data$Variable, .data$Group, .data$Time, .data$`Survival (95% CI)`)
     }
 
     if (save)
@@ -155,8 +158,8 @@ tab_km <- function(time, status, time.points, digits){
   fit <- survfit(Surv(time, status) ~ 1, data = data.model)
   temp <- summary(fit, times = time.points)
 
-  out <- data.frame(time = temp$time, variable = "Overall",
-                    group = NA, survival = temp$surv,
+  out <- data.frame(variable = "Overall",
+                    group = NA, time = temp$time, survival = temp$surv,
                     lower = temp$lower, upper = temp$upper)
 
   return(out)
@@ -173,8 +176,8 @@ tab_km_group <- function(var, var.name, var.label,
   fit <- survfit(Surv(time, status) ~ var, data = data.model)
   temp <- summary(fit, times = time.points)
 
-  out <- data.frame(time = temp$time,
-                    strata = temp$strata,
+  out <- data.frame(strata = temp$strata,
+                    time = temp$time,
                     survival = temp$surv,
                     lower = temp$lower,
                     upper = temp$upper) |>
@@ -186,7 +189,7 @@ tab_km_group <- function(var, var.name, var.label,
 
 
 aux_km <- function(var, var.name, var.label, time, status,
-                   xlab, ylab, time.points, risk.table,
+                   xlab, ylab, time.points, risk.table, survival.table,
                    fig.height, fig.width, save, where, std_fun_group, ...){
 
   if (is.character(var))
@@ -200,6 +203,7 @@ aux_km <- function(var, var.name, var.label, time, status,
                          xlab = xlab, ylab = ylab,
                          time.points = time.points,
                          risk.table = risk.table,
+                         survival.table = survival.table,
                          ...)
 
     if (save)
@@ -237,10 +241,12 @@ aux_km <- function(var, var.name, var.label, time, status,
 #'@importFrom broom tidy
 #'@importFrom dplyr bind_rows
 #'@importFrom cowplot plot_grid
+#'@importFrom gridExtra tableGrob
+#'@importFrom grid annotation_custom
 #'
 #'@export
 std_km <- function(time, status, xlab, ylab,
-                   time.points, risk.table,
+                   time.points, risk.table, survival.table,
                    ...){
 
   ### Data
@@ -260,13 +266,16 @@ std_km <- function(time, status, xlab, ylab,
 
   ### Formatting
   surv.plot <- surv.plot +
-    labs(x = xlab, y = ylab) + theme_bw()
+    labs(x = xlab, y = ylab) +
+    theme_classic(base_size = 20)
 
   if (!is.null(time.points)){
-    surv.plot <- surv.plot + scale_x_continuous(limits = c(0, max(time)),
-                                                breaks = c(0, time.points))
+    surv.plot <- surv.plot +
+      scale_x_continuous(limits = c(0, max(time)),
+                         breaks = c(0, time.points))
   } else {
-    surv.plot <- surv.plot + scale_x_continuous(limits = c(0, max(time)))
+    surv.plot <- surv.plot +
+      scale_x_continuous(limits = c(0, max(time)))
   }
 
   ### Changing from proportion to percentage
@@ -286,10 +295,85 @@ std_km <- function(time, status, xlab, ylab,
                 stat = "stepribbon",
                 aes_string(ymin = "conf.low", ymax = "conf.high",
                            fill = "group"),
-                alpha = 0.2, size = 0, fill = "grey80")
+                alpha = 0.2, size = 0,
+                fill = "grey80",
+                linetype = "blank")
+
+
+  ### Adding a table for median survival
+  if (!is.null(survival.table)){
+
+    tmp <- summary(fit)
+
+    custom_theme <- ttheme_default(
+      core = list(fg_params = list(fontsize = 14,
+                                   col = "black"),
+                  bg_params = list(fill = "white",
+                                   col = "black", lwd = 1)),
+      colhead = list(fg_params = list(fontsize = 16,
+                                      fontface = "bold",
+                                      col = "black"),
+                     bg_params = list(fill = "white",
+                                      col = "black", lwd = 1))
+    )
+
+    if (!is.na(tmp$table["median"]) & is.null(time.points)){
+      median <- paste0(round(tmp$table["median"], 1),
+                       ", (",
+                       round(tmp$table["0.95LCL"], 1),
+                       " ; ",
+                       round(tmp$table["0.95UCL"], 1),
+                       ")")
+      events <- paste0(tmp$table["events"], "/", tmp$table["n.start"])
+
+      table <-
+        tibble("Median Survival Time (95% CI)" =
+                 median,
+               "Events/Total" = events)
+
+    } else if (!is.null(time.points)){
+      aux <- summary(fit, times = time.points)
+
+      survival <- paste0(round(100*aux$surv, 1),
+                         ", (",
+                         round(100*aux$lower, 1), " ; ",
+                         round(100*aux$upper, 1), ")")
+      n.events <- sapply(time.points, function(x) sum(tmp$n.event[tmp$time < x]))
+      events = paste0(n.events, "/", rep(tmp$table["n.start"], length(n.events)))
+
+      table <-
+        tibble(Time = time.points,
+               "Survival (95% CI)" = survival,
+               "Events/Total" = events)
+    }
+
+    table_grob <- tableGrob(table,
+                            rows = NULL,
+                            theme = custom_theme)
+
+    if (min(data.plot$estimate) < 0.5){
+      surv.plot <- surv.plot +
+        annotation_custom(
+          grob = table_grob,
+          xmin = max(tmp$time)*0.6,
+          xmax = max(tmp$time),
+          ymin = 0.8, ymax = 1
+        )
+    } else {
+      surv.plot <- surv.plot +
+        annotation_custom(
+          grob = table_grob,
+          xmin = max(tmp$time)*0.6,
+          xmax = max(tmp$time),
+          ymin = 0.1, ymax = 0.3
+        )
+
+    }
+
+  }
 
   ### Adding risk table
-  if (!is.null(risk.table)){
+  if (risk.table){
     ## Data
     x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x$breaks
     table <- summary(fit, times = x.ticks)
@@ -297,12 +381,14 @@ std_km <- function(time, status, xlab, ylab,
 
     ## Basic plot
     risk.table <- ggplot(data.table, aes_string(x = "time", y = "1")) +
-      geom_text(aes_string(label = "n.risk"))
+      geom_text(aes_string(label = "n.risk"), size = 6)
 
     ## Formatting
     risk.table <- risk.table +
-      labs(x = xlab, y = "", title = "n at risk") + theme_bw() +
-      theme(title = element_text(size = 9),
+      labs(x = xlab, y = "", title = "n at risk") +
+      theme_classic(base_size = 20) +
+      theme(title = element_text(size = 16),
+            axis.title.x = element_text(size = 20),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank())
 
@@ -316,7 +402,13 @@ std_km <- function(time, status, xlab, ylab,
 
 
     ## Combining plots
-    out <- list(surv.plot = surv.plot, risk.table = risk.table)
+    combined.plot <- surv.plot + risk.table +
+      plot_layout(ncol = 1, heights = c(0.8, 0.2))
+
+    out <- list(combined.plot = combined.plot,
+                surv.plot = surv.plot,
+                risk.table = risk.table)
+
   } else {
     out <- surv.plot
   }
@@ -350,11 +442,13 @@ std_km <- function(time, status, xlab, ylab,
 #'@importFrom dplyr select bind_rows mutate filter
 #'@importFrom scales percent
 #'@importFrom stats pchisq
-#'@importFrom cowplot plot_grid
+#'@importFrom gridExtra tableGrob ttheme_default
+#'@importFrom patchwork + plot_layout
 #'
 #'@export
 std_km_group <- function(time, status, var, var.label,
                          xlab, ylab, time.points, risk.table,
+                         survival.table,
                          ...){
 
   ### Data
@@ -384,23 +478,25 @@ std_km_group <- function(time, status, var, var.label,
 
   ### Formatting
   surv.plot <- surv.plot +
-    labs(x = xlab, y = ylab) + theme_bw() +
+    labs(x = xlab, y = ylab) +
+    theme_classic(base_size = 20) +
     theme(legend.position = "top") +
     scale_colour_brewer(var.label, palette = "Set1", drop = FALSE)
 
   ### Specific time points
   if (!is.null(time.points)){
-    surv.plot <- surv.plot + scale_x_continuous(limits = c(0, max(time)),
-                                                breaks = time.points)
+    surv.plot <- surv.plot +
+      scale_x_continuous(limits = c(0, max(time)),
+                         breaks = time.points)
   } else {
-    surv.plot <- surv.plot + scale_x_continuous(limits = c(0, max(time)))
+    surv.plot <- surv.plot +
+      scale_x_continuous(limits = c(0, max(time)))
   }
 
   ### Changing from proportion to percentage
-  surv.plot <- surv.plot + scale_y_continuous(labels = scales::percent,
-                                              limits = c(0, 1))
-
-
+  surv.plot <- surv.plot +
+    scale_y_continuous(labels = scales::percent,
+                       limits = c(0, 1))
 
   ### Adding censor marks
   data.censor <- data.plot |> filter(.data$n.censor > 0)
@@ -415,7 +511,8 @@ std_km_group <- function(time, status, var, var.label,
                 aes_string(ymin = "conf.low",
                            ymax = "conf.high",
                            fill = "group"),
-                alpha = 0.2, size = 0) +
+                alpha = 0.2, size = 0,
+                linetype = "blank") +
     scale_fill_brewer(var.label, palette = "Set1", drop = FALSE)
 
 
@@ -423,15 +520,71 @@ std_km_group <- function(time, status, var, var.label,
   test <- survival::survdiff(survival::Surv(time, status) ~ var, data = data.model)
   p <- 1 - stats::pchisq(test$chisq, 1)
   p <- ifelse(round(p, 3) != 0,
-              paste0("p = ", round(p, 3)),
-              "p < 0.001")
+              paste0("Logrank test \n p = ", round(p, 3)),
+              "Logrank test \n p < 0.001")
 
   surv.plot <- surv.plot +
     annotate(geom = "text", label = p,
-             x = -Inf, y = -Inf, hjust = -0.2,  vjust = -0.5, size = 3.5)
+             x = -Inf, y = -Inf, hjust = -0.2,  vjust = -0.5, size = 6)
+
+  ### Adding survival table
+  if (!is.null(survival.table)){
+
+    tmp <- summary(fit)
+
+    if (any(!is.na(tmp$table[, "median"])) & is.null(time.points)){
+      table <- get_survival_table(fit,
+                                  var_label = {{var.label}},
+                                  type = "median")
+    } else if (!is.null(time.points)) {
+      table <- get_survival_table(fit,
+                                  var_label = {{var.label}},
+                                  time_points = time.points)
+    }
+
+    custom_theme <- ttheme_default(
+      core = list(fg_params = list(fontsize = 14,
+                                   col = "black"),
+                  bg_params = list(fill = "white",
+                                   col = "black", lwd = 1)),
+      colhead = list(fg_params = list(fontsize = 16,
+                                      fontface = "bold",
+                                      col = "black"),
+                     bg_params = list(fill = "white",
+                                      col = "black", lwd = 1))
+    )
+
+
+
+    table_grob <- tableGrob(table,
+                            rows = NULL,
+                            theme = custom_theme)
+
+    if (min(data.plot$estimate) < 0.5){
+      surv.plot <- surv.plot +
+        annotation_custom(
+          grob = table_grob,
+          xmin = max(tmp$time)*0.6,
+          xmax = max(tmp$time),
+          ymin = 0.8, ymax = 1
+        )
+    } else {
+      surv.plot <- surv.plot +
+        annotation_custom(
+          grob = table_grob,
+          xmin = max(tmp$time)*0.6,
+          xmax = max(tmp$time),
+          ymin = 0.1, ymax = 0.3
+        )
+
+    }
+
+
+
+  }
 
   ### Adding risk table
-  if (!is.null(risk.table)){
+  if (risk.table){
   ## Data
     x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x$breaks
     table <- summary(fit, times = x.ticks)
@@ -445,11 +598,12 @@ std_km_group <- function(time, status, var, var.label,
 
     ## Basic plot
     risk.table <- ggplot(data.table, aes_string(x = "time", y = "group")) +
-      geom_text(aes_string(label = "n.risk"), size = 3.5)
+      geom_text(aes_string(label = "n.risk"), size = 6)
 
     ## Formatting
-    risk.table <- risk.table + theme_bw() +
-      labs(x = xlab, y = "")
+    risk.table <- risk.table +
+      theme_classic(base_size = 20) +
+      labs(x = xlab, y = "", title = "n at risk")
 
     if (!is.null(time.points)){
       risk.table <- risk.table +
@@ -466,7 +620,8 @@ std_km_group <- function(time, status, var, var.label,
 
     risk.table <- risk.table +
       scale_y_discrete(labels = rep("-", nlevels(data.table$group))) +
-      theme(title = element_text(size = 9),
+      theme(title = element_text(size = 16),
+            axis.title.x = element_text(size = 20),
             axis.text.y = element_text(colour = rev(colors[[1]]),
                                        face = "bold",
                                        size = 48,
@@ -474,9 +629,14 @@ std_km_group <- function(time, status, var, var.label,
             axis.ticks.y = element_blank())
 
     ## Combining plots
-    out <- list(surv.plot = surv.plot, risk.table = risk.table)
+    combined.plot <- surv.plot + risk.table +
+      plot_layout(ncol = 1, heights = c(0.8, 0.2))
+
+    out <- list(combined.plot = combined.plot,
+                surv.plot = surv.plot,
+                risk.table = risk.table)
   } else {
-    out <- surv.plot
+    out <- surv_plot
   }
 
   return(out)
