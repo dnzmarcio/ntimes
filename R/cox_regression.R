@@ -393,7 +393,7 @@ aux_multiple_cox <- function(fit, ci.type,
 
   aux <- extract_data(fit)
 
-  effect <- fit_multiple_cox(fit, fit.vars = aux, type = ci.type,
+  effect <- fit_multiple_cox(fit, fit_vars = aux, type = ci.type,
                          user.contrast = user.contrast,
                          user.contrast.interaction = user.contrast.interaction,
                          table.reference = table.reference) |>
@@ -422,14 +422,14 @@ aux_multiple_cox <- function(fit, ci.type,
 #'@importFrom stats model.matrix formula setNames anova vcov update.formula
 #'@importFrom survival coxph
 #'@importFrom stringr str_split
-fit_multiple_cox <- function(fit, fit.vars, type,
+fit_multiple_cox <- function(fit, fit_vars, type,
                          user.contrast, user.contrast.interaction,
                          table.reference){
 
   ref <- reference_df(fit)$df
   beta <- as.numeric(fit$coefficients)
-  beta.var <- as.matrix(vcov(fit))
-  term.labels <- attr(fit$terms, "term.labels")
+  beta_var <- as.matrix(vcov(fit))
+  term_labels <- attr(fit$terms, "term.labels")
 
   interaction <- colnames(attr(fit$terms, "factors"))[attr(fit$terms, "order") > 1]
 
@@ -443,27 +443,27 @@ fit_multiple_cox <- function(fit, fit.vars, type,
     interaction <- interaction[index]
   }
 
-  for (i in 1:length(fit.vars$var)){
+  for (i in 1:length(fit_vars$var)){
 
     if (length(interaction) > 0){
-      cond.interaction <- grepl(fit.vars$var[i], x = interaction, fixed = TRUE)
+      cond.interaction <- grepl(fit_vars$var[i], x = interaction, fixed = TRUE)
     } else {
       cond.interaction <- FALSE
     }
 
     if (all(!cond.interaction)){
-      temp <- contrast_df(data = fit.vars$data, var = fit.vars$var[i],
+      temp <- contrast_df(data = fit_vars$data, var = fit_vars$var[i],
                           ref = ref, user.contrast = user.contrast,
                           table.reference = table.reference)
-      design.matrix <- model.matrix(fit, temp$new.data)
+      design_matrix <- model.matrix(fit, temp$new.data)
 
-      drop <- which(grepl(fit.vars$var[i], x = as.character(term.labels), fixed = TRUE))
-      fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
-                    data = na.exclude(fit.vars$data))
+      drop <- which(grepl(fit_vars$var[i], x = as.character(term_labels), fixed = TRUE))
+      fit0 <- coxph(update.formula(fit$formula, paste0(" ~ . - ", paste(term_labels[drop], collapse = " - "))),
+                    data = na.exclude(fit_vars$data))
 
       contrast <- contrast_calc(fit = fit, fit0 = fit0,
-                                design.matrix = design.matrix,
-                                beta = beta, beta.var = beta.var,
+                                design_matrix = design_matrix,
+                                beta = beta, beta_var = beta_var,
                                 type = type)
 
       if (table.reference)
@@ -481,23 +481,23 @@ fit_multiple_cox <- function(fit, fit.vars, type,
 
     } else {
       for (k in which(cond.interaction)){
-        interaction.vars <- fit.vars$var[sapply(fit.vars$var, grepl, x = as.character(interaction[k]), fixed = TRUE)]
-        others <- interaction.vars[interaction.vars != fit.vars$var[i]]
-        temp <- contrast_df(data = fit.vars$data, var = fit.vars$var[i],
+        interaction.vars <- fit_vars$var[sapply(fit_vars$var, grepl, x = as.character(interaction[k]), fixed = TRUE)]
+        others <- interaction.vars[interaction.vars != fit_vars$var[i]]
+        temp <- contrast_df(data = fit_vars$data, var = fit_vars$var[i],
                             ref = ref, user.contrast = user.contrast,
                             interaction = others,
                             user.contrast.interaction = user.contrast.interaction,
                             table.reference = table.reference)
 
-        design.matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
+        design_matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
 
-        drop <- which(grepl(fit.vars$var[i], x = as.character(term.labels), fixed = TRUE))
+        drop <- which(grepl(fit_vars$var[i], x = as.character(term_labels), fixed = TRUE))
         fit0 <- coxph(update.formula(fit$formula,
-                                     paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
-                      data = fit.vars$data)
+                                     paste0(" ~ . - ", paste(term_labels[drop], collapse = " - "))),
+                      data = fit_vars$data)
 
-        contrast <- contrast_calc(fit = fit, fit0 = fit0, design.matrix = design.matrix,
-                                  beta = beta, beta.var = beta.var,
+        contrast <- contrast_calc(fit = fit, fit0 = fit0, design_matrix = design_matrix,
+                                  beta = beta, beta_var = beta_var,
                                   type = type)
 
         if (table.reference){

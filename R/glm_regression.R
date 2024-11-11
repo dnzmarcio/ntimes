@@ -403,8 +403,8 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust_variance,
 
   ref <- reference_df(fit)$df
   beta <- as.numeric(fit$coefficients)
-  beta.var <- as.matrix(vcov(fit))
-  term.labels <- attr(fit$terms, "term.labels")
+  beta_var <- as.matrix(vcov(fit))
+  term_labels <- attr(fit$terms, "term.labels")
 
   interaction <- colnames(attr(fit$terms, "factors"))[attr(fit$terms, "order") > 1]
 
@@ -423,17 +423,17 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust_variance,
                           contrast.qt = contrast.qt,
                           user.contrast = user.contrast,
                           table.reference = table.reference)
-      design.matrix <- model.matrix(formula(fit), data = temp$new.data)
+      design_matrix <- model.matrix(formula(fit), data = temp$new.data)
 
-      drop <- which(grepl(fit.vars$var[i], x = as.character(term.labels), fixed = TRUE))
+      drop <- which(grepl(fit.vars$var[i], x = as.character(term_labels), fixed = TRUE))
       fit0 <- glm(update.formula(fit$formula,
-                                 paste0(" ~ . - ", paste(term.labels[drop],
+                                 paste0(" ~ . - ", paste(term_labels[drop],
                                                          collapse = " - "))),
                   data = na.exclude(fit.vars$data), family = fit$family)
 
       contrast <- contrast_calc(fit = fit, fit0 = fit0,
-                                design.matrix = design.matrix,
-                                beta = beta, beta.var = beta.var,
+                                design_matrix = design_matrix,
+                                beta = beta, beta_var = beta_var,
                                 type = type)
 
       aux <- grep("one-unit change", temp$label)
@@ -462,14 +462,14 @@ fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust_variance,
                             interaction = others,
                             user.contrast.interaction = user.contrast.interaction)
 
-        design.matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
+        design_matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
 
-        drop <- which(grepl(fit.vars$var[i], x = as.character(term.labels), fixed = TRUE))
-        fit0 <- glm(update.formula(fit$formula, paste0(" ~ . - ", paste(term.labels[drop], collapse = " - "))),
+        drop <- which(grepl(fit.vars$var[i], x = as.character(term_labels), fixed = TRUE))
+        fit0 <- glm(update.formula(fit$formula, paste0(" ~ . - ", paste(term_labels[drop], collapse = " - "))),
                     data = fit.vars$data, family = fit$family)
 
-        contrast <- contrast_calc(fit = fit, fit0 = fit0, design.matrix = design.matrix,
-                                  beta = beta, beta.var = beta.var,
+        contrast <- contrast_calc(fit = fit, fit0 = fit0, design_matrix = design_matrix,
+                                  beta = beta, beta_var = beta_var,
                                   type = type)
 
         if (table.reference){
