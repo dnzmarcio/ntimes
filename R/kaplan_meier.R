@@ -358,7 +358,7 @@ std_km <- function(time, status, xlab, ylab,
     data.table <- data.frame(time = table$time, n.risk = table$n.risk)
 
     ## Basic plot
-    risk_table <- ggplot(data.table, aes_string(x = "time", y = "1")) +
+    risk_table <- ggplot(data.table, aes(x = .data$time, y = 1)) +
       geom_text(aes_string(label = "n.risk"), size = 6)
 
     ## Formatting
@@ -450,8 +450,8 @@ std_km_group <- function(time, status, var, var_label,
     mutate(group = factor(.data$group, levels = levels(var)))
 
   ### Basic plot
-  surv.plot <- ggplot(data.plot, aes_string(x = "time", y = "estimate",
-                                            colour = "group")) +
+  surv.plot <- ggplot(data.plot, aes(x = .data$time, y = .data$estimate,
+                                     colour = .data$group)) +
     geom_step()
 
   ### Formatting
@@ -575,7 +575,7 @@ std_km_group <- function(time, status, var, var_label,
                             levels = rev(levels(var))))
 
     ## Basic plot
-    risk_table <- ggplot(data.table, aes_string(x = "time", y = "group")) +
+    risk_table <- ggplot(data.table, aes(x = .data$time, y = .data$group)) +
       geom_text(aes_string(label = "n.risk"), size = 6)
 
     ## Formatting

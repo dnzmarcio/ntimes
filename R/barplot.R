@@ -161,7 +161,7 @@ std_barplot <- function(var, var.label, ylab, ...){
            label = paste0(round(.data$perc, 2), '%', " (", .data$n, ")"))
 
   ### Basic plot
-  out <- ggplot(data_plot, aes_string(x = "var", y = "perc")) +
+  out <- ggplot(data_plot, aes_string(x = .data$var, y = .data$perc)) +
     geom_bar(stat = 'identity', position = position_dodge(width = .9),
              fill = "grey80")
 
@@ -209,9 +209,9 @@ std_barplot_group <- function(var, group, var.label, group.label, ylab, ...){
            label = paste0(round(.data$perc, 2), '%', " (", .data$n, ")"))
 
   ### Basic plot
-  out <- ggplot(data_plot, aes_string(x = "group",
-                                      y = "perc",
-                                      fill = "var")) +
+  out <- ggplot(data_plot, aes(x = .data$group,
+                               y = .data$perc,
+                               fill = .data$var)) +
     geom_bar(stat = 'identity', position = position_dodge(width = .9))
 
   ### Formatting

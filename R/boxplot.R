@@ -144,7 +144,7 @@ std_boxplot <- function(var, var.label, ...){
   data_plot <- data.frame(var = var)
 
   ### Basic Plot
-  out <- ggplot(data_plot, aes_string(x = NA, y = "var")) +
+  out <- ggplot(data_plot, aes(x = NA, y = .data$var)) +
     stat_boxplot(geom = "errorbar", width = 0.5) +
     geom_boxplot(fill = "grey80", outlier.shape = NA)  +
     geom_jitter(shape = 16, size = 1.5,
@@ -183,7 +183,7 @@ std_boxplot_group <- function(var, group, var.label, group.label, ...){
   data_plot <- data.frame(var = var, group = group)
 
   ### Basic plot
-  out <- ggplot(data_plot, aes_string(y = "var", x = "group")) +
+  out <- ggplot(data_plot, aes(y = .data$var, x = .data$group)) +
     stat_boxplot(geom = "errorbar", width = 0.5) +
     geom_boxplot(outlier.shape = NA, fill = "grey80")  +
     geom_jitter(shape = 16, size = 1.5,
