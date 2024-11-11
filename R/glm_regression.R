@@ -275,7 +275,7 @@ fit_simple_glm <- function(data, family,
 #'@param fit a glm object.
 #'@param exponentiate a logical value indicating whether coefficients should be exponentiated.
 #'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{wald}).
-#'@param contrast.qt a character indicating whether is one-unit change (\code{one-unit}), quartiles (\code{quartiles}) or provided by the user (\code{user}).
+#'@param contrast.qt a character indicating whether the contrast for quantitative covariates. Options are every one-unit of change (\code{one-unit}), quartiles (\code{quartiles}) or provided by the user (\code{user}).
 #'@param user.contrast a variable named list of numerical vectors indicating contrast for a covariate.
 #'@param user.contrast.interaction a variable named list of numerical vectors indicating a contrast for interaction.
 #'@param table.reference a logical value indicating whether the output should be presented with a line indicating the reference category.
