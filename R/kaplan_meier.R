@@ -154,8 +154,8 @@ nt_km <-  function(data, time, status, labels = NULL,
 #'@importFrom survival survfit Surv
 tab_km <- function(time, status, time_points, digits){
 
-  data.model <- data.frame(time, status)
-  fit <- survfit(Surv(time, status) ~ 1, data = data.model)
+  data_model <- data.frame(time, status)
+  fit <- survfit(Surv(time, status) ~ 1, data = data_model)
   temp <- summary(fit, times = time_points)
 
   out <- data.frame(variable = "Overall",
@@ -169,11 +169,11 @@ tab_km <- function(time, status, time_points, digits){
 #'@importFrom tidyr separate
 #'@importFrom dplyr mutate
 #'@importFrom rlang .data
-tab_km_group <- function(var, var.name, var.label,
+tab_km_group <- function(var, var.name, var_label,
                          time, status, time_points, digits){
 
-  data.model <- data.frame(time, status)
-  fit <- survfit(Surv(time, status) ~ var, data = data.model)
+  data_model <- data.frame(time, status)
+  fit <- survfit(Surv(time, status) ~ var, data = data_model)
   temp <- summary(fit, times = time_points)
 
   out <- data.frame(strata = temp$strata,
@@ -182,24 +182,24 @@ tab_km_group <- function(var, var.name, var.label,
                     lower = temp$lower,
                     upper = temp$upper) |>
     separate(.data$strata, into = c("variable", "group"), sep = "=") |>
-    mutate(variable = var.label)
+    mutate(variable = var_label)
 
   return(out)
 }
 
 
-aux_km <- function(var, var.name, var.label, time, status,
+aux_km <- function(var, var.name, var_label, time, status,
                    xlab, ylab, time_points, risk_table, survival_table,
                    fig_height, fig_width, save, where, std_fun_group, ...){
 
   if (is.character(var))
     var <- as.factor(var)
   if (is.numeric(var))
-    stop(paste0(var.label, " is numeric!"))
+    stop(paste0(var_label, " is numeric!"))
 
   if (nlevels(droplevels(var)) >= 2){
     out <- std_fun_group(time = time, status = status,
-                         var = var, var.label = var.label,
+                         var = var, var_label = var_label,
                          xlab = xlab, ylab = ylab,
                          time_points = time_points,
                          risk_table = risk_table,
@@ -250,10 +250,10 @@ std_km <- function(time, status, xlab, ylab,
                    ...){
 
   ### Data
-  data.model <- data.frame(time, status)
-  fit <- survival::survfit(survival::Surv(time, status) ~ 1, data = data.model)
+  data_model <- data.frame(time, status)
+  fit <- survival::survfit(survival::Surv(time, status) ~ 1, data = data_model)
 
-  first.row <- data.frame(time = 0, n.risk = nrow(data.model),
+  first.row <- data.frame(time = 0, n.risk = nrow(data_model),
                           n.event = 0, n.censor = 0,
                           estimate = 1, std.error = NA,
                           conf.high = 1, conf.low = 1)
@@ -423,7 +423,7 @@ std_km <- function(time, status, xlab, ylab,
 #'@param time a numeric vector.
 #'@param status a numeric vector of '0' and '1'.
 #'@param var a character vector.
-#'@param var.label a character value specifying the group label.
+#'@param var_label a character value specifying the group label.
 #'@param xlab a character value specifying the x axis label.
 #'@param ylab a character value specifying the y axis label.
 #'@param time_points a numeric vector of time points to evaluate the survival curves.
@@ -446,14 +446,14 @@ std_km <- function(time, status, xlab, ylab,
 #'@importFrom patchwork + plot_layout
 #'
 #'@export
-std_km_group <- function(time, status, var, var.label,
+std_km_group <- function(time, status, var, var_label,
                          xlab, ylab, time_points, risk_table,
                          survival_table,
                          ...){
 
   ### Data
-  data.model <- data.frame(time, status, var)
-  fit <- survival::survfit(survival::Surv(time, status) ~ var, data = data.model)
+  data_model <- data.frame(time, status, var)
+  fit <- survival::survfit(survival::Surv(time, status) ~ var, data = data_model)
 
   first.row <- data.frame(time = 0, n.risk = as.numeric(table(var)),
                           n.event = 0, n.censor = 0,
@@ -481,7 +481,7 @@ std_km_group <- function(time, status, var, var.label,
     labs(x = xlab, y = ylab) +
     theme_classic(base_size = 20) +
     theme(legend.position = "top") +
-    scale_colour_brewer(var.label, palette = "Set1", drop = FALSE)
+    scale_colour_brewer(var_label, palette = "Set1", drop = FALSE)
 
   ### Specific time points
   if (!is.null(time_points)){
@@ -513,11 +513,11 @@ std_km_group <- function(time, status, var, var.label,
                            fill = "group"),
                 alpha = 0.2, size = 0,
                 linetype = "blank") +
-    scale_fill_brewer(var.label, palette = "Set1", drop = FALSE)
+    scale_fill_brewer(var_label, palette = "Set1", drop = FALSE)
 
 
   ### Adding p-values
-  test <- survival::survdiff(survival::Surv(time, status) ~ var, data = data.model)
+  test <- survival::survdiff(survival::Surv(time, status) ~ var, data = data_model)
   p <- 1 - stats::pchisq(test$chisq, 1)
   p <- ifelse(round(p, 3) != 0,
               paste0("Logrank test \n p = ", round(p, 3)),
@@ -534,11 +534,11 @@ std_km_group <- function(time, status, var, var.label,
 
     if (any(!is.na(tmp$table[, "median"])) & is.null(time_points)){
       table <- get_survival_table(fit,
-                                  var_label = {{var.label}},
+                                  var_label = {{var_label}},
                                   type = "median")
     } else if (!is.null(time_points)) {
       table <- get_survival_table(fit,
-                                  var_label = {{var.label}},
+                                  var_label = {{var_label}},
                                   time_points = time_points)
     }
 
