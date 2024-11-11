@@ -261,36 +261,36 @@ std_km <- function(time, status, xlab, ylab,
   data.plot <- bind_rows(first.row, broom::tidy(fit))
 
   ### Basic plot
-  surv.plot <- ggplot(data.plot, aes_string(x = "time", y = "estimate")) +
+  surv_plot <- ggplot(data.plot, aes_string(x = "time", y = "estimate")) +
     geom_step()
 
   ### Formatting
-  surv.plot <- surv.plot +
+  surv_plot <- surv_plot +
     labs(x = xlab, y = ylab) +
     theme_classic(base_size = 20)
 
   if (!is.null(time_points)){
-    surv.plot <- surv.plot +
+    surv_plot <- surv_plot +
       scale_x_continuous(limits = c(0, max(time)),
                          breaks = c(0, time_points))
   } else {
-    surv.plot <- surv.plot +
+    surv_plot <- surv_plot +
       scale_x_continuous(limits = c(0, max(time)))
   }
 
   ### Changing from proportion to percentage
-  surv.plot <- surv.plot +
+  surv_plot <- surv_plot +
     scale_y_continuous(labels = scales::percent, limits = c(0, 1))
 
   ### Adding censor marks
   data.censor <- data.plot |> filter(.data$n.censor > 0)
-  surv.plot <- surv.plot +
+  surv_plot <- surv_plot +
     geom_point(data = data.censor,
                aes_string(x = "time", y = "estimate"),
                shape = 124)
 
   ### Adding 95% confidence bands
-  surv.plot <- surv.plot +
+  surv_plot <- surv_plot +
     geom_ribbon(data = data.plot,
                 stat = "stepribbon",
                 aes_string(ymin = "conf.low", ymax = "conf.high",
@@ -330,7 +330,7 @@ std_km <- function(time, status, xlab, ylab,
                             theme = custom_theme)
 
     if (min(data.plot$estimate) < 0.5){
-      surv.plot <- surv.plot +
+      surv_plot <- surv_plot +
         annotation_custom(
           grob = table_grob,
           xmin = max(tmp$time)*0.6,
@@ -338,7 +338,7 @@ std_km <- function(time, status, xlab, ylab,
           ymin = 0.8, ymax = 1
         )
     } else {
-      surv.plot <- surv.plot +
+      surv_plot <- surv_plot +
         annotation_custom(
           grob = table_grob,
           xmin = max(tmp$time)*0.6,
@@ -353,12 +353,12 @@ std_km <- function(time, status, xlab, ylab,
   ### Adding risk table
   if (risk_table){
     ## Data
-    x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x$breaks
-    table <- summary(fit, times = x.ticks)
-    data.table <- data.frame(time = table$time, n.risk = table$n.risk)
+    x_ticks <- ggplot_build(surv_plot)$layout$panel_params[[1]]$x$breaks
+    table <- summary(fit, times = x_ticks)
+    data_table <- data.frame(time = table$time, n.risk = table$n.risk)
 
     ## Basic plot
-    risk_table <- ggplot(data.table, aes(x = .data$time, y = 1)) +
+    risk_table <- ggplot(data_table, aes(x = .data$time, y = 1)) +
       geom_text(aes_string(label = "n.risk"), size = 6)
 
     ## Formatting
@@ -380,15 +380,15 @@ std_km <- function(time, status, xlab, ylab,
 
 
     ## Combining plots
-    combined.plot <- surv.plot + risk_table +
+    combined.plot <- surv_plot + risk_table +
       plot_layout(ncol = 1, heights = c(0.8, 0.2))
 
     out <- list(combined.plot = combined.plot,
-                surv.plot = surv.plot,
+                surv_plot = surv_plot,
                 risk_table = risk_table)
 
   } else {
-    out <- surv.plot
+    out <- surv_plot
   }
 
   return(out)
@@ -450,12 +450,12 @@ std_km_group <- function(time, status, var, var_label,
     mutate(group = factor(.data$group, levels = levels(var)))
 
   ### Basic plot
-  surv.plot <- ggplot(data.plot, aes(x = .data$time, y = .data$estimate,
+  surv_plot <- ggplot(data.plot, aes(x = .data$time, y = .data$estimate,
                                      colour = .data$group)) +
     geom_step()
 
   ### Formatting
-  surv.plot <- surv.plot +
+  surv_plot <- surv_plot +
     labs(x = xlab, y = ylab) +
     theme_classic(base_size = 20) +
     theme(legend.position = "top") +
@@ -463,27 +463,27 @@ std_km_group <- function(time, status, var, var_label,
 
   ### Specific time points
   if (!is.null(time_points)){
-    surv.plot <- surv.plot +
+    surv_plot <- surv_plot +
       scale_x_continuous(limits = c(0, max(time)),
                          breaks = time_points)
   } else {
-    surv.plot <- surv.plot +
+    surv_plot <- surv_plot +
       scale_x_continuous(limits = c(0, max(time)))
   }
 
   ### Changing from proportion to percentage
-  surv.plot <- surv.plot +
+  surv_plot <- surv_plot +
     scale_y_continuous(labels = scales::percent,
                        limits = c(0, 1))
 
   ### Adding censor marks
   data.censor <- data.plot |> filter(.data$n.censor > 0)
-  surv.plot <- surv.plot +
+  surv_plot <- surv_plot +
     geom_point(data = data.censor,
                aes_string(x = "time", y = "estimate"), shape = 124)
 
   ### Adding 95% confidence bands
-  surv.plot <- surv.plot +
+  surv_plot <- surv_plot +
     geom_ribbon(data = data.plot,
                 stat = 'stepribbon',
                 aes_string(ymin = "conf.low",
@@ -501,7 +501,7 @@ std_km_group <- function(time, status, var, var_label,
               paste0("Logrank test \n p = ", round(p, 3)),
               "Logrank test \n p < 0.001")
 
-  surv.plot <- surv.plot +
+  surv_plot <- surv_plot +
     annotate(geom = "text", label = p,
              x = -Inf, y = -Inf, hjust = -0.2,  vjust = -0.5, size = 6)
 
@@ -539,7 +539,7 @@ std_km_group <- function(time, status, var, var_label,
                             theme = custom_theme)
 
     if (min(data.plot$estimate) < 0.5){
-      surv.plot <- surv.plot +
+      surv_plot <- surv_plot +
         annotation_custom(
           grob = table_grob,
           xmin = max(tmp$time)*0.6,
@@ -547,7 +547,7 @@ std_km_group <- function(time, status, var, var_label,
           ymin = 0.8, ymax = 1
         )
     } else {
-      surv.plot <- surv.plot +
+      surv_plot <- surv_plot +
         annotation_custom(
           grob = table_grob,
           xmin = max(tmp$time)*0.6,
@@ -564,10 +564,10 @@ std_km_group <- function(time, status, var, var_label,
   ### Adding risk table
   if (risk_table){
   ## Data
-    x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x$breaks
-    table <- summary(fit, times = x.ticks)
-    data.table <- data.frame(time = table$time,
-                             n.risk = table$n.risk,
+    x_ticks <- ggplot_build(surv_plot)$layout$panel_params[[1]]$x$breaks
+    table <- summary(fit, times = x_ticks)
+    data_table <- data.frame(time = table$time,
+                             n_risk = table$n.risk,
                              group = table$strata) |>
       tidyr::separate(.data$group, into = c("var", "group"), sep = "r=") |>
       select(-var) |>
@@ -575,8 +575,8 @@ std_km_group <- function(time, status, var, var_label,
                             levels = rev(levels(var))))
 
     ## Basic plot
-    risk_table <- ggplot(data.table, aes(x = .data$time, y = .data$group)) +
-      geom_text(aes_string(label = "n.risk"), size = 6)
+    risk_table <- ggplot(data_table, aes(x = .data$time, y = .data$group)) +
+      geom_text(aes(label = .data$n_risk), size = 6)
 
     ## Formatting
     risk_table <- risk_table +
@@ -594,10 +594,10 @@ std_km_group <- function(time, status, var, var_label,
 
 
     ## Changing y axis ticks
-    colors <- unique(ggplot_build(surv.plot)$data[[1]]["colour"])
+    colors <- unique(ggplot_build(surv_plot)$data[[1]]["colour"])
 
     risk_table <- risk_table +
-      scale_y_discrete(labels = rep("-", nlevels(data.table$group))) +
+      scale_y_discrete(labels = rep("-", nlevels(data_table$group))) +
       theme(title = element_text(size = 16),
             axis.title.x = element_text(size = 20),
             axis.text.y = element_text(colour = rev(colors[[1]]),
@@ -607,11 +607,11 @@ std_km_group <- function(time, status, var, var_label,
             axis.ticks.y = element_blank())
 
     ## Combining plots
-    combined.plot <- surv.plot + risk_table +
+    combined_plot <- surv_plot + risk_table +
       plot_layout(ncol = 1, heights = c(0.8, 0.2))
 
-    out <- list(combined.plot = combined.plot,
-                surv.plot = surv.plot,
+    out <- list(combined_plot = combined_plot,
+                surv_plot = surv_plot,
                 risk_table = risk_table)
   } else {
     out <- surv_plot
