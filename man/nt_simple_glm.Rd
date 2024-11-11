@@ -9,15 +9,15 @@ nt_simple_glm(
   response,
   ...,
   family,
-  robust.variance = NULL,
+  robust_variance = NULL,
   increment = NULL,
-  ci.type = "Wald",
-  conf.level = 0.95,
+  ci_type = "Wald",
+  conf_level = 0.95,
   exponentiate = FALSE,
   format = TRUE,
   labels = NULL,
   digits = 2,
-  digits.p = 3,
+  digits_p = 3,
   save = FALSE,
   file = "simple_logistic"
 )
@@ -31,13 +31,13 @@ nt_simple_glm(
 
 \item{family}{a character indicating family distribution. See more \code{\link[stats]{family}}.}
 
-\item{robust.variance}{a function yielding a covariance matrix or a covariance matrix. See more \code{\link[lmtest]{coeftest}}.}
+\item{robust_variance}{a function yielding a covariance matrix or a covariance matrix. See more \code{\link[lmtest]{coeftest}}.}
 
 \item{increment}{a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
 
-\item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald})}
+\item{ci_type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald})}
 
-\item{conf.level}{a numerical value indicating the confidence level for parameters of interest.}
+\item{conf_level}{a numerical value indicating the confidence level for parameters of interest.}
 
 \item{exponentiate}{a logical value indicating whether coefficients should be exponentiated.}
 
@@ -47,7 +47,7 @@ nt_simple_glm(
 
 \item{digits}{a numerical value defining of digits to present the results.}
 
-\item{digits.p}{a numerical value defining number of digits to present the p-values.}
+\item{digits_p}{a numerical value defining number of digits to present the p-values.}
 
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 

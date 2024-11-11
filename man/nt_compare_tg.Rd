@@ -9,15 +9,15 @@ nt_compare_tg(
   group,
   labels = NULL,
   alternative = "two.sided",
-  norm.test = helper_sf_test,
-  var.test = helper_levene_test,
-  qt.test = list(helper_student_t, helper_welch_t, helper_mann_whitney,
+  norm_test = helper_sf_test,
+  var_test = helper_levene_test,
+  qt_test = list(helper_student_t, helper_welch_t, helper_mann_whitney,
     helper_brunner_munzel),
   paired = FALSE,
-  conf.level = 0.95,
+  conf_level = 0.95,
   format = TRUE,
-  digits.ci = 3,
-  digits.p = 5,
+  digits_ci = 3,
+  digits_p = 5,
   save = FALSE,
   file = "nt_compare_tg",
   ...
@@ -33,23 +33,23 @@ nt_compare_tg(
 \item{alternative}{a character value indicating the alternative hypothesis,
 must be one of "two.sided", "greater" or "less".}
 
-\item{norm.test}{a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.}
+\item{norm_test}{a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.}
 
-\item{var.test}{a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_levene_test}.}
+\item{var_test}{a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_levene_test}.}
 
-\item{qt.test}{a list of functions for four possible cases: (1) normality and homoscedasticity,
+\item{qt_test}{a list of functions for four possible cases: (1) normality and homoscedasticity,
 (2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.}
 
 \item{paired}{a logical value indicating whether a paired test should be used.}
 
-\item{conf.level}{a character value specifying the confidence level of the confidence interval for
+\item{conf_level}{a character value specifying the confidence level of the confidence interval for
 the difference between the two groups.}
 
 \item{format}{a logical value indicating whether the output should be formatted.}
 
-\item{digits.ci}{the number of digits to present the confidence intervals.}
+\item{digits_ci}{the number of digits to present the confidence intervals.}
 
-\item{digits.p}{the number of digits to present the p-values.}
+\item{digits_p}{the number of digits to present the p-values.}
 
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 

@@ -4,7 +4,15 @@
 \alias{std_profileplot_group}
 \title{Standard profile plot by group}
 \usage{
-std_profileplot_group(var, time, group, var.label, time.label, group.label)
+std_profileplot_group(
+  var,
+  time,
+  group,
+  var.label,
+  time.label,
+  group.label,
+  ...
+)
 }
 \arguments{
 \item{var}{a numeric vector.}

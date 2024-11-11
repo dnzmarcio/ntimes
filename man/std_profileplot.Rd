@@ -4,7 +4,7 @@
 \alias{std_profileplot}
 \title{Standard profile plot}
 \usage{
-std_profileplot(var, time, var.label, time.label)
+std_profileplot(var, time, var.label, time.label, ...)
 }
 \arguments{
 \item{var}{a numeric vector.}

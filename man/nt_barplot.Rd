@@ -10,8 +10,8 @@ nt_barplot(
   labels = NULL,
   ylab = "Percent (\%)",
   save = FALSE,
-  fig.height = 5,
-  fig.width = 5,
+  fig_height = 5,
+  fig_width = 5,
   std_fun = std_barplot,
   std_fun_group = std_barplot_group,
   ...
@@ -29,9 +29,9 @@ nt_barplot(
 \item{save}{a logical value indicating whether the output
 should be saved as a jpeg file.}
 
-\item{fig.height}{a numeric value indicating the height (in) of the file.}
+\item{fig_height}{a numeric value indicating the height (in) of the file.}
 
-\item{fig.width}{a numeric value indicating the width (in) of the file.}
+\item{fig_width}{a numeric value indicating the width (in) of the file.}
 
 \item{std_fun}{a function to plot a barplot when \code{group = NULL}.
 It must follow the same structure of \code{\link{std_barplot}}.}

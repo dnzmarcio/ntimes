@@ -15,7 +15,7 @@ nt_simple_cox(
   strata = NULL,
   format = TRUE,
   digits = 2,
-  digits.p = 3,
+  digits_p = 3,
   save = FALSE,
   file = "simple_cox"
 )
@@ -41,7 +41,7 @@ nt_simple_cox(
 
 \item{digits}{a numerical value defining of digits to present the results.}
 
-\item{digits.p}{a numerical value defining number of digits to present the p-values.}
+\item{digits_p}{a numerical value defining number of digits to present the p-values.}
 
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 

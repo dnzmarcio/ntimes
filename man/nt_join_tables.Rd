@@ -5,8 +5,8 @@
 \title{Join tables}
 \usage{
 nt_join_tables(
-  tab.x,
-  tab.y,
+  tab_x,
+  tab_y,
   digits = 3,
   alpha = 0.05,
   save = FALSE,
@@ -14,9 +14,9 @@ nt_join_tables(
 )
 }
 \arguments{
-\item{tab.x}{a data frame with attribute \code{ntimes}.}
+\item{tab_x}{a data frame with attribute \code{ntimes}.}
 
-\item{tab.y}{a data frame with attribute \code{ntimes}.}
+\item{tab_y}{a data frame with attribute \code{ntimes}.}
 
 \item{digits}{a numeric value specifying the number of digits for the p values.}
 
@@ -27,7 +27,7 @@ nt_join_tables(
 \item{file}{a character value indicating the name of output file in csv format to be saved.}
 }
 \value{
-A data frame containing \code{tab.x} and \code{tab.y}.
+A data frame containing \code{tab_x} and \code{tab_y}.
 }
 \description{
 Join tables resulting from other functions of the package \code{ntimes}.

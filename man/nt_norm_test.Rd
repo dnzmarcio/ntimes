@@ -4,14 +4,14 @@
 \alias{nt_norm_test}
 \title{Normality tests}
 \usage{
-nt_norm_test(data, group = NULL, norm.test = helper_sf_test)
+nt_norm_test(data, group = NULL, norm_test = helper_sf_test)
 }
 \arguments{
 \item{data}{a data frame with the variables.}
 
 \item{group}{an optional character indicating the group variable.}
 
-\item{norm.test}{a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.}
+\item{norm_test}{a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.}
 }
 \value{
 \code{tab} a table of p-values for each of the five normality tests.

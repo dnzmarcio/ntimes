@@ -7,14 +7,15 @@
 nt_multiple_glm(
   fit,
   exponentiate = FALSE,
-  ci.type = "Wald",
+  ci_type = "Wald",
+  contrast.qt = "one-unit",
   user.contrast = NULL,
   user.contrast.interaction = NULL,
   table.reference = TRUE,
   format = TRUE,
   labels = NULL,
   digits = 2,
-  digits.p = 3,
+  digits_p = 3,
   save = FALSE,
   file = "nt_multiple_glm"
 )
@@ -24,7 +25,9 @@ nt_multiple_glm(
 
 \item{exponentiate}{a logical value indicating whether coefficients should be exponentiated.}
 
-\item{ci.type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald}).}
+\item{ci_type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{wald}).}
+
+\item{contrast.qt}{a character indicating whether the contrast for quantitative covariates. Options are every one-unit of change (\code{one-unit}), quartiles (\code{quartiles}) or provided by the user (\code{user}).}
 
 \item{user.contrast}{a variable named list of numerical vectors indicating contrast for a covariate.}
 
@@ -38,7 +41,7 @@ nt_multiple_glm(
 
 \item{digits}{a numerical value defining of digits to present the results.}
 
-\item{digits.p}{a numerical value defining number of digits to present the p-values.}
+\item{digits_p}{a numerical value defining number of digits to present the p-values.}
 
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 

@@ -10,10 +10,11 @@ nt_profileplot(
   group = NULL,
   labels = NULL,
   save = FALSE,
-  fig.height = 5,
-  fig.width = 5,
+  fig_height = 5,
+  fig_width = 5,
   std_fun = std_profileplot,
-  std_fun_group = std_profileplot_group
+  std_fun_group = std_profileplot_group,
+  ...
 )
 }
 \arguments{
@@ -28,9 +29,9 @@ nt_profileplot(
 \item{save}{a logical value indicating whether the output
 should be saved as a jpeg file.}
 
-\item{fig.height}{a numeric value indicating the height (in) of the file.}
+\item{fig_height}{a numeric value indicating the height (in) of the file.}
 
-\item{fig.width}{a numeric value indicating the width (in) of the file.}
+\item{fig_width}{a numeric value indicating the width (in) of the file.}
 
 \item{std_fun}{a function to plot a profile plot when \code{group = NULL}.
 It must follow the same structure of \code{\link{std_profileplot}}.}
