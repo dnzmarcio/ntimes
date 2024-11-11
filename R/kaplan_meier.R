@@ -317,34 +317,12 @@ std_km <- function(time, status, xlab, ylab,
                                       col = "black", lwd = 1))
     )
 
-    if (!is.na(tmp$table["median"]) & is.null(time_points)){
-      median <- paste0(round(tmp$table["median"], 1),
-                       ", (",
-                       round(tmp$table["0.95LCL"], 1),
-                       " ; ",
-                       round(tmp$table["0.95UCL"], 1),
-                       ")")
-      events <- paste0(tmp$table["events"], "/", tmp$table["n.start"])
-
-      table <-
-        tibble("Median Survival Time (95% CI)" =
-                 median,
-               "Events/Total" = events)
-
-    } else if (!is.null(time_points)){
-      aux <- summary(fit, times = time_points)
-
-      survival <- paste0(round(100*aux$surv, 1),
-                         ", (",
-                         round(100*aux$lower, 1), " ; ",
-                         round(100*aux$upper, 1), ")")
-      n.events <- sapply(time_points, function(x) sum(tmp$n.event[tmp$time < x]))
-      events = paste0(n.events, "/", rep(tmp$table["n.start"], length(n.events)))
-
-      table <-
-        tibble(Time = time_points,
-               "Survival (95% CI)" = survival,
-               "Events/Total" = events)
+    if (any(!is.na(tmp$table[, "median"])) & is.null(time_points)){
+      table <- get_survival_table(fit,
+                                  type = "median")
+    } else if (!is.null(time_points)) {
+      table <- get_survival_table(fit,
+                                  time_points = time_points)
     }
 
     table_grob <- tableGrob(table,

@@ -143,81 +143,115 @@ stairstepn <- function(data, direction="hv", yvars="y") {
 #'@importFrom tidyr unnest left_join separate_wider_delim
 #'@importFrom rlang
 #'@export
-get_survival_table <- function(survfit_obj, var_label,
+get_survival_table <- function(survfit_obj, var_label = NULL,
                                type = "median", time_points = NULL) {
+
   s <- summary(survfit_obj)
 
+  if (is.null(s$strata)) {
 
-  if (type == "median" & is.null(time_points)) {
-    if (all(is.na(s$table[, "median"])))
-      stop("There is no median survival time!")
+    if (!is.na(s$table["median"]) & is.null(time_points)){
+      median <- paste0(round(s$table["median"], 1),
+                       ", (",
+                       round(s$table["0.95LCL"], 1),
+                       " ; ",
+                       round(s$table["0.95UCL"], 1),
+                       ")")
+      events <- paste0(s$table["events"], "/", s$table["n.start"])
 
-    median <- paste0(round(s$table[, "median"], 1),
-                     ", (",
-                     round(s$table[, "0.95LCL"], 1),
-                     " ; ",
-                     round(s$table[, "0.95UCL"], 1),
-                     ")")
-    events <- paste0(s$table[, "events"], "/", s$table[, "n.start"])
+      table <-
+        tibble("Median Survival Time (95% CI)" =
+                 median,
+               "Events/Total" = events)
 
+    } else if (!is.null(time_points)){
+      aux <- summary(fit, times = time_points)
 
-    out <-
-      tibble({{var_label}} := sub(".*=", "", levels(s$strata)),
-             "Median Survival Time (95% CI)" =
-               median,
-             "Events/Total" = events)
+      survival <- paste0(round(100*aux$surv, 1),
+                         ", (",
+                         round(100*aux$lower, 1), " ; ",
+                         round(100*aux$upper, 1), ")")
+      n.events <- sapply(time_points, function(x) sum(s$n.event[s$time < x]))
+      events = paste0(n.events, "/", rep(s$table["n.start"], length(n.events)))
+
+      table <-
+        tibble(Time = time_points,
+               "Survival (95% CI)" = survival,
+               "Events/Total" = events)
+    }
 
   } else {
 
-    aux <- function(tp, time) {
-      valid_times <- time[time <= tp]
-      if (length(valid_times) == 0) NA else valid_times[which.min(abs(valid_times - tp))]
+    if (type == "median" & is.null(time_points)) {
+      if (all(is.na(s$table[, "median"])))
+        stop("There is no median survival time!")
+
+      median <- paste0(round(s$table[, "median"], 1),
+                       ", (",
+                       round(s$table[, "0.95LCL"], 1),
+                       " ; ",
+                       round(s$table[, "0.95UCL"], 1),
+                       ")")
+      events <- paste0(s$table[, "events"], "/", s$table[, "n.start"])
+
+
+      out <-
+        tibble({{var_label}} := sub(".*=", "", levels(s$strata)),
+               "Median Survival Time (95% CI)" =
+                 median,
+               "Events/Total" = events)
+
+    } else {
+
+      aux <- function(tp, time) {
+        valid_times <- time[time <= tp]
+        if (length(valid_times) == 0) NA else valid_times[which.min(abs(valid_times - tp))]
+      }
+
+      # Create a data frame with the event data
+      event_data <- data.frame(
+        time = s$time,
+        group = s$strata, # Repeat group labels according to strata sizes
+        n_risk = s$n.risk,    # number of subjects at risk
+        n_event = s$n.event,   # number of events at each time point
+        surv = s$surv,
+        lower = s$lower,
+        upper = s$upper
+      )
+
+      # Compute the cumulative sum of events for each group
+      event_data <- event_data |>
+        group_by(group) |>
+        mutate(cum_event = cumsum(n_event)) |>  # cumulative sum of events by group
+        ungroup()
+
+      closest_events <- event_data |>
+        group_by(group) |>
+        summarize(
+          closest_time = list(sapply(time_points, aux, time = time)),
+          target_time = list(time_points)
+        ) |>
+        unnest(c(target_time, closest_time)) |>
+        filter(!is.na(closest_time)) |>
+        mutate(n.start = unlist(lapply(s$table[, "n.start"], function(x)
+          rep(x, each = length(time_points))))) |>
+        left_join(event_data, by = c("group", "closest_time" = "time")) |>
+        select(group, target_time, cum_event, n.start, surv, lower, upper)
+
+      out <- closest_events |>
+        separate_wider_delim(group, "=", names = c("var", "group")) |>
+        mutate({{var_label}} := if_else(duplicated(group), "", group),
+               Time = target_time,
+               `Survival (95%CI)` = paste0(round(100*surv, 1),
+                                           ", (",
+                                           round(100*lower, 1), " ; ",
+                                           round(100*upper, 1), ")"),
+               Events = paste0(cum_event, "/", n.start)) |>
+        select({{var_label}}, Time, `Survival (95%CI)`, Events)
+
     }
 
-    # Create a data frame with the event data
-    event_data <- data.frame(
-      time = s$time,
-      group = s$strata, # Repeat group labels according to strata sizes
-      n_risk = s$n.risk,    # number of subjects at risk
-      n_event = s$n.event,   # number of events at each time point
-      surv = s$surv,
-      lower = s$lower,
-      upper = s$upper
-    )
-
-    # Compute the cumulative sum of events for each group
-    event_data <- event_data |>
-      group_by(group) |>
-      mutate(cum_event = cumsum(n_event)) |>  # cumulative sum of events by group
-      ungroup()
-
-    closest_events <- event_data |>
-      group_by(group) |>
-      summarize(
-        closest_time = list(sapply(time_points, aux, time = time)),
-        target_time = list(time_points)
-      ) |>
-      unnest(c(target_time, closest_time)) |>
-      filter(!is.na(closest_time)) |>
-      mutate(n.start = unlist(lapply(s$table[, "n.start"], function(x)
-        rep(x, each = length(time_points))))) |>
-      left_join(event_data, by = c("group", "closest_time" = "time")) |>
-      select(group, target_time, cum_event, n.start, surv, lower, upper)
-
-    out <- closest_events |>
-      separate_wider_delim(group, "=", names = c("var", "group")) |>
-      mutate({{var_label}} := if_else(duplicated(group), "", group),
-             Time = target_time,
-             `Survival (95%CI)` = paste0(round(100*surv, 1),
-                                         ", (",
-                                         round(100*lower, 1), " ; ",
-                                         round(100*upper, 1), ")"),
-             Events = paste0(cum_event, "/", n.start)) |>
-      select({{var_label}}, Time, `Survival (95%CI)`, Events)
-
   }
-
-
 
 
 
