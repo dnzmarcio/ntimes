@@ -122,7 +122,7 @@ contrast_df <- function(data, var, ref, contrast.qt,
     }
 
     if (contrast.qt == "one-unit"){
-      label <- paste0(var, ":", "one-unit change")
+      label <- paste0(var, ":", "every 1 unit of change")
 
     } else {
 
@@ -192,7 +192,7 @@ contrast_df <- function(data, var, ref, contrast.qt,
           contrast <- contrast[rep(1:nrow(contrast), each = nc), ]
           contrast[[interaction[k]]] <- rep(lv, nrow(contrast)/nc)
 
-        }  else if (contrast.qt == "user" &
+        } else if (contrast.qt == "user" &
                     !is.null(user.contrast.interaction[[interaction[k]]])){
 
           nc <- length(user.contrast.interaction[[interaction[k]]])
