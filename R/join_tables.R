@@ -2,8 +2,8 @@
 #'
 #'@description Join tables resulting from other functions of the package \code{ntimes}.
 #'
-#'@param tab.x a data frame with attribute \code{ntimes}.
-#'@param tab.y a data frame with attribute \code{ntimes}.
+#'@param tab_x a data frame with attribute \code{ntimes}.
+#'@param tab_y a data frame with attribute \code{ntimes}.
 #'@param digits a numeric value specifying the number of digits for the p values.
 #'@param alpha a numeric value specifying the significance level to indicate statistically significant multiple comparisons.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
@@ -17,41 +17,41 @@
 #'tab02 <- nt_compare_tg(iris_nt, group = Species)
 #'tab <- nt_join_tables(tab01, tab02)
 #'
-#'@return A data frame containing \code{tab.x} and \code{tab.y}.
+#'@return A data frame containing \code{tab_x} and \code{tab_y}.
 #'
 #'@importFrom tidyr replace_na pivot_wider unite
 #'@importFrom dplyr mutate select left_join
 #'@importFrom stringr str_split
 #'
 #'@export
-nt_join_tables <- function(tab.x, tab.y, digits = 3,
+nt_join_tables <- function(tab_x, tab_y, digits = 3,
                          alpha = 0.05,
                          save = FALSE,
                          file = "table"){
 
-  if ((attr(tab.x, "ntimes") == "descriptive" &
-       (attr(tab.y, "ntimes") == "two_groups" |
-        attr(tab.y, "ntimes") == "multiple_groups" |
-        attr(tab.y, "ntimes") == "multiple_comparisons")) |
-      attr(tab.y, "ntimes") == "descriptive" &
-      (attr(tab.x, "ntimes") == "two_groups" |
-       attr(tab.x, "ntimes") == "multiple_groups" |
-       attr(tab.x, "ntimes") == "multiple_comparisons")){
+  if ((attr(tab_x, "ntimes") == "descriptive" &
+       (attr(tab_y, "ntimes") == "two_groups" |
+        attr(tab_y, "ntimes") == "multiple_groups" |
+        attr(tab_y, "ntimes") == "multiple_comparisons")) |
+      attr(tab_y, "ntimes") == "descriptive" &
+      (attr(tab_x, "ntimes") == "two_groups" |
+       attr(tab_x, "ntimes") == "multiple_groups" |
+       attr(tab_x, "ntimes") == "multiple_comparisons")){
 
-    if (attr(tab.x, "ntimes") == "descriptive" &
-        (attr(tab.y, "ntimes") == "two_groups" |
-         attr(tab.y, "ntimes") == "multiple_groups" |
-         attr(tab.y, "ntimes") == "multiple_comparisons")){
-      descriptive.tab <- tab.x
-      test.tab <- tab.y
+    if (attr(tab_x, "ntimes") == "descriptive" &
+        (attr(tab_y, "ntimes") == "two_groups" |
+         attr(tab_y, "ntimes") == "multiple_groups" |
+         attr(tab_y, "ntimes") == "multiple_comparisons")){
+      descriptive.tab <- tab_x
+      test.tab <- tab_y
     }
 
-    if (attr(tab.y, "ntimes") == "descriptive" &
-        (attr(tab.x, "ntimes") == "two_groups" |
-         attr(tab.x, "ntimes") == "multiple_groups" |
-         attr(tab.x, "ntimes") == "multiple_comparisons")){
-      descriptive.tab <- tab.x
-      test.tab <- tab.y
+    if (attr(tab_y, "ntimes") == "descriptive" &
+        (attr(tab_x, "ntimes") == "two_groups" |
+         attr(tab_x, "ntimes") == "multiple_groups" |
+         attr(tab_x, "ntimes") == "multiple_comparisons")){
+      descriptive.tab <- tab_x
+      test.tab <- tab_y
     }
 
     if (attr(test.tab, "ntimes") == "two_groups"){
@@ -125,11 +125,11 @@ nt_join_tables <- function(tab.x, tab.y, digits = 3,
     }
   }
 
-  if (attr(tab.x, "ntimes") == "descriptive" &
-      attr(tab.y, "ntimes") == "descriptive"){
-    tab.x <- tab.x |> mutate(id = 1:nrow(tab.x))
-    tab.y <- tab.y |> mutate(id = 1:nrow(tab.y))
-    tab <- left_join(tab.x, tab.y, by = c("id", "Variable")) |>
+  if (attr(tab_x, "ntimes") == "descriptive" &
+      attr(tab_y, "ntimes") == "descriptive"){
+    tab_x <- tab_x |> mutate(id = 1:nrow(tab_x))
+    tab_y <- tab_y |> mutate(id = 1:nrow(tab_y))
+    tab <- left_join(tab_x, tab_y, by = c("id", "Variable")) |>
       select(-id)
     temp <- str_split(colnames(tab), ": ")
 

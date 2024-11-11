@@ -7,8 +7,8 @@
 #'@param labels a list of labels with components given by their variable names.
 #'@param save a logical value indicating whether the output
 #'should be saved as a jpeg file.
-#'@param fig.height a numeric value indicating the height (in) of the file.
-#'@param fig.width a numeric value indicating the width (in) of the file.
+#'@param fig_height a numeric value indicating the height (in) of the file.
+#'@param fig_width a numeric value indicating the width (in) of the file.
 #'@param std_fun a function to plot a boxplot when \code{group = NULL}.
 #'It must follow the same structure of \code{\link{std_boxplot}}.
 #'@param std_fun_group a function to plot a boxplot when \code{group}
@@ -38,7 +38,7 @@
 #'
 #'@export
 nt_boxplot <-  function(data, group = NULL, labels = NULL,
-                        save = FALSE, fig.height = 5, fig.width = 5,
+                        save = FALSE, fig_height = 5, fig_width = 5,
                         std_fun = std_boxplot,
                         std_fun_group = std_boxplot_group,
                         ...){
@@ -79,7 +79,7 @@ nt_boxplot <-  function(data, group = NULL, labels = NULL,
   out <- pmap(.l = list(vars, vars.name, vars.label),
               .f = aux_boxplot,
               group = group, group.name = group.name, group.label = group.label,
-              fig.height = fig.height, fig.width = fig.width, save = save,
+              fig_height = fig_height, fig_width = fig_width, save = save,
               std_fun = std_fun, std_fun_group = std_fun_group,
               ... = ...)
 
@@ -87,7 +87,7 @@ nt_boxplot <-  function(data, group = NULL, labels = NULL,
 }
 
 aux_boxplot <- function(var, var.name, var.label, group, group.name, group.label,
-                        fig.height, fig.width, save,
+                        fig_height, fig_width, save,
                         std_fun, std_fun_group, ...){
 
   out <- list()
@@ -99,7 +99,7 @@ aux_boxplot <- function(var, var.name, var.label, group, group.name, group.label
 
     if(save)
       gp <- gp + ggsave(filename = paste0("box_", var.name, ".jpeg"),
-                        height = fig.height, width = fig.width)
+                        height = fig_height, width = fig_width)
 
     out <- gp
 
@@ -113,8 +113,8 @@ aux_boxplot <- function(var, var.name, var.label, group, group.name, group.label
     if (save)
       gp <- gp + ggsave(filename = paste0("box_", group.name, "_",
                                  var.name, ".jpeg"),
-                        height = fig.height,
-                        width = fig.width)
+                        height = fig_height,
+                        width = fig_width)
 
     out <- gp
   }

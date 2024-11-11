@@ -7,8 +7,8 @@
 #'@param binwidth a numerical vector specifying the bin width for each variable.
 #'@param save a logical value indicating whether the output
 #'should be saved as a jpeg file.
-#'@param fig.height a numeric value indicating the height (in) of the file.
-#'@param fig.width a numeric value indicating the width (in) of the file.
+#'@param fig_height a numeric value indicating the height (in) of the file.
+#'@param fig_width a numeric value indicating the width (in) of the file.
 #'@param std_fun a function to plot a dotplot when \code{group = NULL}.
 #'It must follow the same structure of the function \code{\link{std_dotplot}}.
 #'@param std_fun_group a function to plot a dotplot when \code{group}
@@ -37,7 +37,7 @@
 #'
 #'@export
 nt_dotplot <-  function(data, group = NULL, binwidth = 1,
-                        save = FALSE, fig.height = 5, fig.width = 5,
+                        save = FALSE, fig_height = 5, fig_width = 5,
                         std_fun = std_dotplot,
                         std_fun_group = std_dotplot_group, ...) {
 
@@ -61,7 +61,7 @@ nt_dotplot <-  function(data, group = NULL, binwidth = 1,
 
   out <- pmap(.l = L, .f = aux_dotplot,
               group = group, group.name = group.name,
-              fig.height = fig.height, fig.width = fig.width, save = save,
+              fig_height = fig_height, fig_width = fig_width, save = save,
               std_fun = std_fun, std_fun_group = std_fun_group,
               ... = ...)
 
@@ -69,7 +69,7 @@ nt_dotplot <-  function(data, group = NULL, binwidth = 1,
 }
 
 aux_dotplot <- function(var, var.name, binwidth, group, group.name,
-                        fig.height, fig.width, save,
+                        fig_height, fig_width, save,
                         std_fun, std_fun_group, ...){
 
   out <- list()
@@ -87,7 +87,7 @@ aux_dotplot <- function(var, var.name, binwidth, group, group.name,
 
     if(save)
       gp <- gp + ggsave(filename = paste0("dot_", var.name, ".jpeg"),
-                        height = fig.height, width = fig.width)
+                        height = fig_height, width = fig_width)
 
     out <- gp
 
@@ -104,8 +104,8 @@ aux_dotplot <- function(var, var.name, binwidth, group, group.name,
     if (save)
       gp <- gp + ggsave(filename =  paste0("dot_", group.name, "_",
                                  var.name, ".jpeg"),
-                        height = fig.height,
-                        width = fig.width)
+                        height = fig_height,
+                        width = fig_width)
 
     out <- gp
   }

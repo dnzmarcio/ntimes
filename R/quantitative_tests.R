@@ -1,54 +1,54 @@
-dist_qt_tg <-  function(var, var.label, group, group.label,
-                        norm.test, var.test, qt.test,
-                        alternative, conf.level, paired,
-                        digits.p, digits.ci,
+dist_qt_tg <-  function(var, var_label, group, group_label,
+                        norm_test, var_test, qt_test,
+                        alternative, conf_level, paired,
+                        digits_p, digits_ci,
                         ...) {
 
-  data.test <- data.frame(x = var, g = droplevels(group))
-  nlg <- nlevels(droplevels(data.test$g[!is.na(data.test$x)]))
-  lg <- levels(data.test$g)
+  data_test <- data.frame(x = var, g = droplevels(group))
+  nlg <- nlevels(droplevels(data_test$g[!is.na(data_test$x)]))
+  lg <- levels(data_test$g)
 
   if (nlg == 2)  {
 
     # Checking normality
     aux <- function(x){
-      result <- try(norm.test(x), silent = TRUE)
+      result <- try(norm_test(x), silent = TRUE)
       out <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
     }
-    p.norm <- tapply(data.test$x, data.test$g, aux)
+    p.norm <- tapply(data_test$x, data_test$g, aux)
 
     # Checking homoscedasticity
-    result <- try(var.test(x = data.test$x, g = data.test$g, paired = paired), silent = TRUE)
+    result <- try(var_test(x = data_test$x, g = data_test$g, paired = paired), silent = TRUE)
     p.var <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
 
     # Possible cases
     if (all(p.norm > 0.05)) {
       if (p.var > 0.05) {
-        result <- try(qt.test[[1]](data.test$x, data.test$g,
+        result <- try(qt_test[[1]](data_test$x, data_test$g,
                                    alternative = alternative,
                                    paired = paired,
-                                   conf.level = conf.level), silent = TRUE)
+                                   conf_level = conf_level), silent = TRUE)
 
       } else {
-        result <- try(qt.test[[2]](data.test$x, data.test$g,
+        result <- try(qt_test[[2]](data_test$x, data_test$g,
                                    alternative = alternative,
                                    paired = paired,
-                                   conf.level = conf.level), silent = TRUE)
+                                   conf_level = conf_level), silent = TRUE)
       }
 
     } else {
       if (p.var > 0.05) {
-        result <- try(qt.test[[3]](data.test$x, data.test$g,
+        result <- try(qt_test[[3]](data_test$x, data_test$g,
                                    alternative = alternative,
                                    paired = paired,
-                                   conf.level = conf.level), silent = TRUE)
+                                   conf_level = conf_level), silent = TRUE)
 
       } else {
-        result <- try(qt.test[[4]](x = data.test$x,
-                                   g = data.test$g,
+        result <- try(qt_test[[4]](x = data_test$x,
+                                   g = data_test$g,
                                    alternative = alternative,
                                    paired = paired,
-                                   conf.level = conf.level), silent = TRUE)
+                                   conf_level = conf_level), silent = TRUE)
       }
     }
 
@@ -80,47 +80,47 @@ dist_qt_tg <-  function(var, var.label, group, group.label,
     hypothesis <- NA
   }
 
-  out <- data.frame(Variable = var.label,
-                    Group = group.label,
+  out <- data.frame(Variable = var_label,
+                    Group = group_label,
                     Hypothesis = hypothesis,
-                    Lower = round(lower, digits.ci),
-                    Upper = round(upper, digits.ci),
+                    Lower = round(lower, digits_ci),
+                    Upper = round(upper, digits_ci),
                     Test = test,
-                    p.value = round(p.value, digits.p))
+                    p.value = round(p.value, digits_p))
 
   return(out)
 }
 
 dist_qt_mg <-  function(var, group,
-                        norm.test, var.test, qt.test,
-                        digits.p,
-                        var.label, group.label) {
+                        norm_test, var_test, qt_test,
+                        digits_p,
+                        var_label, group_label) {
 
-  data.test <- data.frame(x = var, g = droplevels(group))
-  nlg <- nlevels(droplevels(data.test$g[!is.na(data.test$x)]))
-  lg <- levels(data.test$g)
+  data_test <- data.frame(x = var, g = droplevels(group))
+  nlg <- nlevels(droplevels(data_test$g[!is.na(data_test$x)]))
+  lg <- levels(data_test$g)
 
   if (nlg > 2)  {
 
     # Checking normality
     aux <- function(x){
-      result <- try(norm.test(x), silent = TRUE)
+      result <- try(norm_test(x), silent = TRUE)
       out <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
     }
-    p.norm <- tapply(data.test$x, data.test$g, aux)
+    p.norm <- tapply(data_test$x, data_test$g, aux)
 
     # Checking homocedasticity
-    result <- try(var.test(x = data.test$x, g = data.test$g, paired = FALSE), silent = TRUE)
+    result <- try(var_test(x = data_test$x, g = data_test$g, paired = FALSE), silent = TRUE)
     p.var <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
 
     if (all(p.norm > 0.05)) {
       if (p.var > 0.05) {
-        result <- try(qt.test[[1]](data.test$x, data.test$g), silent = TRUE)
+        result <- try(qt_test[[1]](data_test$x, data_test$g), silent = TRUE)
       } else {
-        result <- try(qt.test[[2]](data.test$x, data.test$g), silent = TRUE)
+        result <- try(qt_test[[2]](data_test$x, data_test$g), silent = TRUE)
       }
     } else {
-      result <- try(qt.test[[3]](data.test$x, data.test$g), silent = TRUE)
+      result <- try(qt_test[[3]](data_test$x, data_test$g), silent = TRUE)
     }
 
     if (any(is(result) != "try-error")){
@@ -140,9 +140,9 @@ dist_qt_mg <-  function(var, group,
     hypothesis <- NA
   }
 
-  out <- data.frame(Variable = var.label, Group = group.label,
+  out <- data.frame(Variable = var_label, Group = group_label,
                     Hypothesis = hypothesis, Test = test,
-                    p.value = round(p.value, digits.p))
+                    p.value = round(p.value, digits_p))
 
   return(out)
 }
@@ -153,13 +153,13 @@ dist_qt_mg <-  function(var, group,
 #'@importFrom methods is
 dist_qt_mc <-  function(var, omnibus.test, group,
                         alternative, contrast,
-                        digits.p, digits.ci,
-                        var.label, group.label) {
+                        digits_p, digits_ci,
+                        var_label, group_label) {
 
-  data.test <- data.frame(x = var, g = group)
+  data_test <- data.frame(x = var, g = group)
 
   if(omnibus.test == "ANOVA" | omnibus.test == "Welch's ANOVA"){
-    av <- aov(x ~ g, data = data.test)
+    av <- aov(x ~ g, data = data_test)
     mc <- try(glht(av, linfct = mcp(g = contrast), alternative = alternative),
               silent = TRUE)
 
@@ -174,9 +174,9 @@ dist_qt_mc <-  function(var, omnibus.test, group,
       hypothesis <- gsub(" - ", alt, dif)
       test <- paste0("Parametric ", contrast)
 
-      p.value <- round(sm$test$pvalues, digits.p)
-      lower <- round(confint(mc)$confint[, 2], digits.ci)
-      upper <- round(confint(mc)$confint[, 3], digits.ci)
+      p.value <- round(sm$test$pvalues, digits_p)
+      lower <- round(confint(mc)$confint[, 2], digits_ci)
+      upper <- round(confint(mc)$confint[, 3], digits_ci)
 
     } else {
       hypothesis <- NA
@@ -185,13 +185,13 @@ dist_qt_mc <-  function(var, omnibus.test, group,
       upper <- NA
     }
 
-    out <- data.frame(Variable = var.label, Group = group.label,
+    out <- data.frame(Variable = var_label, Group = group_label,
                       Hypothesis = hypothesis, Lower = lower, Upper = upper,
                       Test = test, p.value)
   } else {
 
-    mc <- try(nparcomp(x ~ g, data = data.test,  type = contrast,
-                        alternative = alternative, rounds = digits.p,
+    mc <- try(nparcomp(x ~ g, data = data_test,  type = contrast,
+                        alternative = alternative, rounds = digits_p,
                         asy.method = "mult.t",
                         plot.simci = FALSE, info = FALSE),
                silent = TRUE)
@@ -216,7 +216,7 @@ dist_qt_mc <-  function(var, omnibus.test, group,
       upper <- NA
     }
 
-    out <- data.frame(Variable = var.label, Group = group.label,
+    out <- data.frame(Variable = var_label, Group = group_label,
                       Hypothesis = hypothesis, Lower = lower, Upper = upper,
                       Test = test, p.value)
 

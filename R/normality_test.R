@@ -7,7 +7,7 @@
 #'
 #'@param data a data frame with the variables.
 #'@param group an optional character indicating the group variable.
-#'@param norm.test a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.
+#'@param norm_test a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.
 #'
 #'@return \code{tab} a table of p-values for each of the five normality tests.
 #'@return \code{plot} a Quantile-Quantile plot.
@@ -24,7 +24,7 @@
 #'@importFrom dplyr mutate bind_cols
 #'
 #'@export
-nt_norm_test <- function(data, group = NULL, norm.test = helper_sf_test){
+nt_norm_test <- function(data, group = NULL, norm_test = helper_sf_test){
 
   group <- enquo(group)
 
@@ -47,14 +47,14 @@ nt_norm_test <- function(data, group = NULL, norm.test = helper_sf_test){
     tab <- data |>
       pivot_longer(cols = -{{group}}, names_to = "Variable", values_to = "value") |>
       group_by(.data$Variable, {{group}}) |>
-      summarise(p.value = norm.test(.data$value)$p.value) |>
+      summarise(p.value = norm_test(.data$value)$p.value) |>
       rename(Group = {{group}}, 'p value' = .data$p.value)
 
   } else {
     tab <- vars |>
       pivot_longer(cols = everything(), names_to = "Variable", values_to = "value") |>
       group_by(.data$Variable) |>
-      summarise(p.value = norm.test(.data$value)$p.value) |>
+      summarise(p.value = norm_test(.data$value)$p.value) |>
       rename('p value' = .data$p.value)
   }
 

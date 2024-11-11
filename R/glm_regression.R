@@ -6,15 +6,15 @@
 #'@param response a character value indicating the response variable.
 #'@param ...  character values indicating confounding variables.
 #'@param family a character indicating family distribution. See more \code{\link[stats]{family}}.
-#'@param robust.variance a function yielding a covariance matrix or a covariance matrix. See more \code{\link[lmtest]{coeftest}}.
+#'@param robust_variance a function yielding a covariance matrix or a covariance matrix. See more \code{\link[lmtest]{coeftest}}.
 #'@param increment a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.
-#'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald})
-#'@param conf.level a numerical value indicating the confidence level for parameters of interest.
+#'@param ci_type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald})
+#'@param conf_level a numerical value indicating the confidence level for parameters of interest.
 #'@param exponentiate a logical value indicating whether coefficients should be exponentiated.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param labels a list of labels with components given by their variable names.
 #'@param digits a numerical value defining of digits to present the results.
-#'@param digits.p a numerical value defining number of digits to present the p-values.
+#'@param digits_p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character indicating the name of output file in csv format to be saved.
 #'@examples
@@ -48,12 +48,12 @@
 #'
 #'@export
 nt_simple_glm <- function(data, response, ...,
-                          family, robust.variance = NULL,
+                          family, robust_variance = NULL,
                           increment = NULL,
-                          ci.type = "Wald", conf.level = 0.95,
+                          ci_type = "Wald", conf_level = 0.95,
                           exponentiate = FALSE,
                           format = TRUE, labels = NULL,
-                          digits = 2, digits.p = 3,
+                          digits = 2, digits_p = 3,
                           save = FALSE, file = "simple_logistic"){
 
   response <- enquo(response)
@@ -94,9 +94,9 @@ nt_simple_glm <- function(data, response, ...,
                .f = aux_simple_glm,
                response = response[[1]], response.label = response.label,
                add = add, add.name = add.name, add.label = add.label,
-               family = family, robust.variance = robust.variance,
+               family = family, robust_variance = robust_variance,
                increment = increment, exponentiate = exponentiate,
-               conf.level = conf.level, ci.type = ci.type,
+               conf_level = conf_level, ci_type = ci_type,
                format = format)
 
   out <- Reduce(rbind, temp)
@@ -115,10 +115,10 @@ nt_simple_glm <- function(data, response, ...,
                                  paste0(round(.data$estimate, digits), " (",
                                  round(.data$conf.low, digits), " ; ",
                                  round(.data$conf.high, digits), ")")),
-                `Wald p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, digits.p))),
-                `LR p value` = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
-                                        as.character(round(.data$p.value.lr, digits.p))),
+                `Wald p value` = ifelse(round(.data$p.value, digits_p) == 0, "< 0.001",
+                                 as.character(round(.data$p.value, digits_p))),
+                `LR p value` = ifelse(round(.data$p.value.lr, digits_p) == 0, "< 0.001",
+                                        as.character(round(.data$p.value.lr, digits_p))),
                 n = as.character(.data$n),
                 null.deviance = as.character(.data$null.deviance),
                 logLik = as.character(.data$logLik),
@@ -144,9 +144,9 @@ nt_simple_glm <- function(data, response, ...,
 aux_simple_glm <- function(var, var.name, var.label,
                            response, response.label,
                            add, add.name, add.label,
-                           family, robust.variance,
+                           family, robust_variance,
                            increment, exponentiate,
-                           conf.level, ci.type,
+                           conf_level, ci_type,
                            format){
 
   if (is.factor(var)){
@@ -188,8 +188,8 @@ aux_simple_glm <- function(var, var.name, var.label,
 
   out <- fit_simple_glm(data.model, family,
                         tab.labels, tab.levels, var.label,
-                        robust.variance, increment[[var.name]],
-                        exponentiate, conf.level, ci.type)
+                        robust_variance, increment[[var.name]],
+                        exponentiate, conf_level, ci_type)
 
   if (format){
     out$p.value.lr = ifelse(duplicated(out$term), NA, out$p.value.lr)
@@ -205,8 +205,8 @@ aux_simple_glm <- function(var, var.name, var.label,
 #'@importFrom stringr str_which
 fit_simple_glm <- function(data, family,
                            tab.labels, tab.levels, var.label,
-                           robust.variance, increment,
-                           exponentiate, conf.level, ci.type){
+                           robust_variance, increment,
+                           exponentiate, conf_level, ci_type){
 
   data <- na.exclude(data)
 
@@ -215,16 +215,16 @@ fit_simple_glm <- function(data, family,
 
   fit <- glm(response ~ ., data = data, family = family)
 
-  if (is.null(robust.variance)){
+  if (is.null(robust_variance)){
     temp <- tidy(fit, exponentiate = exponentiate,
-                 conf.level = conf.level,
-                 conf.type = ci.type,
+                 conf_level = conf_level,
+                 conf.type = ci_type,
                  conf.int = TRUE)
 
   } else {
-    step <- coeftest(fit, vcov. = robust.variance)
+    step <- coeftest(fit, vcov. = robust_variance)
     temp <- tidy(step, exponentiate = exponentiate,
-                 conf.level = conf.level,
+                 conf_level = conf_level,
                  conf.int = TRUE)
   }
 
@@ -274,7 +274,7 @@ fit_simple_glm <- function(data, family,
 #'
 #'@param fit a glm object.
 #'@param exponentiate a logical value indicating whether coefficients should be exponentiated.
-#'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{wald}).
+#'@param ci_type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{wald}).
 #'@param contrast.qt a character indicating whether the contrast for quantitative covariates. Options are every one-unit of change (\code{one-unit}), quartiles (\code{quartiles}) or provided by the user (\code{user}).
 #'@param user.contrast a variable named list of numerical vectors indicating contrast for a covariate.
 #'@param user.contrast.interaction a variable named list of numerical vectors indicating a contrast for interaction.
@@ -282,7 +282,7 @@ fit_simple_glm <- function(data, family,
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param labels a list of labels with components given by their variable names.
 #'@param digits a numerical value defining of digits to present the results.
-#'@param digits.p a numerical value defining number of digits to present the p-values.
+#'@param digits_p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character indicating the name of output file in csv format to be saved.
 #'
@@ -307,16 +307,16 @@ fit_simple_glm <- function(data, family,
 #'@importFrom utils write.csv
 #'@export
 nt_multiple_glm <- function(fit, exponentiate = FALSE,
-                            ci.type = "Wald", contrast.qt = "one-unit",
+                            ci_type = "Wald", contrast.qt = "one-unit",
                             user.contrast = NULL, user.contrast.interaction = NULL,
                             table.reference = TRUE,
                             format = TRUE, labels = NULL,
-                            digits = 2, digits.p = 3,
+                            digits = 2, digits_p = 3,
                             save = FALSE, file = "nt_multiple_glm"){
 
   out <- aux_multiple_glm(fit = fit,
                                exponentiate = exponentiate,
-                               ci.type = ci.type,
+                               ci_type = ci_type,
                                contrast.qt = contrast.qt,
                                user.contrast = user.contrast,
                                user.contrast.interaction = user.contrast.interaction,
@@ -332,8 +332,8 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
                                                   round(.data$conf.low, digits), " ; ",
                                                   round(.data$conf.high, digits), ")")),
               `p value` = ifelse(is.na(.data$p.value), "",
-                                 ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                        as.character(round(.data$p.value, digits.p))))) |>
+                                 ifelse(round(.data$p.value, digits_p) == 0, "< 0.001",
+                                        as.character(round(.data$p.value, digits_p))))) |>
     replace_na(list(`p value` = ""))
 
   if (!is.null(labels)){
@@ -357,8 +357,8 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
 #'@importFrom stringr str_replace_all
 #'@importFrom tidyr separate
 #'@importFrom broom tidy
-aux_multiple_glm <- function(fit, exponentiate, robust.variance,
-                             ci.type, contrast.qt,
+aux_multiple_glm <- function(fit, exponentiate, robust_variance,
+                             ci_type, contrast.qt,
                              user.contrast, user.contrast.interaction,
                              format, table.reference){
 
@@ -366,8 +366,8 @@ aux_multiple_glm <- function(fit, exponentiate, robust.variance,
 
   effect <- fit_multiple_glm(fit, fit.vars = aux,
                              exponentiate = exponentiate,
-                             robust.variance = robust.variance,
-                             type = ci.type,
+                             robust_variance = robust_variance,
+                             type = ci_type,
                              contrast.qt = contrast.qt,
                              user.contrast = user.contrast,
                              user.contrast.interaction = user.contrast.interaction,
@@ -396,7 +396,7 @@ aux_multiple_glm <- function(fit, exponentiate, robust.variance,
 }
 
 #'@importFrom stats model.matrix formula setNames anova vcov glm update.formula
-fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust.variance,
+fit_multiple_glm <- function(fit, fit.vars, exponentiate, robust_variance,
                              type, contrast.qt,
                              user.contrast, user.contrast.interaction,
                              table.reference){

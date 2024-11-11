@@ -4,9 +4,9 @@
 #'@importFrom methods is
 dist_ql_tg <-  function(var, group,
                         alternative,
-                        conf.level, paired,
-                        digits.p, digits.ci,
-                        var.name, var.label, group.label){
+                        conf_level, paired,
+                        digits_p, digits_ci,
+                        var_name, var_label, group_label){
 
   data.test <- data.frame(x = var, g = fct_drop(group))
   lg <- levels(data.test$g)
@@ -27,7 +27,7 @@ dist_ql_tg <-  function(var, group,
         p.value <- result$p.value
 
         if (max(dim(tab)) == 2){
-          pt <- try(stats::prop.test(tab, conf.level = conf.level), silent = TRUE)
+          pt <- try(stats::prop.test(tab, conf_level = conf_level), silent = TRUE)
 
           if (any(is(pt) != "try-error")){
             lower <- pt$conf.int[[1]]
@@ -75,13 +75,13 @@ dist_ql_tg <-  function(var, group,
     hypothesis <- "Marginal Homogeneity"
   }
 
-  out <- data.frame(Variable = var.label,
-                    Group = group.label,
+  out <- data.frame(Variable = var_label,
+                    Group = group_label,
                     Hypothesis = hypothesis,
-                    Lower = round(lower, digits.ci),
-                    Upper = round(upper, digits.ci),
+                    Lower = round(lower, digits_ci),
+                    Upper = round(upper, digits_ci),
                     Test = test,
-                    p.value = round(p.value, digits.p))
+                    p.value = round(p.value, digits_p))
 
 
   return(out)
@@ -92,7 +92,7 @@ dist_ql_tg <-  function(var, group,
 #'@importFrom dplyr bind_cols
 #'@importFrom stats fisher.test chisq.test
 dist_ql_mg <-  function(var, group,
-                        digits.p, var.name, var.label, group.label){
+                        digits_p, var_name, var_label, group_label){
 
   data.test <- data.frame(x = var, g = fct_drop(group))
   lg <- levels(data.test$g)
@@ -126,9 +126,9 @@ dist_ql_mg <-  function(var, group,
 
   hypothesis <- "Association"
 
-  out <- data.frame(Variable = var.label[[1]], Group = group.label[[1]],
+  out <- data.frame(Variable = var_label[[1]], Group = group_label[[1]],
                     Hypothesis = hypothesis,  Test = test,
-                    `p value` =  round(p.value, digits.p))
+                    `p value` =  round(p.value, digits_p))
 
   return(out)
 }
@@ -136,14 +136,14 @@ dist_ql_mg <-  function(var, group,
 #'@importFrom multcomp glht mcp
 #'@importFrom stats confint
 dist_ql_mc <-  function(var, group, alternative, contrast,
-                        digits.p, digits.ci, var.label, group.label) {
+                        digits_p, digits_ci, var_label, group_label) {
 
   data.test <- data.frame(x = var, g = group)
 
   av <- glm(x ~ g, data = data.test, family = "binomial")
   mc <- glht(av, linfct = mcp(g = contrast), alternative = alternative)
   sm <- summary(mc)
-  p.value <- round(sm$test$pvalues, digits.p)
+  p.value <- round(sm$test$pvalues, digits_p)
 
   test <- paste(contrast)
   dif <- as.character(rownames(sm[2]$linfct))
@@ -155,10 +155,10 @@ dist_ql_mc <-  function(var, group, alternative, contrast,
 
   test <- paste0("Parametric ", contrast)
 
-  lower <- round(exp(confint(mc)$confint[, 2]), digits.ci)
-  upper <- round(exp(confint(mc)$confint[, 3]), digits.ci)
+  lower <- round(exp(confint(mc)$confint[, 2]), digits_ci)
+  upper <- round(exp(confint(mc)$confint[, 3]), digits_ci)
 
-  out <- data.frame(Variable = var.label, Group = group.label,
+  out <- data.frame(Variable = var_label, Group = group_label,
                     Hypothesis = hypothesis, Lower = lower, Upper = upper,
                     Test = test, `p value` = p.value)
 

@@ -8,8 +8,8 @@
 #'@param ylab a character value specifying the y axis label.
 #'@param save a logical value indicating whether the output
 #'should be saved as a jpeg file.
-#'@param fig.height a numeric value indicating the height (in) of the file.
-#'@param fig.width a numeric value indicating the width (in) of the file.
+#'@param fig_height a numeric value indicating the height (in) of the file.
+#'@param fig_width a numeric value indicating the width (in) of the file.
 #'@param std_fun a function to plot a barplot when \code{group = NULL}.
 #'It must follow the same structure of \code{\link{std_barplot}}.
 #'@param std_fun_group a function to plot a dotplot when \code{group}
@@ -45,7 +45,7 @@
 #'@export
 nt_barplot <-  function(data, group = NULL,
                         labels = NULL, ylab = "Percent (%)",
-                        save = FALSE, fig.height = 5, fig.width = 5,
+                        save = FALSE, fig_height = 5, fig_width = 5,
                         std_fun = std_barplot,
                         std_fun_group = std_barplot_group, ...) {
 
@@ -83,7 +83,7 @@ nt_barplot <-  function(data, group = NULL,
 
   out <- map2(.x = vars, .y = vars.name, .f = aux_barplot,
               group = group, group.name = group.name, ylab = ylab,
-              fig.height = fig.height, fig.width = fig.width, save = save,
+              fig_height = fig_height, fig_width = fig_width, save = save,
               std_fun = std_fun, std_fun_group = std_fun_group,
               ... = ...)
 
@@ -91,7 +91,7 @@ nt_barplot <-  function(data, group = NULL,
 }
 
 aux_barplot <- function(var, var.name, group, group.name, ylab,
-                        fig.height, fig.width, save,
+                        fig_height, fig_width, save,
                         std_fun, std_fun_group, ...){
 
   out <- list()
@@ -105,7 +105,7 @@ aux_barplot <- function(var, var.name, group, group.name, ylab,
 
     if(save)
       gp <- gp + ggsave(filename = paste0("bar_", var.name, ".jpeg"),
-                        height = fig.height, width = fig.width)
+                        height = fig_height, width = fig_width)
 
     out <- gp
 
@@ -123,8 +123,8 @@ aux_barplot <- function(var, var.name, group, group.name, ylab,
       gp <- gp + ggsave(filename =
                           paste0("bar_", group.name, "_",
                                  var.name, ".jpeg"),
-                        height = fig.height,
-                        width = fig.width)
+                        height = fig_height,
+                        width = fig_width)
 
     out <- gp
   }

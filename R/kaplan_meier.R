@@ -8,12 +8,12 @@
 #'@param labels a list of labels with components given by their variable names.
 #'@param xlab a character value specifying the x axis label.
 #'@param ylab a character value specifying the y axis label.
-#'@param time.points a numeric vector of time points to evaluate the survival curves.
-#'@param risk.table a logical value indicating whether the risk table should be calculated.
+#'@param time_points a numeric vector of time points to evaluate the survival curves.
+#'@param risk_table a logical value indicating whether the risk table should be calculated.
 #'@param save a logical value indicating whether the output
 #'should be saved as a jpeg file.
-#'@param fig.height a numeric value indicating the height (in) of the file.
-#'@param fig.width a numeric value indicating the width (in) of the file.
+#'@param fig_height a numeric value indicating the height (in) of the file.
+#'@param fig_width a numeric value indicating the width (in) of the file.
 #'@param std_fun a function to plot a barplot when \code{group = NULL}.
 #'It must follow the same structure of \code{\link{std_barplot}}.
 #'@param std_fun_group a function to plot a dotplot when \code{group}
@@ -54,9 +54,9 @@
 #'@export
 nt_km <-  function(data, time, status, labels = NULL,
                    xlab = "Time", ylab = "Survival",
-                   time.points = NULL,
-                   risk.table = TRUE, survival.table = NULL,
-                   save = FALSE, fig.height = 5, fig.width = 5,
+                   time_points = NULL,
+                   risk_table = TRUE, survival_table = NULL,
+                   save = FALSE, fig_height = 5, fig_width = 5,
                    std_fun = std_km,
                    std_fun_group = std_km_group,
                    format = TRUE, digits = 2,
@@ -80,15 +80,15 @@ nt_km <-  function(data, time, status, labels = NULL,
   plot <- list()
 
   overall <- std_fun(time, status, xlab = xlab, ylab = ylab,
-                     time.points = time.points,
-                     risk.table = risk.table,
-                     survival.table = survival.table, ...)
-  if (!is.null(time.points))
-    aux <- tab_km(time, status, time.points, digits = digits)
+                     time_points = time_points,
+                     risk_table = risk_table,
+                     survival_table = survival_table, ...)
+  if (!is.null(time_points))
+    aux <- tab_km(time, status, time_points, digits = digits)
 
   if(save)
     ggsave(overall, filename = paste0(where, "km_overall.jpeg"),
-                      height = fig.height, width = fig.width)
+                      height = fig_height, width = fig_width)
 
   if(ncol(data) > 2){
     if (!is.null(labels)){
@@ -105,27 +105,27 @@ nt_km <-  function(data, time, status, labels = NULL,
                  .f = aux_km,
                  time = time, status = status,
                  xlab = xlab, ylab = ylab,
-                 time.points = time.points,
-                 risk.table = risk.table,
-                 survival.table = survival.table,
-                 fig.height = fig.height, fig.width = fig.width,
+                 time_points = time_points,
+                 risk_table = risk_table,
+                 survival_table = survival_table,
+                 fig_height = fig_height, fig_width = fig_width,
                  save = save, where = where, std_fun_group = std_fun_group,
                  ... = ...)
-    if (!is.null(time.points)){
+    if (!is.null(time_points)){
       tab <- pmap(.l = list(vars, vars.name, vars.label),
                   .f = tab_km_group,
                   time = time, status = status,
-                  time.points = time.points, digits = digits)
+                  time_points = time_points, digits = digits)
      tab <- bind_rows(aux, Reduce(rbind, tab))
     }
   } else {
-    if (!is.null(time.points))
+    if (!is.null(time_points))
       tab <- aux
   }
 
   plot$overall <- overall
 
-  if (!is.null(time.points)){
+  if (!is.null(time_points)){
     if (format){
       tab <-  tab  |>
         rename(Variable = .data$variable,
@@ -152,11 +152,11 @@ nt_km <-  function(data, time, status, labels = NULL,
 }
 
 #'@importFrom survival survfit Surv
-tab_km <- function(time, status, time.points, digits){
+tab_km <- function(time, status, time_points, digits){
 
   data.model <- data.frame(time, status)
   fit <- survfit(Surv(time, status) ~ 1, data = data.model)
-  temp <- summary(fit, times = time.points)
+  temp <- summary(fit, times = time_points)
 
   out <- data.frame(variable = "Overall",
                     group = NA, time = temp$time, survival = temp$surv,
@@ -170,11 +170,11 @@ tab_km <- function(time, status, time.points, digits){
 #'@importFrom dplyr mutate
 #'@importFrom rlang .data
 tab_km_group <- function(var, var.name, var.label,
-                         time, status, time.points, digits){
+                         time, status, time_points, digits){
 
   data.model <- data.frame(time, status)
   fit <- survfit(Surv(time, status) ~ var, data = data.model)
-  temp <- summary(fit, times = time.points)
+  temp <- summary(fit, times = time_points)
 
   out <- data.frame(strata = temp$strata,
                     time = temp$time,
@@ -189,8 +189,8 @@ tab_km_group <- function(var, var.name, var.label,
 
 
 aux_km <- function(var, var.name, var.label, time, status,
-                   xlab, ylab, time.points, risk.table, survival.table,
-                   fig.height, fig.width, save, where, std_fun_group, ...){
+                   xlab, ylab, time_points, risk_table, survival_table,
+                   fig_height, fig_width, save, where, std_fun_group, ...){
 
   if (is.character(var))
     var <- as.factor(var)
@@ -201,14 +201,14 @@ aux_km <- function(var, var.name, var.label, time, status,
     out <- std_fun_group(time = time, status = status,
                          var = var, var.label = var.label,
                          xlab = xlab, ylab = ylab,
-                         time.points = time.points,
-                         risk.table = risk.table,
-                         survival.table = survival.table,
+                         time_points = time_points,
+                         risk_table = risk_table,
+                         survival_table = survival_table,
                          ...)
 
     if (save)
       ggsave(out, filename = paste0(where, paste0("km_", var.name, ".jpeg")),
-             height = fig.height, width = fig.width)
+             height = fig_height, width = fig_width)
 
   } else {
     out <- NA
@@ -228,8 +228,8 @@ aux_km <- function(var, var.name, var.label, time, status,
 #'@param status a numeric vector of '0' and '1'.
 #'@param xlab a character value specifying the x axis label.
 #'@param ylab a character value specifying the y axis label.
-#'@param time.points a numeric vector of time points to evaluate the survival curves.
-#'@param risk.table a logical value indicating whether the risk table should be calculated.
+#'@param time_points a numeric vector of time points to evaluate the survival curves.
+#'@param risk_table a logical value indicating whether the risk table should be calculated.
 #'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function defines the standard of Kaplan-Meier curves
@@ -246,7 +246,7 @@ aux_km <- function(var, var.name, var.label, time, status,
 #'
 #'@export
 std_km <- function(time, status, xlab, ylab,
-                   time.points, risk.table, survival.table,
+                   time_points, risk_table, survival_table,
                    ...){
 
   ### Data
@@ -269,10 +269,10 @@ std_km <- function(time, status, xlab, ylab,
     labs(x = xlab, y = ylab) +
     theme_classic(base_size = 20)
 
-  if (!is.null(time.points)){
+  if (!is.null(time_points)){
     surv.plot <- surv.plot +
       scale_x_continuous(limits = c(0, max(time)),
-                         breaks = c(0, time.points))
+                         breaks = c(0, time_points))
   } else {
     surv.plot <- surv.plot +
       scale_x_continuous(limits = c(0, max(time)))
@@ -301,7 +301,7 @@ std_km <- function(time, status, xlab, ylab,
 
 
   ### Adding a table for median survival
-  if (!is.null(survival.table)){
+  if (!is.null(survival_table)){
 
     tmp <- summary(fit)
 
@@ -317,7 +317,7 @@ std_km <- function(time, status, xlab, ylab,
                                       col = "black", lwd = 1))
     )
 
-    if (!is.na(tmp$table["median"]) & is.null(time.points)){
+    if (!is.na(tmp$table["median"]) & is.null(time_points)){
       median <- paste0(round(tmp$table["median"], 1),
                        ", (",
                        round(tmp$table["0.95LCL"], 1),
@@ -331,18 +331,18 @@ std_km <- function(time, status, xlab, ylab,
                  median,
                "Events/Total" = events)
 
-    } else if (!is.null(time.points)){
-      aux <- summary(fit, times = time.points)
+    } else if (!is.null(time_points)){
+      aux <- summary(fit, times = time_points)
 
       survival <- paste0(round(100*aux$surv, 1),
                          ", (",
                          round(100*aux$lower, 1), " ; ",
                          round(100*aux$upper, 1), ")")
-      n.events <- sapply(time.points, function(x) sum(tmp$n.event[tmp$time < x]))
+      n.events <- sapply(time_points, function(x) sum(tmp$n.event[tmp$time < x]))
       events = paste0(n.events, "/", rep(tmp$table["n.start"], length(n.events)))
 
       table <-
-        tibble(Time = time.points,
+        tibble(Time = time_points,
                "Survival (95% CI)" = survival,
                "Events/Total" = events)
     }
@@ -373,18 +373,18 @@ std_km <- function(time, status, xlab, ylab,
   }
 
   ### Adding risk table
-  if (risk.table){
+  if (risk_table){
     ## Data
     x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x$breaks
     table <- summary(fit, times = x.ticks)
     data.table <- data.frame(time = table$time, n.risk = table$n.risk)
 
     ## Basic plot
-    risk.table <- ggplot(data.table, aes_string(x = "time", y = "1")) +
+    risk_table <- ggplot(data.table, aes_string(x = "time", y = "1")) +
       geom_text(aes_string(label = "n.risk"), size = 6)
 
     ## Formatting
-    risk.table <- risk.table +
+    risk_table <- risk_table +
       labs(x = xlab, y = "", title = "n at risk") +
       theme_classic(base_size = 20) +
       theme(title = element_text(size = 16),
@@ -393,21 +393,21 @@ std_km <- function(time, status, xlab, ylab,
             axis.ticks.y = element_blank())
 
 
-    if (!is.null(time.points)){
-      risk.table <- risk.table + scale_x_continuous(limits = c(0, max(time)),
-                                                    breaks = c(0, time.points))
+    if (!is.null(time_points)){
+      risk_table <- risk_table + scale_x_continuous(limits = c(0, max(time)),
+                                                    breaks = c(0, time_points))
     } else {
-      risk.table <- risk.table + scale_x_continuous(limits = c(0, max(time)))
+      risk_table <- risk_table + scale_x_continuous(limits = c(0, max(time)))
     }
 
 
     ## Combining plots
-    combined.plot <- surv.plot + risk.table +
+    combined.plot <- surv.plot + risk_table +
       plot_layout(ncol = 1, heights = c(0.8, 0.2))
 
     out <- list(combined.plot = combined.plot,
                 surv.plot = surv.plot,
-                risk.table = risk.table)
+                risk_table = risk_table)
 
   } else {
     out <- surv.plot
@@ -426,8 +426,8 @@ std_km <- function(time, status, xlab, ylab,
 #'@param var.label a character value specifying the group label.
 #'@param xlab a character value specifying the x axis label.
 #'@param ylab a character value specifying the y axis label.
-#'@param time.points a numeric vector of time points to evaluate the survival curves.
-#'@param risk.table a logical value indicating whether the risk table should be calculated.
+#'@param time_points a numeric vector of time points to evaluate the survival curves.
+#'@param risk_table a logical value indicating whether the risk table should be calculated.
 #'@param ... additional input arguments that may be used when creating your own function.
 #'
 #'@details This function defines the standard of Kaplan-Meier curves
@@ -447,8 +447,8 @@ std_km <- function(time, status, xlab, ylab,
 #'
 #'@export
 std_km_group <- function(time, status, var, var.label,
-                         xlab, ylab, time.points, risk.table,
-                         survival.table,
+                         xlab, ylab, time_points, risk_table,
+                         survival_table,
                          ...){
 
   ### Data
@@ -484,10 +484,10 @@ std_km_group <- function(time, status, var, var.label,
     scale_colour_brewer(var.label, palette = "Set1", drop = FALSE)
 
   ### Specific time points
-  if (!is.null(time.points)){
+  if (!is.null(time_points)){
     surv.plot <- surv.plot +
       scale_x_continuous(limits = c(0, max(time)),
-                         breaks = time.points)
+                         breaks = time_points)
   } else {
     surv.plot <- surv.plot +
       scale_x_continuous(limits = c(0, max(time)))
@@ -528,18 +528,18 @@ std_km_group <- function(time, status, var, var.label,
              x = -Inf, y = -Inf, hjust = -0.2,  vjust = -0.5, size = 6)
 
   ### Adding survival table
-  if (!is.null(survival.table)){
+  if (!is.null(survival_table)){
 
     tmp <- summary(fit)
 
-    if (any(!is.na(tmp$table[, "median"])) & is.null(time.points)){
+    if (any(!is.na(tmp$table[, "median"])) & is.null(time_points)){
       table <- get_survival_table(fit,
                                   var_label = {{var.label}},
                                   type = "median")
-    } else if (!is.null(time.points)) {
+    } else if (!is.null(time_points)) {
       table <- get_survival_table(fit,
                                   var_label = {{var.label}},
-                                  time_points = time.points)
+                                  time_points = time_points)
     }
 
     custom_theme <- ttheme_default(
@@ -584,7 +584,7 @@ std_km_group <- function(time, status, var, var.label,
   }
 
   ### Adding risk table
-  if (risk.table){
+  if (risk_table){
   ## Data
     x.ticks <- ggplot_build(surv.plot)$layout$panel_params[[1]]$x$breaks
     table <- summary(fit, times = x.ticks)
@@ -597,20 +597,20 @@ std_km_group <- function(time, status, var, var.label,
                             levels = rev(levels(var))))
 
     ## Basic plot
-    risk.table <- ggplot(data.table, aes_string(x = "time", y = "group")) +
+    risk_table <- ggplot(data.table, aes_string(x = "time", y = "group")) +
       geom_text(aes_string(label = "n.risk"), size = 6)
 
     ## Formatting
-    risk.table <- risk.table +
+    risk_table <- risk_table +
       theme_classic(base_size = 20) +
       labs(x = xlab, y = "", title = "n at risk")
 
-    if (!is.null(time.points)){
-      risk.table <- risk.table +
+    if (!is.null(time_points)){
+      risk_table <- risk_table +
         scale_x_continuous(limits = c(0, max(time)),
-                           breaks = time.points)
+                           breaks = time_points)
     } else {
-      risk.table <- risk.table +
+      risk_table <- risk_table +
         scale_x_continuous(limits = c(0, max(time)))
     }
 
@@ -618,7 +618,7 @@ std_km_group <- function(time, status, var, var.label,
     ## Changing y axis ticks
     colors <- unique(ggplot_build(surv.plot)$data[[1]]["colour"])
 
-    risk.table <- risk.table +
+    risk_table <- risk_table +
       scale_y_discrete(labels = rep("-", nlevels(data.table$group))) +
       theme(title = element_text(size = 16),
             axis.title.x = element_text(size = 20),
@@ -629,12 +629,12 @@ std_km_group <- function(time, status, var, var.label,
             axis.ticks.y = element_blank())
 
     ## Combining plots
-    combined.plot <- surv.plot + risk.table +
+    combined.plot <- surv.plot + risk_table +
       plot_layout(ncol = 1, heights = c(0.8, 0.2))
 
     out <- list(combined.plot = combined.plot,
                 surv.plot = surv.plot,
-                risk.table = risk.table)
+                risk_table = risk_table)
   } else {
     out <- surv_plot
   }

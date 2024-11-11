@@ -12,7 +12,7 @@
 #'@param strata a character vector containing the strata variable.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
-#'@param digits.p a numerical value defining number of digits to present the p-values.
+#'@param digits_p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character indicating the name of output file in csv format to be saved.
 #'
@@ -48,7 +48,7 @@
 nt_simple_cox <- function(data, time, status, ...,
                           labels = NULL, increment = NULL,
                           cluster = FALSE, strata = NULL, format = TRUE,
-                          digits = 2, digits.p = 3, save = FALSE,
+                          digits = 2, digits_p = 3, save = FALSE,
                           file = "simple_cox"){
 
   time <- enquo(time)
@@ -120,15 +120,15 @@ nt_simple_cox <- function(data, time, status, ...,
     cox <- cox |> mutate(concordance = round(.data$concordance, digits),
                           r.squared = round(.data$r.squared, digits),
                           AIC = round(.data$AIC, digits),
-                          ph.assumption = round(.data$ph.assumption, digits.p)) |>
+                          ph.assumption = round(.data$ph.assumption, digits_p)) |>
       transmute(Variable = .data$term,  HR = .data$group,
                 `Estimate (95% CI)` = paste0(round(.data$estimate, digits), " (",
                                  round(.data$conf.low, digits), " ; ",
                                  round(.data$conf.high, digits), ")"),
-                `Wald p value` = ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, digits.p))),
-                `LR p value` = ifelse(round(.data$p.value.lr, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value.lr, digits.p))),
+                `Wald p value` = ifelse(round(.data$p.value, digits_p) == 0, "< 0.001",
+                                 as.character(round(.data$p.value, digits_p))),
+                `LR p value` = ifelse(round(.data$p.value.lr, digits_p) == 0, "< 0.001",
+                                 as.character(round(.data$p.value.lr, digits_p))),
                 n = .data$n, n.event = .data$n.event,
                 concordance = .data$concordance, r.squared = .data$r.squared,
                 AIC = .data$AIC, ph.assumption  = .data$ph.assumption) |>
@@ -293,7 +293,7 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param labels a list of labels with components given by their variable names.
 #'@param digits a numerical value defining of digits to present the results.
-#'@param digits.p a numerical value defining number of digits to present the p-values.
+#'@param digits_p a numerical value defining number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character indicating the name of output file in csv format to be saved.
 #'
@@ -329,7 +329,7 @@ nt_multiple_cox <- function(fit,
                             user.contrast.interaction = NULL,
                             table.reference = TRUE,
                             format = TRUE, labels = NULL,
-                            digits = 2, digits.p = 3,
+                            digits = 2, digits_p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
 
   if (any(is(fit) != "coxph"))
@@ -351,8 +351,8 @@ nt_multiple_cox <- function(fit,
                                                   round(.data$conf.low, digits), " ; ",
                                                   round(.data$conf.high, digits), ")")),
               `p value` = ifelse(is.na(.data$p.value), "",
-                                 ifelse(round(.data$p.value, digits.p) == 0, "< 0.001",
-                                 as.character(round(.data$p.value, digits.p))))) |>
+                                 ifelse(round(.data$p.value, digits_p) == 0, "< 0.001",
+                                 as.character(round(.data$p.value, digits_p))))) |>
     replace_na(list(`p value` = ""))
 
   if (!is.null(labels)){
