@@ -287,9 +287,9 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 #'
 #'@param fit a coxph object.
 #'@param ci.type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
-#'@param user.contrast a variable named list of numerical vectors indicating contrast for a covariate.
-#'@param user.contrast.interaction a variable named list of numerical vectors indicating a contrast for interaction.
-#'@param table.reference a logical value indicating whether the output should be presented with a line indicating the reference category.
+#'@param user_contrast a variable named list of numerical vectors indicating contrast for a covariate.
+#'@param user_contrast_interaction a variable named list of numerical vectors indicating a contrast for interaction.
+#'@param table_reference a logical value indicating whether the output should be presented with a line indicating the reference category.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param labels a list of labels with components given by their variable names.
 #'@param digits a numerical value defining of digits to present the results.
@@ -325,9 +325,9 @@ fit_simple_cox <- function(data, tab.labels, tab.levels, strata.var, increment){
 #'@export
 nt_multiple_cox <- function(fit,
                             ci.type = "Wald",
-                            user.contrast = NULL,
-                            user.contrast.interaction = NULL,
-                            table.reference = TRUE,
+                            user_contrast = NULL,
+                            user_contrast_interaction = NULL,
+                            table_reference = TRUE,
                             format = TRUE, labels = NULL,
                             digits = 2, digits_p = 3,
                             save = FALSE, file = "nt_multiple_cox"){
@@ -336,10 +336,10 @@ nt_multiple_cox <- function(fit,
     stop("fit object is not a coxph class")
 
   out <- aux_multiple_cox(fit = fit, ci.type = ci.type,
-                          user.contrast = user.contrast,
-                          user.contrast.interaction = user.contrast.interaction,
+                          user_contrast = user_contrast,
+                          user_contrast_interaction = user_contrast_interaction,
                           format = format,
-                          table.reference = table.reference)
+                          table_reference = table_reference)
   ref <- reference_df(fit)$ref
 
   if (format){
@@ -388,15 +388,15 @@ nt_multiple_cox <- function(fit,
 #'@importFrom tidyr separate
 #'@importFrom broom tidy
 aux_multiple_cox <- function(fit, ci.type,
-                             user.contrast, user.contrast.interaction,
-                             format, table.reference){
+                             user_contrast, user_contrast_interaction,
+                             format, table_reference){
 
   aux <- extract_data(fit)
 
   effect <- fit_multiple_cox(fit, fit_vars = aux, type = ci.type,
-                         user.contrast = user.contrast,
-                         user.contrast.interaction = user.contrast.interaction,
-                         table.reference = table.reference) |>
+                         user_contrast = user_contrast,
+                         user_contrast_interaction = user_contrast_interaction,
+                         table_reference = table_reference) |>
     separate(.data$term, into = c("variable", "hr"), sep = ":")
 
   if (format)
@@ -423,8 +423,8 @@ aux_multiple_cox <- function(fit, ci.type,
 #'@importFrom survival coxph
 #'@importFrom stringr str_split
 fit_multiple_cox <- function(fit, fit_vars, type,
-                         user.contrast, user.contrast.interaction,
-                         table.reference){
+                         user_contrast, user_contrast_interaction,
+                         table_reference){
 
   ref <- reference_df(fit)$df
   beta <- as.numeric(fit$coefficients)
@@ -453,8 +453,8 @@ fit_multiple_cox <- function(fit, fit_vars, type,
 
     if (all(!cond.interaction)){
       temp <- contrast_df(data = fit_vars$data, var = fit_vars$var[i],
-                          ref = ref, user.contrast = user.contrast,
-                          table.reference = table.reference)
+                          ref = ref, user_contrast = user_contrast,
+                          table_reference = table_reference)
       design_matrix <- model.matrix(fit, temp$new.data)
 
       drop <- which(grepl(fit_vars$var[i], x = as.character(term_labels), fixed = TRUE))
@@ -466,7 +466,7 @@ fit_multiple_cox <- function(fit, fit_vars, type,
                                 beta = beta, beta_var = beta_var,
                                 type = type)
 
-      if (table.reference)
+      if (table_reference)
         contrast <- rbind(NA, contrast)
 
       temp <- data.frame(term = temp$label, contrast)
@@ -481,13 +481,13 @@ fit_multiple_cox <- function(fit, fit_vars, type,
 
     } else {
       for (k in which(cond.interaction)){
-        interaction.vars <- fit_vars$var[sapply(fit_vars$var, grepl, x = as.character(interaction[k]), fixed = TRUE)]
-        others <- interaction.vars[interaction.vars != fit_vars$var[i]]
+        interaction_vars <- fit_vars$var[sapply(fit_vars$var, grepl, x = as.character(interaction[k]), fixed = TRUE)]
+        others <- interaction_vars[interaction_vars != fit_vars$var[i]]
         temp <- contrast_df(data = fit_vars$data, var = fit_vars$var[i],
-                            ref = ref, user.contrast = user.contrast,
+                            ref = ref, user_contrast = user_contrast,
                             interaction = others,
-                            user.contrast.interaction = user.contrast.interaction,
-                            table.reference = table.reference)
+                            user_contrast_interaction = user_contrast_interaction,
+                            table_reference = table_reference)
 
         design_matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
 
@@ -500,7 +500,7 @@ fit_multiple_cox <- function(fit, fit_vars, type,
                                   beta = beta, beta_var = beta_var,
                                   type = type)
 
-        if (table.reference){
+        if (table_reference){
           aux.contrast <- list()
           index <- 1
           for (j in 1:length(temp$label)){
