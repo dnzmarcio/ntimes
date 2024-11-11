@@ -380,10 +380,10 @@ std_km <- function(time, status, xlab, ylab,
 
 
     ## Combining plots
-    combined.plot <- surv_plot + risk_table +
+    combined_plot <- surv_plot + risk_table +
       plot_layout(ncol = 1, heights = c(0.8, 0.2))
 
-    out <- list(combined.plot = combined.plot,
+    out <- list(combined_plot = combined_plot,
                 surv_plot = surv_plot,
                 risk_table = risk_table)
 
