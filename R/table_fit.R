@@ -10,7 +10,7 @@ table_fit <- function(fit, type, exponentiate = FALSE){
 #'@importFrom stats terms get_all_vars
 extract_data <- function(fit){
 
-  temp <- eval(fit$call$data)
+  temp <- fit$data
   data <- get_all_vars(formula(fit), temp)
   var.names <- colnames(data)
 
@@ -257,27 +257,29 @@ contrast_calc <- function(fit, fit0 = NULL, design_matrix, beta, beta_var, type)
     K <- matrix(K, nrow = 1)
   test <- glht(fit, linfct = K)
 
-  if (!is.na(pmatch(type, c("Wald", "wald")))){
+  sm <- summary(test)
+  p.value.wald <- sm$test$pvalues
+  ci <- confint(test)$confint
+  p.value.lr <- 1 - pchisq(-2*(logLik(fit0)[[1]] - logLik(fit)[[1]]),
+                           anova(fit0, fit)$Df[2])
+  p.value.lr <- c(p.value.lr, rep(NA, (nrow(ci) - 1)))
 
-    sm <- summary(test)
+  if (!is.na(pmatch(type, c("Wald", "wald")))){
     estimate <- sm$test$coefficients
     pred.se <- sm$test$sigma
 
     lower <- estimate - 1.96*pred.se
     upper <- estimate + 1.96*pred.se
     estimate <- estimate
-    p.value <- sm$test$pvalues
-
-    out <- data.frame(estimate, lower, upper, p.value)
 
   } else if (!is.na(pmatch(type, c("profile", "lr")))) {
-    ci <- confint(test)$confint
-    p.value.lr <- 1 - pchisq(-2*(logLik(fit0)[[1]] - logLik(fit)[[1]]),
-                             anova(fit0, fit)$Df[2])
-    p.value <- c(p.value.lr, rep(NA, (nrow(ci) - 1)))
 
-    out <- data.frame(estimate = ci[, 1], lower = ci[, 2], upper = ci[, 3], p.value)
+    estimate <- ci[, 1]
+    lower <- ci[, 2]
+    upper <- ci[, 3]
   }
+
+  out <- data.frame(estimate, lower, upper, p.value.wald, p.value.lr)
 
   return(out)
 }
