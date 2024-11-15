@@ -14,8 +14,8 @@
 #'@param labels a list of labels with components given by their variable names.
 #'@param alternative a character value indicating the alternative hypothesis,
 #'must be one of "two.sided", "greater" or "less".
-#'@param norm_test a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.
-#'@param var_test a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_levene_test}.
+#'@param norm_test a function with a numeric vector as input and a list as output containing an object named \code{p_value} similar to \link[ntimes]{helper_sf_test}.
+#'@param var_test a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p_value} similar to \link[ntimes]{helper_levene_test}.
 #'@param qt_test a list of functions for four possible cases: (1) normality and homoscedasticity,
 #'(2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.
 #'@param conf_level a character value specifying the confidence level of the confidence interval for
@@ -110,7 +110,7 @@ nt_compare_tg <- function(data, group, labels = NULL,
                             paste0("(", .data$Lower, " ; ",
                                    .data$Upper, ")")) |>
       select(.data$Variable, .data$Group, .data$Hypothesis,
-             .data$Test, .data$`95% CI`, `p value` = .data$`p.value`)
+             .data$Test, .data$`95% CI`, `p value` = .data$`p_value`)
   }
 
 
@@ -178,8 +178,8 @@ aux_compare_tg <- function(var, var_name, var_label,
 #'@param data a data frame with the variables.
 #'@param group a data frame with the group variable.
 #'@param labels a list of labels with components given by their variable names.
-#'@param norm_test a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.
-#'@param var_test a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_levene_test}.
+#'@param norm_test a function with a numeric vector as input and a list as output containing an object named \code{p_value} similar to \link[ntimes]{helper_sf_test}.
+#'@param var_test a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p_value} similar to \link[ntimes]{helper_levene_test}.
 #'@param qt_test a list of functions for three possible cases: (1) normality and homoscedasticity,
 #'(2) normality and heteroscedasticity, (3) non-normality and homoscedasticity/heteroscedasticity.
 #'@param contrast a matrix of contrasts. See more details in \code{\link[multcomp]{glht}}.
@@ -190,7 +190,7 @@ aux_compare_tg <- function(var, var_name, var_label,
 #'@param digits_p the number of digits to present the p-values.
 #'@param save a logical value indicating whether the output should be saved as a csv file.
 #'@param file a character value indicating the name of output file in csv format to be saved.
-#'@param multiple.comparisons a logical value indicating if pairwise comparisons should be performed.
+#'@param multiple_comparisons a logical value indicating if pairwise comparisons should be performed.
 #'
 #'@details If \code{test = "automatic"}, the normality assumption will be verified by
 #'\code{norm_test} and homoscedasticity assumption will evaluate the assumption of
@@ -215,7 +215,7 @@ nt_compare_mg <- function(data, group, labels = NULL,
                           alternative = "two.sided",
                           format = TRUE, digits_p = 3, digits_ci = 2,
                           save = FALSE, file = "nt_compare_mg",
-                          multiple.comparisons = FALSE){
+                          multiple_comparisons = FALSE){
 
   group <- enquo(group)
 
@@ -251,12 +251,12 @@ nt_compare_mg <- function(data, group, labels = NULL,
                norm_test = norm_test, var_test = var_test,
                qt_test = qt_test,
                digits_p = digits_p,
-               mc = multiple.comparisons)
+               mc = multiple_comparisons)
 
   omnibus_test <- Reduce(rbind, temp)
 
-  if (multiple.comparisons){
-    aux <- omnibus_test |> filter(.data$p.value < 0.05)
+  if (multiple_comparisons){
+    aux <- omnibus_test |> filter(.data$p_value < 0.05)
     vars_name <- unlist(aux$Variable)
     vars <- data |> select(all_of(vars_name))
     vars_label.mc <- vars_label[vars_name]
@@ -277,7 +277,7 @@ nt_compare_mg <- function(data, group, labels = NULL,
                  paste0("(", .data$Lower, " ; ",
                         .data$Upper, ")"),) |>
         select(.data$Variable, .data$Group, .data$Hypothesis,
-               .data$Test, .data$`95% CI`, `p value` = .data$`p.value`)
+               .data$Test, .data$`95% CI`, `p value` = .data$`p_value`)
 
       if (save)
         write.csv(mc.test, file = paste0(file, "_mc_test.csv"))
@@ -291,13 +291,13 @@ nt_compare_mg <- function(data, group, labels = NULL,
   if (format){
     omnibus_test <- omnibus_test |>
       select(.data$Variable, .data$Group, .data$Test, .data$Hypothesis,
-             `p value` = .data$`p.value`)
+             `p value` = .data$`p_value`)
   }
 
   if (save)
     write.csv(omnibus_test, file = paste0(file, "_omnibus_test.csv"))
 
-  if (!multiple.comparisons){
+  if (!multiple_comparisons){
     out <- list(omnibus_test = omnibus_test)
     attr(out, "ntimes") <- "multiple_groups"
   } else {

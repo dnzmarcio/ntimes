@@ -214,10 +214,10 @@ helper_count_perc <- function(var, digits, ...){
 #'@export
 helper_sf_test <-  function(x){
 
-  p.value <- nortest::sf.test(x)$p.value
+  p_value <- nortest::sf.test(x)$p.value
   test <- "Shapiro-Francia"
 
-  out <- list(test = test, p.value = p.value)
+  out <- list(test = test, p_value = p_value)
 }
 
 #'Helper for Levene test
@@ -238,15 +238,15 @@ helper_levene_test <- function(x, g, paired){
 
   temp <- na.exclude(data.frame(x, g))
   if (!paired){
-    p.value <- lawstat::levene.test(temp$x, temp$g)$p.value
+    p_value <- lawstat::levene.test(temp$x, temp$g)$p.value
     test <- "Levene"
   } else {
     lg <- levels(g)
-    p.value <- PairedData::levene.Var.test.paired(temp$x[temp$g == lg[1]],
+    p_value <- PairedData::levene.Var.test.paired(temp$x[temp$g == lg[1]],
                                                   temp$x[temp$g == lg[2]])$p.value
   }
 
-  out <- list(test = test, p.value = p.value)
+  out <- list(test = test, p_value = p_value)
 }
 
 #'Helper for Analysis of Variance
@@ -260,17 +260,17 @@ helper_levene_test <- function(x, g, paired){
 #'but input and output should be kept the same.
 #'
 #'@return a list with \code{test} indicating the test that was
-#'performed and its respective \code{p.value}.
+#'performed and its respective \code{p_value}.
 #'
 #'@export
 helper_anova <- function(x, g){
 
-  data.test <- data.frame(x, g)
-  result <- stats::oneway.test(x ~ g, data = data.test, var.equal = TRUE)
+  data_test <- data.frame(x, g)
+  result <- stats::oneway.test(x ~ g, data = data_test, var.equal = TRUE)
   test <- "ANOVA"
-  p.value <- result$p.value
+  p_value <- result$p.value
 
-  out <- list(test = test, p.value = p.value)
+  out <- list(test = test, p_value = p_value)
 }
 
 #'Helper for Welch's Analysis of Variance
@@ -284,17 +284,17 @@ helper_anova <- function(x, g){
 #'but input and output should be kept the same.
 #'
 #'@return a list with \code{test} indicating the test that was
-#'performed and its respective \code{p.value}.
+#'performed and its respective \code{p_value}.
 #'
 #'@export
 helper_welch_anova <- function(x, g){
 
-  data.test <- data.frame(x, g)
-  result <- stats::oneway.test(x ~ g, data = data.test, var.equal = FALSE)
+  data_test <- data.frame(x, g)
+  result <- stats::oneway.test(x ~ g, data = data_test, var.equal = FALSE)
   test <- "Welch's ANOVA"
-  p.value <- result$p.value
+  p_value <- result$p.value
 
-  out <- list(test = test, p.value = p.value)
+  out <- list(test = test, p_value = p_value)
 }
 
 #'Helper for Kruskal-Wallis test
@@ -308,17 +308,17 @@ helper_welch_anova <- function(x, g){
 #'but input and output should be kept the same.
 #'
 #'@return a list with \code{test} indicating the test that was
-#'performed and its respective \code{p.value}.
+#'performed and its respective \code{p_value}.
 #'
 #'@export
 helper_kruskal_wallis <- function(x, g){
 
-  data.test <- data.frame(x, g)
-  result <- stats::kruskal.test(x ~ g, data = data.test)
+  data_test <- data.frame(x, g)
+  result <- stats::kruskal.test(x ~ g, data = data_test)
   test <- "Kruskal-Wallis"
-  p.value <- result$p.value
+  p_value <- result$p.value
 
-  out <- list(test = test, p.value = p.value)
+  out <- list(test = test, p_value = p_value)
 }
 
 #'Helper for Student's t-test
@@ -335,26 +335,26 @@ helper_kruskal_wallis <- function(x, g){
 #'but input and output should be kept the same.
 #'
 #'@return a list with \code{test} indicating the test that was
-#'performed, its respective \code{p.value} and \code{lower} and \code{upper}
+#'performed, its respective \code{p_value} and \code{lower} and \code{upper}
 #'limits of the confidence interval for the effect size considered in the test.
 #'
 #'@export
-helper_student_t <- function(x, g, paired, alternative, conf.level){
+helper_student_t <- function(x, g, paired, alternative, conf_level){
 
-  data.test <- data.frame(x, g)
-  result <- stats::t.test(x = data.test$x[data.test$g == levels(data.test$g)[1]],
-                          y = data.test$x[data.test$g == levels(data.test$g)[2]],
+  data_test <- data.frame(x, g)
+  result <- stats::t.test(x = data_test$x[data_test$g == levels(data_test$g)[1]],
+                          y = data_test$x[data_test$g == levels(data_test$g)[2]],
                           var.equal = TRUE,
                           alternative = alternative,
                           paired = paired,
-                          conf.level = conf.level)
+                          conf.level = conf_level)
 
-  p.value <- result$p.value
+  p_value <- result$p.value
   lower <- result$conf.int[1]
   upper <- result$conf.int[2]
   test <- ifelse(paired, "Paired Student's t-test", "Student's t-test")
 
-  out <- list(test = test, p.value = p.value,
+  out <- list(test = test, p_value = p_value,
               lower = lower, upper = upper)
 }
 
@@ -372,26 +372,26 @@ helper_student_t <- function(x, g, paired, alternative, conf.level){
 #'but input and output should be kept the same.
 #'
 #'@return a list with \code{test} indicating the test that was
-#'performed, its respective \code{p.value} and \code{lower} and \code{upper}
+#'performed, its respective \code{p_value} and \code{lower} and \code{upper}
 #'limits of the confidence interval for the effect size considered in the test.
 #'
 #'@export
-helper_welch_t <- function(x, g, paired, alternative, conf.level){
+helper_welch_t <- function(x, g, paired, alternative, conf_level){
 
-  data.test <- data.frame(x, g)
-  result <- stats::t.test(x = data.test$x[data.test$g == levels(data.test$g)[1]],
-                          y = data.test$x[data.test$g == levels(data.test$g)[2]],
+  data_test <- data.frame(x, g)
+  result <- stats::t.test(x = data_test$x[data_test$g == levels(data_test$g)[1]],
+                          y = data_test$x[data_test$g == levels(data_test$g)[2]],
                           var.equal = FALSE,
                           alternative = alternative,
                           paired = paired,
-                          conf.level = conf.level)
+                          conf.level = conf_level)
 
-  p.value <- result$p.value
+  p_value <- result$p.value
   lower <- result$conf.int[1]
   upper <- result$conf.int[2]
   test <- ifelse(paired, "Paired Welch's t-test", "Welch's t-test")
 
-  out <- list(test = test, p.value = p.value,
+  out <- list(test = test, p_value = p_value,
               lower = lower, upper = upper)
 }
 
@@ -409,25 +409,25 @@ helper_welch_t <- function(x, g, paired, alternative, conf.level){
 #'but input and output should be kept the same.
 #'
 #'@return a list with \code{test} indicating the test that was
-#'performed, its respective \code{p.value} and \code{lower} and \code{upper}
+#'performed, its respective \code{p_value} and \code{lower} and \code{upper}
 #'limits of the confidence interval for the effect size considered in the test.
 #'
 #'@export
-helper_mann_whitney <- function(x, g, paired, alternative, conf.level){
+helper_mann_whitney <- function(x, g, paired, alternative, conf_level){
 
-  data.test <- data.frame(x, g)
-  result <- stats::wilcox.test(x = data.test$x[data.test$g == levels(data.test$g)[1]],
-                               y = data.test$x[data.test$g == levels(data.test$g)[2]],
+  data_test <- data.frame(x, g)
+  result <- stats::wilcox.test(x = data_test$x[data_test$g == levels(data_test$g)[1]],
+                               y = data_test$x[data_test$g == levels(data_test$g)[2]],
                                alternative = alternative,
                                paired = paired, conf.int = TRUE,
-                               conf.level = conf.level)
+                               conf.level = conf_level)
 
-  p.value <- result$p.value
+  p_value <- result$p.value
   lower <- result$conf.int[1]
   upper <- result$conf.int[2]
   test <- ifelse(paired, "Paired Mann-Whitney", "Mann-Whitney")
 
-  out <- list(test = test, p.value = p.value,
+  out <- list(test = test, p_value = p_value,
               lower = lower, upper = upper)
 
 }
@@ -446,40 +446,40 @@ helper_mann_whitney <- function(x, g, paired, alternative, conf.level){
 #'but input and output should be kept the same.
 #'
 #'@return a list with \code{test} indicating the test that was
-#'performed, its respective \code{p.value} and \code{lower} and \code{upper}
+#'performed, its respective \code{p_value} and \code{lower} and \code{upper}
 #'limits of the confidence interval for the effect size considered in the test.
 #'
 #'@export
-helper_brunner_munzel <- function(x, g, paired, alternative, conf.level){
+helper_brunner_munzel <- function(x, g, paired, alternative, conf_level){
 
-  data.test <- data.frame(x, g)
+  data_test <- data.frame(x, g)
 
   if (!paired){
     result <- nparcomp::npar.t.test(x ~ g,
-                                    data = data.test,
+                                    data = data_test,
                                     method = "t.app",
-                                    conf.level = conf.level,
+                                    conf.level = conf_level,
                                     alternative = alternative,
                                     info = FALSE)
 
-    p.value <- result$Analysis[, 6]
+    p_value <- result$Analysis[, 6]
     lower <- ifelse(result$Analysis[, 3] < 0, 0, result$Analysis[, 3])
     upper <- ifelse(result$Analysis[, 4] > 1, 1, result$Analysis[, 4])
     test <- "Brunner-Munzel t-test"
   } else {
     result <- nparcomp::npar.t.test.paired(x ~ g,
-                                           data = data.test,
+                                           data = data_test,
                                            alternative = alternative,
-                                           conf.level = conf.level,
+                                           conf.level = conf_level,
                                            info = FALSE)
 
-    p.value <- result$Analysis[1, 5]
+    p_value <- result$Analysis[1, 5]
     lower <- ifelse(result$Analysis[1, 1] < 0, 0, result$Analysis[1, 1])
     upper <- ifelse(result$Analysis[1, 3] > 1, 1, result$Analysis[1, 3])
     test <- "Paired Brunner-Munzel t-test"
   }
 
-  out <- list(test = test, p.value = p.value,
+  out <- list(test = test, p_value = p_value,
               lower = lower, upper = upper)
 
 }

@@ -16,7 +16,7 @@ dist_ql_tg <-  function(var, group,
 
     if (!is.finite(max(dim(tab))) | min(dim(tab)) < 2) {
       test <- NA
-      p.value <- NA
+      p_value <- NA
       hypothesis <- NA
       lower <- NA
       upper <- NA
@@ -24,7 +24,7 @@ dist_ql_tg <-  function(var, group,
       result <- try(stats::fisher.test(tab), silent = TRUE)
 
       if (any(is(result) != "try-error")){
-        p.value <- result$p.value
+        p_value <- result$p.value
 
         if (max(dim(tab)) == 2){
           pt <- try(stats::prop.test(tab, conf_level = conf_level), silent = TRUE)
@@ -49,10 +49,10 @@ dist_ql_tg <-  function(var, group,
         lower <- NA
         upper <- NA
         if (any(is(result) != "try-error")){
-          p.value <- result$p.value
+          p_value <- result$p.value
           test <- "Chi-Square test"
         } else {
-          p.value <- NA
+          p_value <- NA
           test <- NA
         }
       }
@@ -67,7 +67,7 @@ dist_ql_tg <-  function(var, group,
   } else {
     tab <- table(data.test$x, data.test$g)
     result <- mcnemar.test(tab)
-    p.value <- result$p.value
+    p_value <- result$p.value
     test <- ifelse(max(dim(tab)) == 2, "McNemar test",
                    "McNemar-Bowker test")
     lower <- NA
@@ -81,7 +81,7 @@ dist_ql_tg <-  function(var, group,
                     Lower = round(lower, digits_ci),
                     Upper = round(upper, digits_ci),
                     Test = test,
-                    p.value = round(p.value, digits_p))
+                    p_value = round(p_value, digits_p))
 
 
   return(out)
@@ -101,7 +101,7 @@ dist_ql_mg <-  function(var, group,
 
   if (!is.finite(max(dim(tab))) | min(dim(tab)) < 2) {
     test <- NA
-    p.value <- NA
+    p_value <- NA
     hypothesis <- NA
     lower <- NA
     upper <- NA
@@ -109,16 +109,16 @@ dist_ql_mg <-  function(var, group,
     result <- try(stats::fisher.test(tab), silent = TRUE)
 
     if (any(is(result) != "try-error")){
-      p.value <- result$p.value
+      p_value <- result$p.value
       test <- "Fisher's exact test"
     } else {
       result <- try(stats::chisq.test(tab), silent = TRUE)
 
       if (any(is(result) != "try-error")){
-        p.value <- result$p.value
+        p_value <- result$p.value
         test <- "Chi-square test"
       } else {
-        p.value <- NA
+        p_value <- NA
         test <- NA
       }
     }
@@ -128,7 +128,7 @@ dist_ql_mg <-  function(var, group,
 
   out <- data.frame(Variable = var_label[[1]], Group = group_label[[1]],
                     Hypothesis = hypothesis,  Test = test,
-                    `p value` =  round(p.value, digits_p))
+                    `p value` =  round(p_value, digits_p))
 
   return(out)
 }
@@ -143,7 +143,7 @@ dist_ql_mc <-  function(var, group, alternative, contrast,
   av <- glm(x ~ g, data = data.test, family = "binomial")
   mc <- glht(av, linfct = mcp(g = contrast), alternative = alternative)
   sm <- summary(mc)
-  p.value <- round(sm$test$pvalues, digits_p)
+  p_value <- round(sm$test$pvalues, digits_p)
 
   test <- paste(contrast)
   dif <- as.character(rownames(sm[2]$linfct))
@@ -160,7 +160,7 @@ dist_ql_mc <-  function(var, group, alternative, contrast,
 
   out <- data.frame(Variable = var_label, Group = group_label,
                     Hypothesis = hypothesis, Lower = lower, Upper = upper,
-                    Test = test, `p value` = p.value)
+                    Test = test, `p value` = p_value)
 
   return(out)
 }

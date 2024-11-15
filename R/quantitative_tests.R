@@ -13,13 +13,13 @@ dist_qt_tg <-  function(var, var_label, group, group_label,
     # Checking normality
     aux <- function(x){
       result <- try(norm_test(x), silent = TRUE)
-      out <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
+      out <- ifelse(any(is(result) == "try-error"), 0, result$p_value)
     }
     p.norm <- tapply(data_test$x, data_test$g, aux)
 
     # Checking homoscedasticity
     result <- try(var_test(x = data_test$x, g = data_test$g, paired = paired), silent = TRUE)
-    p.var <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
+    p.var <- ifelse(any(is(result) == "try-error"), 0, result$p_value)
 
     # Possible cases
     if (all(p.norm > 0.05)) {
@@ -54,7 +54,7 @@ dist_qt_tg <-  function(var, var_label, group, group_label,
 
     if (any(is(result) != "try-error")){
       test <- result$test
-      p.value <- result$p.value
+      p_value <- result$p_value
       lower <- result$lower
       upper <- result$upper
 
@@ -66,7 +66,7 @@ dist_qt_tg <-  function(var, var_label, group, group_label,
 
     } else {
       test <- NA
-      p.value <- NA
+      p_value <- NA
       lower <- NA
       upper <- NA
       hypothesis <- NA
@@ -74,7 +74,7 @@ dist_qt_tg <-  function(var, var_label, group, group_label,
 
   } else {
     test <- NA
-    p.value <- NA
+    p_value <- NA
     lower <- NA
     upper <- NA
     hypothesis <- NA
@@ -86,7 +86,7 @@ dist_qt_tg <-  function(var, var_label, group, group_label,
                     Lower = round(lower, digits_ci),
                     Upper = round(upper, digits_ci),
                     Test = test,
-                    p.value = round(p.value, digits_p))
+                    p_value =round(p_value, digits_p))
 
   return(out)
 }
@@ -105,13 +105,13 @@ dist_qt_mg <-  function(var, group,
     # Checking normality
     aux <- function(x){
       result <- try(norm_test(x), silent = TRUE)
-      out <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
+      out <- ifelse(any(is(result) == "try-error"), 0, result$p_value)
     }
     p.norm <- tapply(data_test$x, data_test$g, aux)
 
     # Checking homocedasticity
     result <- try(var_test(x = data_test$x, g = data_test$g, paired = FALSE), silent = TRUE)
-    p.var <- ifelse(any(is(result) == "try-error"), 0, result$p.value)
+    p.var <- ifelse(any(is(result) == "try-error"), 0, result$p_value)
 
     if (all(p.norm > 0.05)) {
       if (p.var > 0.05) {
@@ -125,24 +125,24 @@ dist_qt_mg <-  function(var, group,
 
     if (any(is(result) != "try-error")){
       test <- result$test
-      p.value <- result$p.value
+      p_value <- result$p_value
       hypothesis <- "At least one group is different"
 
     } else {
       test <- NA
-      p.value <- NA
+      p_value <- NA
       hypothesis <- NA
     }
 
   } else {
-    p.value <- NA
+    p_value <- NA
     test <- NA
     hypothesis <- NA
   }
 
   out <- data.frame(Variable = var_label, Group = group_label,
                     Hypothesis = hypothesis, Test = test,
-                    p.value = round(p.value, digits_p))
+                    p_value =round(p_value, digits_p))
 
   return(out)
 }
@@ -174,20 +174,20 @@ dist_qt_mc <-  function(var, omnibus_test, group,
       hypothesis <- gsub(" - ", alt, dif)
       test <- paste0("Parametric ", contrast)
 
-      p.value <- round(sm$test$pvalues, digits_p)
+      p_value <- round(sm$test$pvalues, digits_p)
       lower <- round(confint(mc)$confint[, 2], digits_ci)
       upper <- round(confint(mc)$confint[, 3], digits_ci)
 
     } else {
       hypothesis <- NA
-      p.value <- NA
+      p_value <- NA
       lower <- NA
       upper <- NA
     }
 
     out <- data.frame(Variable = var_label, Group = group_label,
                       Hypothesis = hypothesis, Lower = lower, Upper = upper,
-                      Test = test, p.value)
+                      Test = test, p_value)
   } else {
 
     mc <- try(nparcomp(x ~ g, data = data_test,  type = contrast,
@@ -197,7 +197,7 @@ dist_qt_mc <-  function(var, omnibus_test, group,
                silent = TRUE)
 
     if (any(is(mc) != "try.error")) {
-      p.value <- round(mc$Analysis[,6], 3)
+      p_value <- round(mc$Analysis[,6], 3)
       lower <- ifelse(mc$Analysis[, 3] < 0, 0, round(mc$Analysis[, 3], 2))
       upper <- ifelse(mc$Analysis[, 4] > 1, 1, round(mc$Analysis[, 4], 2))
 
@@ -211,14 +211,14 @@ dist_qt_mc <-  function(var, omnibus_test, group,
     } else {
       test <- NA
       hypothesis <- NA
-      p.value <- NA
+      p_value <- NA
       lower <- NA
       upper <- NA
     }
 
     out <- data.frame(Variable = var_label, Group = group_label,
                       Hypothesis = hypothesis, Lower = lower, Upper = upper,
-                      Test = test, p.value)
+                      Test = test, p_value)
 
   }
   rownames(out) <- NULL
