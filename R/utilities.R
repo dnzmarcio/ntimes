@@ -138,10 +138,8 @@ stairstepn <- function(data, direction="hv", yvars="y") {
 
 
 
-#'@importFrom survival summary
 #'@importFrom dplyr group_by mutate ungroup summarize filter select
-#'@importFrom tidyr unnest left_join separate_wider_delim
-#'@importFrom rlang
+#'@importFrom tidyr unnest separate_wider_delim
 #'@export
 get_survival_table <- function(title = NULL,
                                type = "median", time_points = NULL){

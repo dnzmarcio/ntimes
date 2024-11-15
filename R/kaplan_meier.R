@@ -282,7 +282,6 @@ aux_km <- function(var, var.name, var_label, time, status,
 #'@importFrom dplyr bind_rows
 #'@importFrom cowplot plot_grid
 #'@importFrom gridExtra tableGrob
-#'@importFrom grid annotation_custom
 #'
 #'@export
 std_km <- function(time, status, xlab, ylab,
@@ -456,7 +455,7 @@ std_km <- function(time, status, xlab, ylab,
 #'@importFrom scales percent
 #'@importFrom stats pchisq
 #'@importFrom gridExtra tableGrob ttheme_default
-#'@importFrom patchwork + plot_layout
+#'@importFrom patchwork plot_layout
 #'
 #'@export
 std_km_group <- function(time, status, var, var_label,

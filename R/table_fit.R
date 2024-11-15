@@ -7,36 +7,6 @@ table_fit <- function(fit, type, exponentiate = FALSE){
   return(out)
 }
 
-#' extract_data <- function(fit){
-#'
-#'   UseMethod("extract_data", object = fit)
-#' }
-#'
-#' #'@importFrom stats terms get_all_vars
-#' extract_data.glm <- function(fit){
-#'
-#'   temp <- fit$data
-#'   data <- get_all_vars(formula(fit), temp)
-#'   var.names <- colnames(data)
-#'
-#'   # It is not clear the use of the code below.
-#'   #suppressWarnings(data <- data[!apply(is.na(data), 1, any), , drop = FALSE])
-#'   var <- lapply(setNames(as.list(names(data)), names(data)), grepl,
-#'                 x = as.character(formula(fit)[3]),
-#'                 fixed = TRUE)
-#'   var <- names(which(unlist(var)))
-#'
-#'   if (!is.null(attr(terms(fit),"specials")$strata))
-#'     var <- var[-(attr(terms(fit),"specials")$strata - 1)]
-#'
-#'   if (!is.null(attr(terms(fit),"specials")$random))
-#'     var <- var[-(attr(terms(fit),"specials")$random - 1)]
-#'
-#'   out <- list(data = droplevels(data), var = var)
-#'
-#'   return(out)
-#' }
-#'
 #'@importFrom stats terms get_all_vars
 extract_data <- function(fit, data = NULL){
 
@@ -103,7 +73,8 @@ contrast_df <- function(data, var, ref, contrast_qt,
                         user_contrast = NULL,
                         interaction = NULL,
                         user_contrast_interaction = NULL,
-                        table_reference){
+                        table_reference,
+                        var_label = NULL){
 
   contrast <- ref
 
