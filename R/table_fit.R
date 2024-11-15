@@ -7,10 +7,45 @@ table_fit <- function(fit, type, exponentiate = FALSE){
   return(out)
 }
 
+#' extract_data <- function(fit){
+#'
+#'   UseMethod("extract_data", object = fit)
+#' }
+#'
+#' #'@importFrom stats terms get_all_vars
+#' extract_data.glm <- function(fit){
+#'
+#'   temp <- fit$data
+#'   data <- get_all_vars(formula(fit), temp)
+#'   var.names <- colnames(data)
+#'
+#'   # It is not clear the use of the code below.
+#'   #suppressWarnings(data <- data[!apply(is.na(data), 1, any), , drop = FALSE])
+#'   var <- lapply(setNames(as.list(names(data)), names(data)), grepl,
+#'                 x = as.character(formula(fit)[3]),
+#'                 fixed = TRUE)
+#'   var <- names(which(unlist(var)))
+#'
+#'   if (!is.null(attr(terms(fit),"specials")$strata))
+#'     var <- var[-(attr(terms(fit),"specials")$strata - 1)]
+#'
+#'   if (!is.null(attr(terms(fit),"specials")$random))
+#'     var <- var[-(attr(terms(fit),"specials")$random - 1)]
+#'
+#'   out <- list(data = droplevels(data), var = var)
+#'
+#'   return(out)
+#' }
+#'
 #'@importFrom stats terms get_all_vars
-extract_data <- function(fit){
+extract_data <- function(fit, data = NULL){
 
-  temp <- fit$data
+  if (is.null(data)){
+    temp <- eval(fit$call$data)
+  } else {
+    temp <- data
+  }
+
   data <- get_all_vars(formula(fit), temp)
   var.names <- colnames(data)
 
@@ -33,9 +68,9 @@ extract_data <- function(fit){
 }
 
 #'@importFrom stats setNames median
-reference_df <- function(fit){
+reference_df <- function(fit, data = NULL){
 
-  aux <- extract_data(fit)
+  aux <- extract_data(fit, data)
   data <- aux$data
 
   df <- setNames(data.frame(matrix(NA, ncol = ncol(data), nrow = 1)), names(data))
@@ -258,11 +293,11 @@ contrast_calc <- function(fit, fit0 = NULL, design_matrix, beta, beta_var, type)
   test <- glht(fit, linfct = K)
 
   sm <- summary(test)
-  p.value.wald <- sm$test$pvalues
+  p_value_wald <- sm$test$pvalues
   ci <- confint(test)$confint
-  p.value.lr <- 1 - pchisq(-2*(logLik(fit0)[[1]] - logLik(fit)[[1]]),
+  p_value_lr <- 1 - pchisq(-2*(logLik(fit0)[[1]] - logLik(fit)[[1]]),
                            anova(fit0, fit)$Df[2])
-  p.value.lr <- c(p.value.lr, rep(NA, (nrow(ci) - 1)))
+  p_value_lr <- c(p_value_lr, rep(NA, (nrow(ci) - 1)))
 
   if (!is.na(pmatch(type, c("Wald", "wald")))){
     estimate <- sm$test$coefficients
@@ -279,7 +314,7 @@ contrast_calc <- function(fit, fit0 = NULL, design_matrix, beta, beta_var, type)
     upper <- ci[, 3]
   }
 
-  out <- data.frame(estimate, lower, upper, p.value.wald, p.value.lr)
+  out <- data.frame(estimate, lower, upper, p_value_wald, p_value_lr)
 
   return(out)
 }

@@ -140,10 +140,7 @@ nt_simple_glm <- function(data, response, ...,
                 # AIC = as.character(.data$AIC),
                 # BIC = as.character(.data$BIC),
                 # deviance =as.character(.data$deviance)
-                ) |>
-      mutate(`Estimate (95% CI)` =
-               recode(.data$`Estimate (95% CI)`,
-                      `NA (NA ; NA)` = "Reference")) #|>
+                ) #|>
       # replace_na(list(`Wald p value` = "", `LR p value` = "",
       #                 n = "", null.deviance = "", df.null = "",
       #                 logLik = "", AIC = "", BIC = "",
@@ -161,8 +158,10 @@ aux_simple_glm <- function(var, var_name, var_label,
                            response, response_label,
                            add, add_name, add_label,
                            family,
-                           exponentiate, robust_variance,
-                           type, contrast_qt,
+                           exponentiate,
+                           robust_variance,
+                           type,
+                           contrast_qt,
                            user_contrast,
                            table_reference,
                            format){
@@ -219,9 +218,9 @@ fit_simple_glm <- function(data_model, family,
   data_model <- na.exclude(data_model)
 
   fit <- glm(response ~ ., data = data_model, family = family)
-  aux <- extract_data(fit)
+  aux <- extract_data(fit, data = data_model)
 
-  ref <- reference_df(fit)$df
+  ref <- reference_df(fit, data = data_model)$df
   beta <- as.numeric(fit$coefficients)
   beta_var <- as.matrix(vcov(fit))
   term_labels <- attr(fit$terms, "term.labels")
@@ -356,7 +355,7 @@ nt_multiple_glm <- function(fit, exponentiate = FALSE,
   if (save)
     write.csv(out$effect, file = paste0(file, ".csv"))
 
-  out <- list(effect = out$effect, output = out$coef, ref = ref)
+  out <- list(effect = out$effect, output = out$output, ref = ref)
 
   return(out)
 }
@@ -446,8 +445,8 @@ fit_multiple_glm <- function(fit, fit_vars, exponentiate, robust_variance,
 
       temp <- data.frame(term = temp$label, contrast)
 
-      if (type == "lr"& length(label_index) == 0)
-        temp[1:2, 5] <- temp[2:1, 5]
+      if (length(label_index) == 0)
+        temp[1:2, 6] <- temp[2:1, 6]
 
       if (i > 1)
         temp <- rbind(out, temp)
@@ -461,10 +460,14 @@ fit_multiple_glm <- function(fit, fit_vars, exponentiate, robust_variance,
                                                 x = as.character(interaction[k]),
                                                 fixed = TRUE)]
         others <- interaction_vars[interaction_vars != fit_vars$var[i]]
-        temp <- contrast_df(data = fit_vars$data, var = fit_vars$var[i],
-                            ref = ref, user_contrast = user_contrast,
+        temp <- contrast_df(data = fit_vars$data,
+                            var = fit_vars$var[i],
+                            ref = ref,
+                            contrast_qt = contrast_qt,
+                            user_contrast = user_contrast,
                             interaction = others,
-                            user_contrast_interaction = user_contrast_interaction)
+                            user_contrast_interaction = user_contrast_interaction,
+                            table_reference = table_reference)
 
         design_matrix <- sapply(temp$new.data, function(x) model.matrix(fit, x), simplify = FALSE)
 
@@ -493,8 +496,11 @@ fit_multiple_glm <- function(fit, fit_vars, exponentiate, robust_variance,
         }
 
         contrast <- Reduce(rbind, aux.contrast)
-
+        label_index <- grep("every 1 unit of change", temp$label)
         temp <- data.frame(term = temp$label, contrast)
+
+        if (length(label_index) == 0)
+          temp[1:2, 6] <- temp[2:1, 6]
 
         if (i > 1)
           temp <- rbind(out, temp)
