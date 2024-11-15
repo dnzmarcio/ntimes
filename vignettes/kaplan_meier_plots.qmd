@@ -1,0 +1,352 @@
+---
+title: "ntimes: Kaplan Meier plots"
+author: "Marcio A. Diniz"
+format:
+  html:
+    theme: default
+    html-table-processing: none
+    toc: true
+    toc-depth: 5
+    toc-location: left
+    column: page-right
+    self-contained: true
+    warning: false
+    message: false
+    fig-height: 8
+    fig-width: 10
+vignette: >
+  %\VignetteIndexEntry{ntimes: Kaplan Meier plots}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+
+---
+# Libraries
+```{r}
+library(tidyverse)
+library(survival)
+library(kableExtra)
+library(patchwork)
+
+library(ntimes)
+```
+
+# Data
+The dataset should be formatted to ensure that categorical and numerical variables have `factor` and `numeric` classes, respectively.
+
+Furthermore, a list indicating the variable labels will be used in all plots.
+
+```{r}
+dataset <- lung |>
+  mutate(sex = factor(sex, levels = 1:2,
+                      labels = c("Female", "Male")),
+         ph.ecog = as.factor(ph.ecog)) |>
+  select(sex, ph.ecog, time, status)
+
+data_labels <- list(sex = "Sex", ph.ecog = "ECOG")
+```
+
+# Kaplan-Meier plots
+
+##  Standard Kaplan-Meier plots with labels
+
+Standard Kaplan-Meier curves with labels can be obtained using the function `nt_km` with `time` and `status` as required inputs and `labels` as an optional input to format the plots. The output is a `list` with plots and tables for the overall survival and each variable in the data frame `dataset`.
+
+```{r}
+plots <- 
+  dataset |> nt_km(time = time, status = status,
+                   labels = data_labels)
+
+```
+
+::: {.panel-tabset}
+
+::: {.panel-tabset}
+### Overall
+```{r}
+plots$plot$overall$combined_plot
+
+tab <- plots$tab$overall 
+kable(tab) |> kable_classic()
+```
+
+### Sex
+```{r}
+plots$plot$sex$combined_plot
+
+tab <- plots$tab$sex 
+kable(tab) |> kable_classic()
+```
+
+### ECOG
+```{r}
+plots$plot$ph.ecog$combined_plot
+
+tab <- plots$tab$ph.ecog
+kable(tab) |> kable_classic()
+```
+:::
+
+## Adding specific time points
+
+A set of specific time points can be defined with the input `time_points` as a numeric vector. Furthermore, a table with the survival (95% CI) at the same specific time points can also be accessed.
+
+```{r}
+plots <- 
+  dataset |> nt_km(time = time, status = status,
+                   labels = data_labels,
+                   time_points = c(200, 500, 800))
+
+```
+
+::: {.panel-tabset}
+### Overall
+```{r}
+plots$plot$overall$combined_plot
+
+tab <- plots$tab$overall 
+kable(tab) |> kable_classic()
+```
+
+### Sex
+```{r}
+plots$plot$sex$combined_plot
+
+tab <- plots$tab$sex 
+kable(tab) |> kable_classic()
+```
+
+### ECOG
+```{r}
+plots$plot$ph.ecog$combined_plot
+
+tab <- plots$tab$ph.ecog
+kable(tab) |> kable_classic()
+```
+:::
+
+## Changing x- and y-axis title labels
+
+The x- and y-axis labels can be updated with `xlab` and `ylab`, respectively.
+
+```{r}
+plots <- 
+  dataset |> nt_km(time = time, status = status,
+                   labels = data_labels,
+                   time_points = c(200, 500, 800),
+                   xlab = "Time (Days)",
+                   ylab = "Progression Free Survival")
+
+```
+
+::: {.panel-tabset}
+
+### Overall
+```{r}
+plots$plot$overall$combined_plot
+```
+
+### Sex
+```{r}
+plots$plot$sex$combined_plot
+```
+
+### ECOG
+```{r}
+plots$plot$ph.ecog$combined_plot
+```
+:::
+
+
+## Adding survival table
+
+A table with median survival time (95% CI) or survival (95%) estimates at specific time points can also be added to Kaplan-Meier plots. A function should be provided as the input `survival_table` in the function `nt_km`. The function  `survival_table` is required to have two inputs: a `survfit` object and a label `var_label` for each covariate.
+
+A standard `survival_table` can be obtained using the function `get_survival_table`. For example,
+
+```{r}
+survival_table <- get_survival_table()
+
+fit <- survfit(Surv(time, status) ~ sex, data = dataset)
+survival_table(fit)
+```
+
+Next, the Kaplan-Meier curves are plotted using the `survival_table` function,
+
+```{r}
+plots <- 
+  dataset |> nt_km(time = time, status = status,
+                   labels = data_labels,
+                   time_points = c(200, 500, 800),
+                   survival_table = survival_table,
+                   xlab = "Time (Days)",
+                   ylab = "Progression Free Survival")
+```
+
+::: {.panel-tabset}
+#### Overall
+```{r}
+plots$plot$overall$combined_plot
+```
+
+#### Sex
+```{r}
+plots$plot$sex$combined_plot
+```
+
+#### ECOG
+```{r}
+plots$plot$ph.ecog$combined_plot
+```
+:::
+
+### Modifying survival table
+
+There are two types (`type`) of information provided by the standard `survival_table` function from `get_survival_table`: `"median"` and `"time_points"`. If `type = "time_points"`, then the input `time_points` is required. Additionally, the `title`can be modified. 
+
+First, the `survival_table` should carefully be tested:
+
+```{r}
+survival_table <- get_survival_table(title = "PFS, (95% CI)",
+                                     type = "time_points",
+                                     time_points = c(500))
+
+
+fit <- survfit(Surv(time, status) ~ 1, data = dataset)
+survival_table(fit)
+
+fit <- survfit(Surv(time, status) ~ sex, data = dataset)
+survival_table(fit)
+```
+
+Next, the Kaplan-Meier curves are plotted using the `survival_table` function,
+
+```{r}
+plots <- 
+  dataset |> nt_km(time = time, status = status,
+                   labels = data_labels,
+                   time_points = c(200, 500, 800),
+                   survival_table = survival_table,
+                   xlab = "Time (Days)",
+                   ylab = "Progression Free Survival")
+```
+
+::: {.panel-tabset}
+#### Overall
+```{r}
+plots$plot$overall$combined_plot
+```
+
+#### Sex
+```{r}
+plots$plot$sex$combined_plot
+```
+
+#### ECOG
+```{r}
+plots$plot$ph.ecog$combined_plot
+```
+:::
+
+
+## Saving files
+
+```{r}
+plots <- 
+  dataset |> nt_km(time = time, status = status,
+                   labels = data_labels,
+                   time_points = c(200, 500, 800),
+                   survival_table = survival_table,
+                   xlab = "Time (Days)",
+                   ylab = "Progression Free Survival",
+                   save = TRUE)
+```
+
+::: {.panel-tabset}
+### Overall
+```{r}
+#| fig-height: 5
+#| fig-width: 7
+plots$plot$overall$combined_plot
+```
+
+### Sex
+```{r}
+#| fig-height: 5
+#| fig-width: 7
+plots$plot$sex$combined_plot
+```
+
+### ECOG
+```{r}
+#| fig-height: 5
+#| fig-width: 7
+plots$plot$ph.ecog$combined_plot
+```
+:::
+
+
+### Adjusting figure size and font size
+
+
+```{r}
+plots <- 
+  dataset |> nt_km(time = time, status = status,
+                   labels = data_labels,
+                   time_points = c(200, 500, 800),
+                   survival_table = survival_table,
+                   base_size = 16,
+                   xlab = "Time (Days)",
+                   ylab = "Progression Free Survival",
+                   save = TRUE,
+                   fig_height = 7,
+                   fig_width = 10)
+```
+
+::: {.panel-tabset}
+#### Overall
+```{r}
+#| fig-height: 8
+#| fig-width: 10
+plots$plot$overall$combined_plot
+```
+
+#### Sex
+```{r}
+#| fig-height: 8
+#| fig-width: 10
+plots$plot$sex$combined_plot
+```
+
+#### ECOG
+```{r}
+#| fig-height: 8
+#| fig-width: 10
+plots$plot$ph.ecog$combined_plot
+```
+:::
+
+## Further changes
+
+Further changes can be done using the `ggplot` components of each plot.
+
+```{r}
+plots$plot$overall$surv_plot <- 
+  plots$plot$overall$surv_plot +
+  theme_bw(base_size = 16) +
+  geom_
+
+plots$plot$overall$risk_table <- 
+  plots$plot$overall$risk_table  +
+  theme_bw(base_size = 16) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+plots$plot$overall$combined_plot <-
+  plots$plot$overall$surv_plot + 
+  plots$plot$overall$risk_table + 
+  plot_layout(nrow = 2, heights = c(0.8, 0.2))
+
+plots$plot$overall$combined_plot
+```
+
+
