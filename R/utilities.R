@@ -174,7 +174,7 @@ get_survival_table <- function(title = NULL,
                  `Events/Total` = events)
 
       } else if (type == "time_points"){
-        aux <- summary(fit, times = time_points)
+        aux <- summary(survfit_obj, times = time_points)
 
         survival <- paste0(round(100*aux$surv, 1),
                            ", (",
@@ -207,9 +207,9 @@ get_survival_table <- function(title = NULL,
                          ")")
         events <- paste0(s$table[, "events"], "/", s$table[, "n.start"])
 
-
+        Groups <- sub(".*=", "", levels(s$strata))
         out <-
-          tibble({{var_label}} := sub(".*=", "", levels(s$strata)),
+          tibble({{var_label}} := Groups,
                  {{title}} := median,
                  `Events/Total` = events)
 

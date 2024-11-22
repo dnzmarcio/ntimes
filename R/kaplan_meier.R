@@ -140,22 +140,37 @@ nt_km <-  function(data, time, status, labels = NULL,
                         " - ", round(.data$upper, digits), ")")) |>
         select(-.data$survival, -.data$lower, -.data$upper) |>
         select(.data$Variable, .data$Group, .data$Time, .data$`Survival (95% CI)`))
+
         aux <- bind_rows(tab)
 
       tab$overall <- tab$overall |> select(-.data$Group)
     }
 
-    if (save){
-
-        aux <- bind_rows(tab)
-        write.csv(aux, file = paste0(where, paste0(file, ".csv")))
-    }
-
-
-    out <- list(tab = tab, plot = plot)
   } else {
-    out <- list(plot = plot)
+
+    if (format){
+      tab <-  map(tab, ~ .x  |>
+                    rename(Variable = .data$variable,
+                           Group = .data$group) |>
+                    mutate(`Median (95% CI)` =
+                             paste0(round(.data$survival, digits),
+                                    " (", round(.data$lower, digits),
+                                    " - ", round(.data$upper, digits), ")")) |>
+                    select(-.data$survival, -.data$lower, -.data$upper) |>
+                    select(.data$Variable, .data$Group, .data$`Median (95% CI)`))
+
+      aux <- bind_rows(tab)
+
+      tab$overall <- tab$overall |> select(-.data$Group)
+    }
   }
+
+  if (save){
+
+    aux <- bind_rows(tab)
+    write.csv(aux, file = paste0(where, paste0(file, ".csv")))
+  }
+  out <- list(tab = tab, plot = plot)
 
   return(out)
 }
@@ -354,17 +369,17 @@ std_km <- function(time, status, xlab, ylab,
                                       col = "black", lwd = 1))
     )
 
-    table <- survival_table(fit,
+    surv_table <- survival_table(fit,
                             var_label = NULL)
 
     if (!is.null(table)){
 
-      table_grob <- tableGrob(table,
+      table_grob <- tableGrob(surv_table,
                               rows = NULL,
                               theme = custom_theme)
 
       if (min(data.plot$estimate) < 0.5){
-        surv_plot <- surv_plot +
+        surv_plot2 <- surv_plot +
           annotation_custom(
             grob = table_grob,
             xmin = max(tmp$time)*0.6,
@@ -372,7 +387,7 @@ std_km <- function(time, status, xlab, ylab,
             ymin = 0.8, ymax = 1
           )
       } else {
-        surv_plot <- surv_plot +
+        surv_plot2 <- surv_plot +
           annotation_custom(
             grob = table_grob,
             xmin = max(tmp$time)*0.6,
@@ -382,6 +397,9 @@ std_km <- function(time, status, xlab, ylab,
       }
     }
 
+  } else {
+    surv_table  <- NULL
+    surv_plot2 <- surv_plot
   }
 
   ### Adding risk table
@@ -414,15 +432,18 @@ std_km <- function(time, status, xlab, ylab,
 
 
     ## Combining plots
-    combined_plot <- surv_plot + risk_table +
+    combined_plot <- surv_plot2 + risk_table +
       plot_layout(ncol = 1, heights = c(0.8, 0.2))
 
     out <- list(combined_plot = combined_plot,
                 surv_plot = surv_plot,
-                risk_table = risk_table)
+                risk_table = risk_table,
+                surv_table = table)
 
   } else {
-    out <- surv_plot
+    out <- list(combined_plot = surv_plot2,
+                surv_plot = surv_plot,
+                surv_table = table)
   }
 
   return(out)
@@ -557,15 +578,15 @@ std_km_group <- function(time, status, var, var_label,
                                       col = "black", lwd = 1))
     )
 
-    table <- survival_table(fit,
+    surv_table <- survival_table(fit,
                             var_label = {{var_label}})
 
-    table_grob <- tableGrob(table,
+    table_grob <- tableGrob(surv_table,
                             rows = NULL,
                             theme = custom_theme)
 
     if (min(data.plot$estimate) < 0.5){
-      surv_plot <- surv_plot +
+      surv_plot2 <- surv_plot +
         annotation_custom(
           grob = table_grob,
           xmin = max(tmp$time)*0.6,
@@ -573,7 +594,7 @@ std_km_group <- function(time, status, var, var_label,
           ymin = 0.8, ymax = 1
         )
     } else {
-      surv_plot <- surv_plot +
+      surv_plot2 <- surv_plot +
         annotation_custom(
           grob = table_grob,
           xmin = max(tmp$time)*0.6,
@@ -582,9 +603,9 @@ std_km_group <- function(time, status, var, var_label,
         )
 
     }
-
-
-
+  } else {
+    surv_table <- NULL
+    surv_plot2 <- surv_plot
   }
 
   ### Adding risk table
@@ -633,14 +654,17 @@ std_km_group <- function(time, status, var, var_label,
             axis.ticks.y = element_blank())
 
     ## Combining plots
-    combined_plot <- surv_plot + risk_table +
+    combined_plot <- surv_plot2 + risk_table +
       plot_layout(ncol = 1, heights = c(0.8, 0.2))
 
     out <- list(combined_plot = combined_plot,
                 surv_plot = surv_plot,
-                risk_table = risk_table)
+                risk_table = risk_table,
+                surv_table = surv_table)
   } else {
-    out <- surv_plot
+    out <- list(combined_plot = surv_plot2,
+                surv_plot = surv_plot,
+                surv_table = surv_table)
   }
 
   return(out)
