@@ -150,7 +150,7 @@ get_survival_table <- function(title = NULL,
     if (is.null(title)){
       if (type == "median"){
         title <- "Median Survival Time (95% CI)"
-      } else if (type == "time_Points") {
+      } else if (type == "time_points") {
         title <- "Survival (95% CI)"
       }
     }
@@ -254,12 +254,12 @@ get_survival_table <- function(title = NULL,
           separate_wider_delim(group, "=", names = c("var", "group")) |>
           mutate({{var_label}} := if_else(duplicated(group), "", group),
                  Time = target_time,
-                 `Survival (95%CI)` = paste0(round(100*surv, 1),
+                 {{title}} := paste0(round(100*surv, 1),
                                              ", (",
                                              round(100*lower, 1), " ; ",
                                              round(100*upper, 1), ")"),
                  Events = paste0(cum_event, "/", n.start)) |>
-          select({{var_label}}, Time, `Survival (95%CI)`, Events)
+          select({{var_label}}, Time, {{title}}, Events)
 
       } else {
         out <- NULL

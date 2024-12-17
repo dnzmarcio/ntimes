@@ -170,6 +170,8 @@ nt_km <-  function(data, time, status, labels = NULL,
     aux <- bind_rows(tab)
     write.csv(aux, file = paste0(where, paste0(file, ".csv")))
   }
+  rownames(tab) <- NULL
+
   out <- list(tab = tab, plot = plot)
 
   return(out)
@@ -199,6 +201,9 @@ tab_km <- function(time, status, time_points, digits){
                       upper = temp$table["0.95UCL"])
   }
 
+  out <- out |>
+    mutate(variable = if_else(duplicated(variable), "", variable))
+  rownames(out) <- NULL
 
   return(out)
 }
@@ -215,7 +220,7 @@ tab_km_group <- function(var, var.name, var_label,
     fit <- survfit(Surv(time, status) ~ var, data = data_model)
     temp <- summary(fit, times = time_points, extend = TRUE)
 
-    out <- data.frame(strata = rownames(temp$table),
+    out <- data.frame(strata = temp$strata,
                       time = temp$time,
                       survival = temp$surv,
                       lower = temp$lower,
@@ -233,8 +238,13 @@ tab_km_group <- function(var, var.name, var_label,
                       lower = temp$table[, "0.95LCL"],
                       upper = temp$table[, "0.95UCL"]) |>
       separate(.data$strata, into = c("variable", "group"), sep = "=") |>
-      mutate(variable = var_label)
+      mutate(variable = var_label,
+             variable = if_else(duplicated(variable), "", variable))
   }
+
+
+
+  rownames(out) <- NULL
 
   return(out)
 }
@@ -372,7 +382,7 @@ std_km <- function(time, status, xlab, ylab,
     surv_table <- survival_table(fit,
                             var_label = NULL)
 
-    if (!is.null(table)){
+    if (!is.null(surv_table)){
 
       table_grob <- tableGrob(surv_table,
                               rows = NULL,
@@ -418,9 +428,12 @@ std_km <- function(time, status, xlab, ylab,
       labs(x = xlab, y = "", title = "n at risk") +
       theme_classic(base_size = base_size) +
       theme(title = element_text(size = 0.8*base_size),
-            axis.title.x = element_text(size = base_size),
             axis.text.y = element_blank(),
-            axis.ticks.y = element_blank())
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.title.x = element_blank(),
+            axis.line.x = element_blank())
 
 
     if (!is.null(time_points)){
@@ -438,12 +451,12 @@ std_km <- function(time, status, xlab, ylab,
     out <- list(combined_plot = combined_plot,
                 surv_plot = surv_plot,
                 risk_table = risk_table,
-                surv_table = table)
+                surv_table = surv_table)
 
   } else {
     out <- list(combined_plot = surv_plot2,
                 surv_plot = surv_plot,
-                surv_table = table)
+                surv_table = surv_table)
   }
 
   return(out)
@@ -623,7 +636,7 @@ std_km_group <- function(time, status, var, var_label,
 
     ## Basic plot
     risk_table <- ggplot(data_table, aes(x = .data$time, y = .data$group)) +
-      geom_text(aes(label = .data$n_risk), size = 0.3*base_size)
+      geom_text(aes(label = .data$n_risk), size = 0.2*base_size)
 
     ## Formatting
     risk_table <- risk_table +
@@ -646,12 +659,15 @@ std_km_group <- function(time, status, var, var_label,
     risk_table <- risk_table +
       scale_y_discrete(labels = rep("-", nlevels(data_table$group))) +
       theme(title = element_text(size = 0.8*base_size),
-            axis.title.x = element_text(size = base_size),
             axis.text.y = element_text(colour = rev(colors[[1]]),
                                        face = "bold",
                                        size = 2.4*base_size,
                                        vjust = 0.3),
-            axis.ticks.y = element_blank())
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.title.x = element_blank(),
+            axis.line.x = element_blank())
 
     ## Combining plots
     combined_plot <- surv_plot2 + risk_table +
