@@ -12,8 +12,8 @@ format:
     self-contained: true
     warning: false
     message: false
-    fig-height: 8
-    fig-width: 10
+    fig-height: 5
+    fig-width: 7
 vignette: >
   %\VignetteIndexEntry{ntimes: Kaplan Meier plots}
   %\VignetteEngine{quarto::html}
@@ -54,11 +54,10 @@ Standard Kaplan-Meier curves with labels can be obtained using the function `nt_
 ```{r}
 plots <- 
   dataset |> nt_km(time = time, status = status,
-                   labels = data_labels)
+                   labels = data_labels,
+                   base_size = 12)
 
 ```
-
-::: {.panel-tabset}
 
 ::: {.panel-tabset}
 ### Overall
@@ -94,7 +93,8 @@ A set of specific time points can be defined with the input `time_points` as a n
 plots <- 
   dataset |> nt_km(time = time, status = status,
                    labels = data_labels,
-                   time_points = c(200, 500, 800))
+                   time_points = c(200, 500, 800),
+                   base_size = 12)
 
 ```
 
@@ -134,7 +134,8 @@ plots <-
                    labels = data_labels,
                    time_points = c(200, 500, 800),
                    xlab = "Time (Days)",
-                   ylab = "Progression Free Survival")
+                   ylab = "Progression Free Survival",
+                   base_size = 12)
 
 ```
 
@@ -164,22 +165,23 @@ A table with median survival time (95% CI) or survival (95%) estimates at specif
 A standard `survival_table` can be obtained using the function `get_survival_table`. For example,
 
 ```{r}
-survival_table <- get_survival_table()
+my_survival_table <- get_survival_table()
 
 fit <- survfit(Surv(time, status) ~ sex, data = dataset)
-survival_table(fit)
+my_survival_table(fit)
 ```
 
-Next, the Kaplan-Meier curves are plotted using the `survival_table` function,
+Next, the Kaplan-Meier curves are plotted using the `my_survival_table` function as input for `survival_function`,
 
 ```{r}
 plots <- 
   dataset |> nt_km(time = time, status = status,
                    labels = data_labels,
                    time_points = c(200, 500, 800),
-                   survival_table = survival_table,
+                   survival_table = my_survival_table,
                    xlab = "Time (Days)",
-                   ylab = "Progression Free Survival")
+                   ylab = "Progression Free Survival",
+                   base_size = 12)
 ```
 
 ::: {.panel-tabset}
@@ -206,16 +208,16 @@ There are two types (`type`) of information provided by the standard `survival_t
 First, the `survival_table` should carefully be tested:
 
 ```{r}
-survival_table <- get_survival_table(title = "PFS, (95% CI)",
-                                     type = "time_points",
-                                     time_points = c(500))
+my_survival_table <- get_survival_table(title = "PFS, (95% CI)",
+                                        type = "time_points",
+                                        time_points = c(500))
 
 
 fit <- survfit(Surv(time, status) ~ 1, data = dataset)
-survival_table(fit)
+my_survival_table(fit)
 
 fit <- survfit(Surv(time, status) ~ sex, data = dataset)
-survival_table(fit)
+my_survival_table(fit)
 ```
 
 Next, the Kaplan-Meier curves are plotted using the `survival_table` function,
@@ -225,7 +227,7 @@ plots <-
   dataset |> nt_km(time = time, status = status,
                    labels = data_labels,
                    time_points = c(200, 500, 800),
-                   survival_table = survival_table,
+                   survival_table = my_survival_table,
                    xlab = "Time (Days)",
                    ylab = "Progression Free Survival")
 ```
@@ -248,58 +250,19 @@ plots$plot$ph.ecog$combined_plot
 :::
 
 
-## Saving files
-
-```{r}
-plots <- 
-  dataset |> nt_km(time = time, status = status,
-                   labels = data_labels,
-                   time_points = c(200, 500, 800),
-                   survival_table = survival_table,
-                   xlab = "Time (Days)",
-                   ylab = "Progression Free Survival",
-                   save = TRUE)
-```
-
-::: {.panel-tabset}
-### Overall
-```{r}
-#| fig-height: 5
-#| fig-width: 7
-plots$plot$overall$combined_plot
-```
-
-### Sex
-```{r}
-#| fig-height: 5
-#| fig-width: 7
-plots$plot$sex$combined_plot
-```
-
-### ECOG
-```{r}
-#| fig-height: 5
-#| fig-width: 7
-plots$plot$ph.ecog$combined_plot
-```
-:::
-
 
 ### Adjusting figure size and font size
 
-
+The font size can be adjusted using the argument `base_size` and figure height and width can be adjuste din Quarto using `fig-height` and `fig-width`.
 ```{r}
 plots <- 
   dataset |> nt_km(time = time, status = status,
                    labels = data_labels,
                    time_points = c(200, 500, 800),
-                   survival_table = survival_table,
+                   survival_table = my_survival_table,
                    base_size = 16,
                    xlab = "Time (Days)",
-                   ylab = "Progression Free Survival",
-                   save = TRUE,
-                   fig_height = 7,
-                   fig_width = 10)
+                   ylab = "Progression Free Survival")
 ```
 
 ::: {.panel-tabset}
@@ -327,26 +290,67 @@ plots$plot$ph.ecog$combined_plot
 
 ## Further changes
 
-Further changes can be done using the `ggplot` components of each plot.
+Further changes can be done as the components of each plt are  `ggplot` objects.
 
 ```{r}
-plots$plot$overall$surv_plot <- 
-  plots$plot$overall$surv_plot +
-  theme_bw(base_size = 16) +
-  geom_
+library(gridExtra)
 
-plots$plot$overall$risk_table <- 
-  plots$plot$overall$risk_table  +
-  theme_bw(base_size = 16) +
+plots$plot$ph.ecog$surv_plot <- 
+  plots$plot$ph.ecog$surv_plot +
+  theme_bw(base_size = 12)
+
+custom_theme <- ttheme_default(
+  core = list(fg_params = list(fontsize = 6,
+                               col = "black"),
+              bg_params = list(fill = "white",
+                               col = "black", lwd = 1)),
+  colhead = list(fg_params = list(fontsize = 6,
+                                  fontface = "bold",
+                                  col = "black"),
+                 bg_params = list(fill = "white",
+                                  col = "black", lwd = 1))
+)
+
+table_grob <- tableGrob(plots$plot$ph.ecog$surv_table,
+                        rows = NULL,
+                        theme = custom_theme)
+
+plots$plot$ph.ecog$surv_plot <- 
+  plots$plot$ph.ecog$surv_plot +
+        annotation_custom(
+          grob = table_grob,
+          xmin = 600,
+          xmax = 900,
+          ymin = 0.7, ymax = 0.9
+        )
+
+plots$plot$ph.ecog$risk_table <- 
+  plots$plot$ph.ecog$risk_table  +
+  theme_bw(base_size = 12) +
   theme(axis.ticks.y = element_blank(),
         axis.text.y = element_blank())
 
-plots$plot$overall$combined_plot <-
-  plots$plot$overall$surv_plot + 
-  plots$plot$overall$risk_table + 
+plots$plot$ph.ecog$combined_plot <-
+  plots$plot$ph.ecog$surv_plot + 
+  plots$plot$ph.ecog$risk_table + 
   plot_layout(nrow = 2, heights = c(0.8, 0.2))
 
-plots$plot$overall$combined_plot
+plots$plot$ph.ecog$combined_plot
 ```
 
+
+## Saving files
+Finally, files can be saved in `jpeg` format
+
+```{r, eval = FALSE}
+plots <- 
+  dataset |> nt_km(time = time, status = status,
+                   labels = data_labels,
+                   time_points = c(200, 500, 800),
+                   survival_table = my_survival_table,
+                   xlab = "Time (Days)",
+                   ylab = "Progression Free Survival",
+                   save = TRUE, 
+                   fig_height = 8, fig_width = 10)
+```
 
