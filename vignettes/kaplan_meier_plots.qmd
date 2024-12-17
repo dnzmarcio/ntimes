@@ -290,7 +290,7 @@ plots$plot$ph.ecog$combined_plot
 
 ## Further changes
 
-Further changes can be done as the components of each plt are  `ggplot` objects.
+Further changes can be done as the components of each plot are  `ggplot` objects.
 
 ```{r}
 library(gridExtra)
@@ -337,6 +337,8 @@ plots$plot$ph.ecog$combined_plot <-
 
 plots$plot$ph.ecog$combined_plot
 ```
+
+Extensive changes can be done editing the functions `std_km` and `std_km_group` using `edit(std_km)` or `edit(std_km_group)`, then creating new functions `my_std_km` and `my_std_km_group` to input as the arguments `std_km` and `std_km_group` in the function `nt_km`.
 
 
 ## Saving files
