@@ -8,10 +8,10 @@ nt_multiple_glm(
   fit,
   exponentiate = FALSE,
   ci_type = "Wald",
-  contrast.qt = "one-unit",
-  user.contrast = NULL,
-  user.contrast.interaction = NULL,
-  table.reference = TRUE,
+  contrast_qt = "one-unit",
+  user_contrast = NULL,
+  user_contrast_interaction = NULL,
+  table_reference = TRUE,
   format = TRUE,
   labels = NULL,
   digits = 2,
@@ -27,13 +27,13 @@ nt_multiple_glm(
 
 \item{ci_type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{wald}).}
 
-\item{contrast.qt}{a character indicating whether the contrast for quantitative covariates. Options are every one-unit of change (\code{one-unit}), quartiles (\code{quartiles}) or provided by the user (\code{user}).}
+\item{contrast_qt}{a character indicating whether the contrast for quantitative covariates. Options are every one-unit of change (\code{one-unit}), quartiles (\code{quartiles}) or provided by the user (\code{user}).}
 
-\item{user.contrast}{a variable named list of numerical vectors indicating contrast for a covariate.}
+\item{user_contrast}{a variable named list of numerical vectors indicating contrast for a covariate.}
 
-\item{user.contrast.interaction}{a variable named list of numerical vectors indicating a contrast for interaction.}
+\item{user_contrast_interaction}{a variable named list of numerical vectors indicating a contrast for interaction.}
 
-\item{table.reference}{a logical value indicating whether the output should be presented with a line indicating the reference category.}
+\item{table_reference}{a logical value indicating whether the output should be presented with a line indicating the reference category.}
 
 \item{format}{a logical value indicating whether the output should be formatted.}
 

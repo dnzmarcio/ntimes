@@ -13,7 +13,7 @@ helper_welch_anova(x, g)
 }
 \value{
 a list with \code{test} indicating the test that was
-performed and its respective \code{p.value}.
+performed and its respective \code{p_value}.
 }
 \description{
 It performs the Welch's Analysis of Variance.

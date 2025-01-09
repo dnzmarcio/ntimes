@@ -4,7 +4,17 @@
 \alias{std_km}
 \title{Standard Kaplan-Meier curve}
 \usage{
-std_km(time, status, xlab, ylab, time_points, risk_table, survival_table, ...)
+std_km(
+  time,
+  status,
+  xlab,
+  ylab,
+  time_points,
+  base_size,
+  risk_table,
+  survival_table,
+  ...
+)
 }
 \arguments{
 \item{time}{a numeric vector.}

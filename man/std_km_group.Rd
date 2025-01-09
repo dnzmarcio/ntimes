@@ -8,9 +8,10 @@ std_km_group(
   time,
   status,
   var,
-  var.label,
+  var_label,
   xlab,
   ylab,
+  base_size,
   time_points,
   risk_table,
   survival_table,
@@ -24,7 +25,7 @@ std_km_group(
 
 \item{var}{a character vector.}
 
-\item{var.label}{a character value specifying the group label.}
+\item{var_label}{a character value specifying the group label.}
 
 \item{xlab}{a character value specifying the x axis label.}
 

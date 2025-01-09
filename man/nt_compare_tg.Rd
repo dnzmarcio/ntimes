@@ -33,9 +33,9 @@ nt_compare_tg(
 \item{alternative}{a character value indicating the alternative hypothesis,
 must be one of "two.sided", "greater" or "less".}
 
-\item{norm_test}{a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.}
+\item{norm_test}{a function with a numeric vector as input and a list as output containing an object named \code{p_value} similar to \link[ntimes]{helper_sf_test}.}
 
-\item{var_test}{a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_levene_test}.}
+\item{var_test}{a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p_value} similar to \link[ntimes]{helper_levene_test}.}
 
 \item{qt_test}{a list of functions for four possible cases: (1) normality and homoscedasticity,
 (2) normality and heteroscedasticity, (3) non-normality and homoscedasticity and (4) normality and heteroscedasticity.}

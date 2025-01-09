@@ -4,7 +4,7 @@
 \alias{helper_brunner_munzel}
 \title{Helper for Brunner-Munzel t-test}
 \usage{
-helper_brunner_munzel(x, g, paired, alternative, conf.level)
+helper_brunner_munzel(x, g, paired, alternative, conf_level)
 }
 \arguments{
 \item{x}{a numeric vector.}
@@ -19,7 +19,7 @@ helper_brunner_munzel(x, g, paired, alternative, conf.level)
 }
 \value{
 a list with \code{test} indicating the test that was
-performed, its respective \code{p.value} and \code{lower} and \code{upper}
+performed, its respective \code{p_value} and \code{lower} and \code{upper}
 limits of the confidence interval for the effect size considered in the test.
 }
 \description{

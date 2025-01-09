@@ -18,7 +18,7 @@ nt_compare_mg(
   digits_ci = 2,
   save = FALSE,
   file = "nt_compare_mg",
-  multiple.comparisons = FALSE
+  multiple_comparisons = FALSE
 )
 }
 \arguments{
@@ -28,9 +28,9 @@ nt_compare_mg(
 
 \item{labels}{a list of labels with components given by their variable names.}
 
-\item{norm_test}{a function with a numeric vector as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_sf_test}.}
+\item{norm_test}{a function with a numeric vector as input and a list as output containing an object named \code{p_value} similar to \link[ntimes]{helper_sf_test}.}
 
-\item{var_test}{a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p.value} similar to \link[ntimes]{helper_levene_test}.}
+\item{var_test}{a function with a numeric vector, group vector and paired logical variable as input and a list as output containing an object named \code{p_value} similar to \link[ntimes]{helper_levene_test}.}
 
 \item{qt_test}{a list of functions for three possible cases: (1) normality and homoscedasticity,
 (2) normality and heteroscedasticity, (3) non-normality and homoscedasticity/heteroscedasticity.}
@@ -50,7 +50,7 @@ must be one of "two.sided", "greater" or "less".}
 
 \item{file}{a character value indicating the name of output file in csv format to be saved.}
 
-\item{multiple.comparisons}{a logical value indicating if pairwise comparisons should be performed.}
+\item{multiple_comparisons}{a logical value indicating if pairwise comparisons should be performed.}
 }
 \description{
 Performing comparisons among three or more groups.

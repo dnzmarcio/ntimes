@@ -9,11 +9,15 @@ nt_simple_cox(
   time,
   status,
   ...,
-  labels = NULL,
-  increment = NULL,
   cluster = FALSE,
   strata = NULL,
+  exponentiate = TRUE,
+  type = "wald",
+  contrast_qt = "one-unit",
+  user_contrast = NULL,
+  table_reference = TRUE,
   format = TRUE,
+  labels = NULL,
   digits = 2,
   digits_p = 3,
   save = FALSE,
@@ -29,15 +33,13 @@ nt_simple_cox(
 
 \item{...}{character values indicating confounding variables.}
 
-\item{labels}{a list of labels with components given by their variable names.}
-
-\item{increment}{a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
-
 \item{cluster}{a character vector containing the cluster variable.}
 
 \item{strata}{a character vector containing the strata variable.}
 
 \item{format}{a logical value indicating whether the output should be formatted.}
+
+\item{labels}{a list of labels with components given by their variable names.}
 
 \item{digits}{a numerical value defining of digits to present the results.}
 
@@ -46,6 +48,8 @@ nt_simple_cox(
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character indicating the name of output file in csv format to be saved.}
+
+\item{increment}{a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
 }
 \description{
 Performing simple Cox regression.

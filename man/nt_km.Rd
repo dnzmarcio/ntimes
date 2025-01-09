@@ -11,17 +11,20 @@ nt_km(
   labels = NULL,
   xlab = "Time",
   ylab = "Survival",
+  base_size = 20,
   time_points = NULL,
   risk_table = TRUE,
   survival_table = NULL,
   save = FALSE,
   fig_height = 5,
-  fig_width = 5,
+  fig_width = 7,
   std_fun = std_km,
   std_fun_group = std_km_group,
+  std_survival_table = std_get_survival_table,
   format = TRUE,
   digits = 2,
   file = "survival",
+  where = NULL,
   ...
 )
 }

@@ -10,10 +10,11 @@ nt_simple_glm(
   ...,
   family,
   robust_variance = NULL,
-  increment = NULL,
-  ci_type = "Wald",
-  conf_level = 0.95,
-  exponentiate = FALSE,
+  exponentiate = TRUE,
+  type = "wald",
+  contrast_qt = "one-unit",
+  user_contrast = NULL,
+  table_reference = TRUE,
   format = TRUE,
   labels = NULL,
   digits = 2,
@@ -33,12 +34,6 @@ nt_simple_glm(
 
 \item{robust_variance}{a function yielding a covariance matrix or a covariance matrix. See more \code{\link[lmtest]{coeftest}}.}
 
-\item{increment}{a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
-
-\item{ci_type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald})}
-
-\item{conf_level}{a numerical value indicating the confidence level for parameters of interest.}
-
 \item{exponentiate}{a logical value indicating whether coefficients should be exponentiated.}
 
 \item{format}{a logical value indicating whether the output should be formatted.}
@@ -52,6 +47,12 @@ nt_simple_glm(
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character indicating the name of output file in csv format to be saved.}
+
+\item{increment}{a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
+
+\item{ci_type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{profile}) or wald (\code{Wald})}
+
+\item{conf_level}{a numerical value indicating the confidence level for parameters of interest.}
 }
 \description{
 Fit simple GLM.
