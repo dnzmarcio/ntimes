@@ -514,7 +514,7 @@ fit_multiple_cox <- function(fit, fit_vars, type, contrast_qt,
 
       temp <- data.frame(term = temp$label, contrast)
 
-      if (length(label_index) == 0)
+      if (table_reference & length(label_index) == 0)
         temp[1:2, 6] <- temp[2:1, 6]
 
       if (i > 1)
