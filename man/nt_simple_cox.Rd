@@ -12,7 +12,7 @@ nt_simple_cox(
   cluster = FALSE,
   strata = NULL,
   exponentiate = TRUE,
-  type = "wald",
+  ci_type = "wald",
   contrast_qt = "one-unit",
   user_contrast = NULL,
   table_reference = TRUE,
@@ -37,6 +37,16 @@ nt_simple_cox(
 
 \item{strata}{a character vector containing the strata variable.}
 
+\item{exponentiate}{a logical value indicating whether coeficients should be exponentiated.}
+
+\item{ci_type}{a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).}
+
+\item{contrast_qt}{a character value \code{quartiles}, \code{one-unit}, \code{user} to indicate the contrast for all covariates.}
+
+\item{user_contrast}{a variable named list of numerical vectors indicating contrast for a given covariate.}
+
+\item{table_reference}{a logical value indicating whether the output should be presented with a line indicating the reference category.}
+
 \item{format}{a logical value indicating whether the output should be formatted.}
 
 \item{labels}{a list of labels with components given by their variable names.}
@@ -48,8 +58,6 @@ nt_simple_cox(
 \item{save}{a logical value indicating whether the output should be saved as a csv file.}
 
 \item{file}{a character indicating the name of output file in csv format to be saved.}
-
-\item{increment}{a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.}
 }
 \description{
 Performing simple Cox regression.

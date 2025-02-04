@@ -7,9 +7,13 @@
 #'@param status a numeric vector indicating status, 0 = censored, 1 = event at time.
 #'@param ...  character values indicating confounding variables.
 #'@param labels a list of labels with components given by their variable names.
-#'@param increment a named list indicating the magnitude of increments to calculate odds ratio for continuous covariates.
 #'@param cluster a character vector containing the cluster variable.
 #'@param strata a character vector containing the strata variable.
+#'@param exponentiate a logical value indicating whether coeficients should be exponentiated.
+#'@param ci_type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
+#'@param contrast_qt a character value \code{quartiles}, \code{one-unit}, \code{user} to indicate the contrast for all covariates.
+#'@param user_contrast a variable named list of numerical vectors indicating contrast for a given covariate.
+#'@param table_reference a logical value indicating whether the output should be presented with a line indicating the reference category.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param digits_p a numerical value defining number of digits to present the p-values.
@@ -48,7 +52,7 @@
 nt_simple_cox <- function(data, time, status, ...,
                           cluster = FALSE, strata = NULL,
                           exponentiate = TRUE,
-                          type = "wald",
+                          ci_type = "wald",
                           contrast_qt = "one-unit",
                           user_contrast = NULL,
                           table_reference = TRUE,
@@ -120,7 +124,7 @@ nt_simple_cox <- function(data, time, status, ...,
                add_label = add_label,
                strata_var = strata_var,
                exponentiate = exponentiate,
-               type = type,
+               ci_type = ci_type,
                contrast_qt = contrast_qt,
                user_contrast = user_contrast,
                table_reference = table_reference,
@@ -206,7 +210,7 @@ aux_simple_cox <- function(var, var_name, var_label,
                            add, add_name, add_label,
                            strata_var,
                            exponentiate,
-                           type,
+                           ci_type,
                            contrast_qt,
                            user_contrast,
                            table_reference,
@@ -228,7 +232,7 @@ aux_simple_cox <- function(var, var_name, var_label,
 
   out <- fit_simple_cox(data_model, strata_var,
                         exponentiate, robust_variance,
-                        type, contrast_qt,
+                        ci_type, contrast_qt,
                         user_contrast,
                         table_reference,
                         var_label)
@@ -256,7 +260,7 @@ aux_simple_cox <- function(var, var_name, var_label,
 #'@importFrom methods is
 fit_simple_cox <- function(data_model, strata_var,
                            exponentiate, robust_variance,
-                           type, contrast_qt,
+                           ci_type, contrast_qt,
                            user_contrast,
                            table_reference,
                            var_label){
@@ -295,7 +299,7 @@ fit_simple_cox <- function(data_model, strata_var,
     contrast <- contrast_calc(fit = fit, fit0 = fit0,
                               design_matrix = design_matrix,
                               beta = beta, beta_var = beta_var,
-                              type = type)
+                              type = ci_type)
 
     label_index <- grep("every 1 unit of change", temp$label)
     if (table_reference & length(label_index) == 0)
@@ -346,8 +350,9 @@ fit_simple_cox <- function(data_model, strata_var,
 #'
 #'@param fit a coxph object.
 #'@param ci_type a character value indicating the procedure to calculate confidence intervals: likelihood ratio (\code{lr}) or wald (\code{wald}).
-#'@param user_contrast a variable named list of numerical vectors indicating contrast for a covariate.
-#'@param user_contrast_interaction a variable named list of numerical vectors indicating a contrast for interaction.
+#'@param contrast_qt a character value "quartiles", "one-unit", "user" to indicate the contrast for all covariates.
+#'@param user_contrast a variable named list of numerical vectors indicating contrast for a given covariate.
+#'@param user_contrast_interaction a variable named list of numerical vectors indicating a contrast for a given interaction.
 #'@param table_reference a logical value indicating whether the output should be presented with a line indicating the reference category.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param labels a list of labels with components given by their variable names.
