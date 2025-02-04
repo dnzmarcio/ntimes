@@ -144,6 +144,9 @@ nt_km <-  function(data, time, status, labels = NULL,
         aux <- bind_rows(tab)
 
       tab$overall <- tab$overall |> select(-.data$Group)
+
+      aux <- bind_rows(tab) |>
+        select(Variable, Group, Time, `Survival (95% CI)`)
     }
 
   } else {
@@ -162,12 +165,15 @@ nt_km <-  function(data, time, status, labels = NULL,
       aux <- bind_rows(tab)
 
       tab$overall <- tab$overall |> select(-.data$Group)
+
+      aux <- bind_rows(tab) |>
+        select(Variable, Group, Time, `Median (95% CI)`)
     }
   }
 
   if (save){
 
-    aux <- bind_rows(tab)
+
     write.csv(aux, file = paste0(where, paste0(file, ".csv")))
   }
   rownames(tab) <- NULL
@@ -241,7 +247,6 @@ tab_km_group <- function(var, var.name, var_label,
       mutate(variable = var_label,
              variable = if_else(duplicated(variable), "", variable))
   }
-
 
 
   rownames(out) <- NULL
@@ -658,7 +663,7 @@ std_km_group <- function(time, status, var, var_label,
 
     risk_table <- risk_table +
       scale_y_discrete(labels = rep("-", nlevels(data_table$group))) +
-      theme(title = element_text(size = 0.8*base_size),
+      theme(title = element_text(size = 1*base_size),
             axis.text.y = element_text(colour = rev(colors[[1]]),
                                        face = "bold",
                                        size = 2.4*base_size,

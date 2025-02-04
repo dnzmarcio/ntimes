@@ -138,8 +138,7 @@ helper_missing <- function(var, ...){
 helper_perc_count <- function(var, digits, ...){
 
   ldots <- list(...)
-
-  h <- fct_na_value_to_level(var, level = "Missing")
+  h <- var
   lh <- levels(h)
 
   count <- tapply(h, h, length)
@@ -152,7 +151,7 @@ helper_perc_count <- function(var, digits, ...){
 
   if (!("Missing" %in% lh)){
     lh <- c(lh, "Missing")
-    perc_count <- c(perc_count, "0 (0)")
+    perc_count <- c(perc_count, sum(is.na(h)))
   }
 
   lh <- paste0("\t ", lh)
@@ -180,8 +179,7 @@ helper_perc_count <- function(var, digits, ...){
 helper_count_perc <- function(var, digits, ...){
 
   ldots <- list(...)
-
-  h <- fct_na_value_to_level(var, level = "Missing")
+  h <- var
   lh <- levels(h)
 
   count <- tapply(h, h, length)
@@ -194,7 +192,7 @@ helper_count_perc <- function(var, digits, ...){
 
   if (!("Missing" %in% lh)){
     lh <- c(lh, "Missing")
-    perc_count <- c(perc_count, "0 (0)")
+    perc_count <- c(perc_count, sum(is.na(h)))
   }
 
   lh <- paste0("\t ", lh)

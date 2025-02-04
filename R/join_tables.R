@@ -133,12 +133,13 @@ nt_join_tables <- function(tab_x, tab_y, digits = 3,
       select(-id)
     temp <- str_split(colnames(tab), ": ")
 
+    out <- tab
+    attr(out, "ntimes") <- "descriptive"
+
+
     if (save){
       write.csv(out, file = paste0(file, ".csv"))
     }
-
-    out <- tab
-    attr(out, "ntimes") <- "descriptive"
   }
 
   return(out)

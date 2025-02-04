@@ -129,31 +129,62 @@ nt_simple_cox <- function(data, time, status, ...,
   out <- bind_rows(temp)
 
   if (format) {
-    out <- out |>
-      # mutate(concordance = round(.data$concordance, digits),
-      #        r.squared = round(.data$r.squared, digits),
-      #        AIC = round(.data$AIC, digits),
-      #        ph.assumption = round(.data$ph.assumption, digits_p)) |>
-      transmute(Variable = .data$variable,
-                Contrast = .data$group,
-                `Estimate (95% CI)` = ifelse(is.na(.data$estimate) &
-                                               is.na(.data$conf_low) &
-                                               is.na(.data$conf_high),
-                                             "Reference",
-                                             paste0(round(.data$estimate, digits), " (",
-                                                    round(.data$conf_low, digits), " ; ",
-                                                    round(.data$conf_high, digits), ")")),
-                `Wald p value` = ifelse(is.na(.data$p_value_wald), "",
-                                        ifelse(round(.data$p_value_wald, digits_p) == 0, "< 0.001",
-                                               as.character(round(.data$p_value_wald, digits_p)))),
-                `LR p value` = ifelse(is.na(.data$p_value_lr), "",
-                                      ifelse(round(.data$p_value_lr, digits_p) == 0, "< 0.001",
-                                             as.character(round(.data$p_value_lr, digits_p))))
-                # ,
-                # n = .data$n, n.event = .data$n.event,
-                # concordance = .data$concordance, r.squared = .data$r.squared,
-                # AIC = .data$AIC, ph.assumption  = .data$ph.assumption
-                )
+
+    if (table_reference){
+      out <- out |>
+        # mutate(concordance = round(.data$concordance, digits),
+        #        r.squared = round(.data$r.squared, digits),
+        #        AIC = round(.data$AIC, digits),
+        #        ph.assumption = round(.data$ph.assumption, digits_p)) |>
+        transmute(Variable = .data$variable,
+                  Group = .data$group,
+                  `HR (95% CI)` = ifelse(is.na(.data$estimate) &
+                                                 is.na(.data$conf_low) &
+                                                 is.na(.data$conf_high),
+                                               "Reference",
+                                               paste0(round(.data$estimate, digits), " (",
+                                                      round(.data$conf_low, digits), " ; ",
+                                                      round(.data$conf_high, digits), ")")),
+                  `Wald p value` = ifelse(is.na(.data$p_value_wald), "",
+                                          ifelse(round(.data$p_value_wald, digits_p) == 0, "< 0.001",
+                                                 as.character(round(.data$p_value_wald, digits_p)))),
+                  `LR p value` = ifelse(is.na(.data$p_value_lr), "",
+                                        ifelse(round(.data$p_value_lr, digits_p) == 0, "< 0.001",
+                                               as.character(round(.data$p_value_lr, digits_p))))
+                  # ,
+                  # n = .data$n, n.event = .data$n.event,
+                  # concordance = .data$concordance, r.squared = .data$r.squared,
+                  # AIC = .data$AIC, ph.assumption  = .data$ph.assumption
+        )
+
+    } else {
+      out <- out |>
+        # mutate(concordance = round(.data$concordance, digits),
+        #        r.squared = round(.data$r.squared, digits),
+        #        AIC = round(.data$AIC, digits),
+        #        ph.assumption = round(.data$ph.assumption, digits_p)) |>
+        transmute(Variable = .data$variable,
+                  HR = .data$group,
+                  `Estimate (95% CI)` = ifelse(is.na(.data$estimate) &
+                                                 is.na(.data$conf_low) &
+                                                 is.na(.data$conf_high),
+                                               "Reference",
+                                               paste0(round(.data$estimate, digits), " (",
+                                                      round(.data$conf_low, digits), " ; ",
+                                                      round(.data$conf_high, digits), ")")),
+                  `Wald p value` = ifelse(is.na(.data$p_value_wald), "",
+                                          ifelse(round(.data$p_value_wald, digits_p) == 0, "< 0.001",
+                                                 as.character(round(.data$p_value_wald, digits_p)))),
+                  `LR p value` = ifelse(is.na(.data$p_value_lr), "",
+                                        ifelse(round(.data$p_value_lr, digits_p) == 0, "< 0.001",
+                                               as.character(round(.data$p_value_lr, digits_p))))
+                  # ,
+                  # n = .data$n, n.event = .data$n.event,
+                  # concordance = .data$concordance, r.squared = .data$r.squared,
+                  # AIC = .data$AIC, ph.assumption  = .data$ph.assumption
+        )
+    }
+
   }
 
   if (save){
@@ -231,7 +262,7 @@ fit_simple_cox <- function(data_model, strata_var,
                            var_label){
 
   if (any(is.na(data_model)))
-    strata_var <- strata_var[-which(is.na(data), arr.ind = TRUE)[, 1]]
+    strata_var <- strata_var[-which(is.na(data_model), arr.ind = TRUE)[, 1]]
 
   data_model <- na.exclude(data_model)
 
@@ -373,20 +404,41 @@ nt_multiple_cox <- function(fit,
   ref <- reference_df(fit)$ref
 
   if (format){
-    out$effect <-  out$effect |>
-    transmute(Variable = .data$variable, HR = .data$hr,
-              `Estimate (95% CI)` = ifelse(is.na(.data$estimate),
-                                           "Reference",
-                                           paste0(round(.data$estimate, digits), " (",
-                                                  round(.data$conf_low, digits), " ; ",
-                                                  round(.data$conf_high, digits), ")")),
-              `Wald p value` = ifelse(is.na(.data$p_value_wald), "",
-                                      ifelse(round(.data$p_value_wald, digits_p) == 0, "< 0.001",
-                                             as.character(round(.data$p_value_wald, digits_p)))),
-              `LR p value` = ifelse(is.na(.data$p_value_lr), "",
-                                    ifelse(round(.data$p_value_lr, digits_p) == 0, "< 0.001",
-                                           as.character(round(.data$p_value_lr, digits_p))))) |>
-    replace_na(list(`p value` = ""))
+
+    if (!table_reference){
+      out$effect <-  out$effect |>
+        transmute(Variable = .data$variable, HR = .data$hr,
+                  `Estimate (95% CI)` = ifelse(is.na(.data$estimate),
+                                               "Reference",
+                                               paste0(round(.data$estimate, digits), " (",
+                                                      round(.data$conf_low, digits), " ; ",
+                                                      round(.data$conf_high, digits), ")")),
+                  `Wald p value` = ifelse(is.na(.data$p_value_wald), "",
+                                          ifelse(round(.data$p_value_wald, digits_p) == 0, "< 0.001",
+                                                 as.character(round(.data$p_value_wald, digits_p)))),
+                  `LR p value` = ifelse(is.na(.data$p_value_lr), "",
+                                        ifelse(round(.data$p_value_lr, digits_p) == 0, "< 0.001",
+                                               as.character(round(.data$p_value_lr, digits_p))))) |>
+        replace_na(list(`p value` = ""))
+
+    } else {
+
+      out$effect <-  out$effect |>
+        transmute(Variable = .data$variable, Group = .data$hr,
+                  `HR (95% CI)` = ifelse(is.na(.data$estimate),
+                                               "Reference",
+                                               paste0(round(.data$estimate, digits), " (",
+                                                      round(.data$conf_low, digits), " ; ",
+                                                      round(.data$conf_high, digits), ")")),
+                  `Wald p value` = ifelse(is.na(.data$p_value_wald), "",
+                                          ifelse(round(.data$p_value_wald, digits_p) == 0, "< 0.001",
+                                                 as.character(round(.data$p_value_wald, digits_p)))),
+                  `LR p value` = ifelse(is.na(.data$p_value_lr), "",
+                                        ifelse(round(.data$p_value_lr, digits_p) == 0, "< 0.001",
+                                               as.character(round(.data$p_value_lr, digits_p))))) |>
+        replace_na(list(`p value` = ""))
+    }
+
 
   if (!is.null(labels)){
     aux_labels <- labels
