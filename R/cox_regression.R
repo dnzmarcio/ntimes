@@ -172,7 +172,7 @@ nt_simple_cox <- function(data, time, status, ...,
                   `Estimate (95% CI)` = ifelse(is.na(.data$estimate) &
                                                  is.na(.data$conf_low) &
                                                  is.na(.data$conf_high),
-                                               "Reference",
+                                               NA,
                                                paste0(round(.data$estimate, digits), " (",
                                                       round(.data$conf_low, digits), " ; ",
                                                       round(.data$conf_high, digits), ")")),
@@ -307,7 +307,7 @@ fit_simple_cox <- function(data_model, strata_var,
 
     temp <- data.frame(term = temp$label, contrast)
 
-    if (length(label_index) == 0)
+    if (table_reference & length(label_index) == 0)
       temp[1:2, 6] <- temp[2:1, 6]
 
     if (i > 1)
