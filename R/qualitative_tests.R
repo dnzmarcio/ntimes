@@ -60,8 +60,8 @@ dist_ql_tg <-  function(var, group,
       alt <- switch(alternative,
                     "greater" = ">",
                     "less" = "<",
-                    "two.sided" = "!=")
-      hypothesis <- paste(lg[2], "=", lg[1])
+                    "two.sided" = " \u2260 ")
+      hypothesis <- paste(lg[2], alt, lg[1])
     }
 
   } else {
@@ -77,7 +77,7 @@ dist_ql_tg <-  function(var, group,
 
   out <- data.frame(Variable = var_label,
                     Group = group_label,
-                    Hypothesis = hypothesis,
+                    `Alternative Hypothesis` = hypothesis,
                     Lower = round(lower, digits_ci),
                     Upper = round(upper, digits_ci),
                     Test = test,
@@ -127,7 +127,7 @@ dist_ql_mg <-  function(var, group,
   hypothesis <- "Association"
 
   out <- data.frame(Variable = var_label[[1]], Group = group_label[[1]],
-                    Hypothesis = hypothesis,  Test = test,
+                    `Alternative Hypothesis` = hypothesis,  Test = test,
                     `p value` =  round(p_value, digits_p))
 
   return(out)
@@ -148,7 +148,7 @@ dist_ql_mc <-  function(var, group, alternative, contrast,
   test <- paste(contrast)
   dif <- as.character(rownames(sm[2]$linfct))
   alt <- switch(alternative,
-                "two.sided" = " != ",
+                "two.sided" = " \u2260 ",
                 "greater" = " < ",
                 "less" = " > ")
   hypothesis <- gsub(" - ", alt, dif)
@@ -159,7 +159,7 @@ dist_ql_mc <-  function(var, group, alternative, contrast,
   upper <- round(exp(confint(mc)$confint[, 3]), digits_ci)
 
   out <- data.frame(Variable = var_label, Group = group_label,
-                    Hypothesis = hypothesis, Lower = lower, Upper = upper,
+                    `Alternative Hypothesis` = hypothesis, Lower = lower, Upper = upper,
                     Test = test, `p value` = p_value)
 
   return(out)

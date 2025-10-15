@@ -82,7 +82,7 @@ dist_qt_tg <-  function(var, var_label, group, group_label,
 
   out <- data.frame(Variable = var_label,
                     Group = group_label,
-                    Hypothesis = hypothesis,
+                    `Alternative Hypothesis` = hypothesis,
                     Lower = round(lower, digits_ci),
                     Upper = round(upper, digits_ci),
                     Test = test,
@@ -141,7 +141,7 @@ dist_qt_mg <-  function(var, group,
   }
 
   out <- data.frame(Variable = var_label, Group = group_label,
-                    Hypothesis = hypothesis, Test = test,
+                    `Alternative Hypothesis` = hypothesis, Test = test,
                     p_value =round(p_value, digits_p))
 
   return(out)
@@ -217,7 +217,7 @@ dist_qt_mc <-  function(var, omnibus_test, group,
     }
 
     out <- data.frame(Variable = var_label, Group = group_label,
-                      Hypothesis = hypothesis, Lower = lower, Upper = upper,
+                      `Alternative Hypothesis` = hypothesis, Lower = lower, Upper = upper,
                       Test = test, p_value)
 
   }
