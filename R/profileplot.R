@@ -163,20 +163,37 @@ std_profileplot <- function(var, time, var.label, time.label, ...){
     na.exclude() |>
     group_by(time) |>
     summarize(mean = mean(var, na.rm = TRUE),
-              se = sd(var, na.rm = TRUE)/sqrt(n()))
+              se = sd(var, na.rm = TRUE)/sqrt(n()),
+              n = n()) |>
+    mutate(group = as.factor(group))
 
 
   ### Basic Plot
-  out <- ggplot(dp, aes(x = .data$time, y = .data$mean)) +
+  aux <- ggplot(dp, aes(x = .data$time, y = .data$mean)) +
     geom_point(position = position_dodge(0.05)) +
     geom_errorbar(aes(ymin = .data$mean-.data$se,
                       ymax = .data$mean+.data$se), width=.2,
                   position = position_dodge(0.05))
 
   ### Formatting
-  out <- out +
+  plot <- aux +
     labs(y = var.label, x = time.label) +
     theme_classic()
+
+  ### Sample Size table
+  colors <- unique(ggplot_build(plot)$data[[1]]["colour"])
+
+  n_table <- ggplot(dp, aes(x = time, y = 1)) +
+    geom_text(aes_string(label = "n"), size = 3.5)  +
+    theme_classic() +
+    labs(x = "Time (days)", y = "", title = "Sample Size") +
+    theme(title = element_text(size = 9),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          strip.background = element_blank(),
+          strip.text = element_blank())
+
+  out <- list(plot = plot, n_table = n_table)
 
   return(out)
 }
@@ -208,10 +225,12 @@ std_profileplot_group <- function(var, time, group,
     na.exclude() |>
     group_by(group, time) |>
     summarize(mean = mean(var, na.rm = TRUE),
-              se = sd(var, na.rm = TRUE)/sqrt(n()))
+              se = sd(var, na.rm = TRUE)/sqrt(n()),
+              n = n()) |>
+    mutate(group = as.factor(group))
 
   ### Basic plot
-  out <- ggplot(dp, aes(x = .data$time, color = .data$group, y = .data$mean)) +
+  aux <- ggplot(dp, aes(x = .data$time, color = .data$group, y = .data$mean)) +
     geom_point(position = position_dodge(0.05)) +
     geom_line(aes(group = group),
               position = position_dodge(0.05)) +
@@ -220,10 +239,28 @@ std_profileplot_group <- function(var, time, group,
                   position = position_dodge(0.05))
 
   ### Formatting
-  out <- out + labs(y = var.label, x = time.label) +
+  plot <- aux + labs(y = var.label, x = time.label) +
     theme_classic() +
     theme(legend.position = "top") +
     scale_color_discrete(group.label)
+
+  ### Sample Size table
+  colors <- unique(ggplot_build(plot)$data[[1]]["colour"])
+
+  n_table <- ggplot(dp, aes(x = time, y = group)) +
+    geom_text(aes_string(label = "n"), size = 3.5)  +
+    theme_classic() +
+    labs(x = "Time (days)", y = "", title = "Sample Size") +
+    scale_y_discrete(labels = rep("-", nlevels(dp$group)))  +
+    theme(title = element_text(size = 9),
+          axis.text.y = element_text(colour = colors[[1]],
+                                     face = "bold",
+                                     size = 48,
+                                     vjust = 0.3),
+          axis.ticks.y = element_blank(),
+          strip.background = element_blank())
+
+  out <- list(plot = plot, n_table = n_table)
 
   return(out)
 }
