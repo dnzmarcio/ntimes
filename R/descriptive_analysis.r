@@ -112,25 +112,31 @@ aux_describe <- function(var, var.name, var.label,
     }
   }
 
-  if (is.numeric(var)){
-    out <- describe_quantitative(var = var,
-                                 group = group,
-                                 digits = digits,
-                                 var.label = var.label,
-                                 group.label = group.label,
-                                 measures_qt = measures_qt,
-                                 ...)
+  if (!all(is.na(var))) {
+    if (is.numeric(var)){
+      out <- describe_quantitative(var = var,
+                                   group = group,
+                                   digits = digits,
+                                   var.label = var.label,
+                                   group.label = group.label,
+                                   measures_qt = measures_qt,
+                                   ...)
+    } else {
+      out <- describe_qualitative(var = var,
+                                  group = group,
+                                  digits = digits,
+                                  var.label = var.label,
+                                  group.label = group.label,
+                                  measures_ql = measures_ql,
+                                  ...)
+
+
+    }
   } else {
-    out <- describe_qualitative(var = var,
-                                group = group,
-                                digits = digits,
-                                var.label = var.label,
-                                group.label = group.label,
-                                measures_ql = measures_ql,
-                                ...)
-
-
+    out <- NULL
+    warning(paste0(var.label, " has only NA values and was not summarized."))
   }
+
   return(out)
 }
 
