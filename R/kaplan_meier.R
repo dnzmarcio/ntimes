@@ -60,7 +60,7 @@ nt_km <-  function(data, time, status, labels = NULL,
                    save = FALSE, fig_height = 5, fig_width = 7,
                    std_fun = std_km,
                    std_fun_group = std_km_group,
-                   std_survival_table = std_get_survival_table,
+                   std_survival_table = NULL,
                    format = TRUE, digits = 2,
                    file = "survival", where = NULL,
                    ...) {
@@ -87,7 +87,7 @@ nt_km <-  function(data, time, status, labels = NULL,
                      base_size = base_size,
                      time_points = time_points,
                      risk_table = risk_table,
-                     survival_table = survival_table, ...)
+                     survival_table = std_survival_table, ...)
   tab$overall <- tab_km(time, status, time_points, digits = digits)
 
   if(save)
@@ -112,7 +112,7 @@ nt_km <-  function(data, time, status, labels = NULL,
                  base_size = base_size,
                  time_points = time_points,
                  risk_table = risk_table,
-                 survival_table = survival_table,
+                 survival_table = std_survival_table,
                  fig_height = fig_height, fig_width = fig_width,
                  save = save, where = where, std_fun_group = std_fun_group,
                  ... = ...)
@@ -166,8 +166,14 @@ nt_km <-  function(data, time, status, labels = NULL,
 
       tab$overall <- tab$overall |> select(-.data$Group)
 
-      aux <- bind_rows(tab) |>
-        select(Variable, Group, Time, `Median (95% CI)`)
+      if (is.null(time_points)){
+        aux <- bind_rows(tab) |>
+          select(Variable, Group, `Median (95% CI)`)
+      } else {
+        aux <- bind_rows(tab) |>
+          select(Variable, Group, Time, `Median (95% CI)`)
+      }
+
     }
   }
 
