@@ -14,11 +14,13 @@
 #'should be saved as a jpeg file.
 #'@param fig_height a numeric value indicating the height (in) of the file.
 #'@param fig_width a numeric value indicating the width (in) of the file.
-#'@param std_fun a function to plot a barplot when \code{group = NULL}.
-#'It must follow the same structure of \code{\link{std_barplot}}.
-#'@param std_fun_group a function to plot a dotplot when \code{group}
+#'@param std_fun a function to plot Kaplan-Meier curves when \code{group = NULL}.
+#'It must follow the same structure of \code{\link{std_km}}.
+#'@param std_fun_group a function to plot Kaplan-Meier curves when \code{group}
 #'is provided. It must follow the same structure of
-#'\code{\link{std_barplot_group}}.
+#'\code{\link{std_km_group}}.
+#'@param std_survival_table a function to calculate a table to be plotted.
+#'See \code{\link{get_survival_table}}.
 #'@param format a logical value indicating whether the output should be formatted.
 #'@param digits a numerical value defining of digits to present the results.
 #'@param file a character indicating the name of output file in csv format to be saved.
@@ -60,7 +62,7 @@ nt_km <-  function(data, time, status, labels = NULL,
                    save = FALSE, fig_height = 5, fig_width = 7,
                    std_fun = std_km,
                    std_fun_group = std_km_group,
-                   std_survival_table = NULL,
+                   std_survival_table = get_survival_table(),
                    format = TRUE, digits = 2,
                    file = "survival", where = NULL,
                    ...) {

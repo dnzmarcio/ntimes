@@ -20,7 +20,7 @@ nt_km(
   fig_width = 7,
   std_fun = std_km,
   std_fun_group = std_km_group,
-  std_survival_table = std_get_survival_table,
+  std_survival_table = get_survival_table(),
   format = TRUE,
   digits = 2,
   file = "survival",
@@ -52,12 +52,15 @@ should be saved as a jpeg file.}
 
 \item{fig_width}{a numeric value indicating the width (in) of the file.}
 
-\item{std_fun}{a function to plot a barplot when \code{group = NULL}.
-It must follow the same structure of \code{\link{std_barplot}}.}
+\item{std_fun}{a function to plot Kaplan-Meier curves when \code{group = NULL}.
+It must follow the same structure of \code{\link{std_km}}.}
 
-\item{std_fun_group}{a function to plot a dotplot when \code{group}
+\item{std_fun_group}{a function to plot Kaplan-Meier curves when \code{group}
 is provided. It must follow the same structure of
-\code{\link{std_barplot_group}}.}
+\code{\link{std_km_group}}.}
+
+\item{std_survival_table}{a function to calculate a table to be plotted.
+See \code{\link{get_survival_table}}.}
 
 \item{format}{a logical value indicating whether the output should be formatted.}
 
