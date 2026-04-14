@@ -21,11 +21,12 @@ helper_mean_sd <- function(var, digits, ...){
 
   mean <- format(round(mean(var, na.rm = TRUE), digits), nsmall = digits)
   sd <- format(round(sd(var, na.rm = TRUE), digits), nsmall = digits)
-  name <- paste0("\t Mean", " \U00b1 ", "SD")
+  name <- paste0("\u00A0 Mean", " \U00b1 ", "SD")
   value <- paste0(mean, " \U00b1 ", sd)
   out <- list(name = name, value = value)
   return(out)
 }
+
 
 #'Median with first and third quantiles
 #'
@@ -54,7 +55,7 @@ helper_median_iqr <- function(var, digits, ...){
                 nsmall = digits)
   q75 <- format(round(quantile(var, probs = 0.75, na.rm = TRUE), digits),
                 nsmall = digits)
-  name <- "\t Median (Q25% ; Q75%)"
+  name <- "\u00A0 Median (Q25% ; Q75%)"
   value <- paste0(median," (", q25, " ; ", q75, ")")
   out <- list(name = name, value = value)
   return(out)
@@ -88,7 +89,7 @@ helper_median_range <- function(var, digits, ...){
                 nsmall = digits)
   max <- format(round(max(var, na.rm = TRUE), digits),
                 nsmall = digits)
-  name <- "\t Median (Min ; Max)"
+  name <- "\u00A0 Median (Min ; Max)"
   value <- paste0(median," (", min, " ; ", max, ")")
   out <- list(name = name, value = value)
   return(out)
@@ -112,7 +113,7 @@ helper_missing <- function(var, ...){
 
   ldots <- list(...)
 
-  out <- list(name = "\t Missing",
+  out <- list(name = "\u00A0 Missing",
               value = sum(is.na(var)))
 
   return(out)
@@ -154,7 +155,7 @@ helper_perc_count <- function(var, digits, ...){
     perc_count <- c(perc_count, sum(is.na(h)))
   }
 
-  lh <- paste0("\t ", lh)
+  lh <- paste0("\u00A0 ", lh)
 
   out <- list(name = lh, value = perc_count)
 }
@@ -195,7 +196,7 @@ helper_count_perc <- function(var, digits, ...){
     perc_count <- c(perc_count, sum(is.na(h)))
   }
 
-  lh <- paste0("\t ", lh)
+  lh <- paste0("\u00A0 ", lh)
 
   out <- list(name = lh, value = perc_count)
 }
