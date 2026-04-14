@@ -7,6 +7,7 @@
 nt_describe(
   data,
   group = NULL,
+  strata = NULL,
   labels = NULL,
   measures_qt = list(helper_mean_sd, helper_median_iqr, helper_median_range,
     helper_missing),
@@ -21,6 +22,8 @@ nt_describe(
 \item{data}{a data frame with the variables.}
 
 \item{group}{a character value indicating the group variable.}
+
+\item{strata}{a character value indicating the strata variable.}
 
 \item{labels}{a list of labels with components given by their variable names.}
 
@@ -38,6 +41,7 @@ nt_describe(
 }
 \value{
 a data frame with summary for all variables by group.
+When \code{strata} is provided, a list of data frame with summarized statistics is the output.
 }
 \description{
 It calculates a descriptive table for quantitative and
@@ -49,7 +53,7 @@ median (minimum - maximum) and number of missing observations are calculated usi
 functions \code{\link[ntimes]{helper_mean_sd}}, \code{\link[ntimes]{helper_median_iqr}},
 \code{\link[ntimes]{helper_median_range}} and \code{\link[ntimes]{helper_missing}}.
 For qualitative variables, percentage (frequency) is calculated using
-\code{\link[ntimes]{helper_perc_count}}.
+\code{\link[ntimes]{helper_perc_count}} or \code{\link[ntimes]{helper_count_perc}}.
 }
 \examples{
 data(iris)
