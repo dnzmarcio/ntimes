@@ -263,7 +263,7 @@ contrast_calc <- function(fit, fit0 = NULL, design_matrix, beta, beta_var, type)
     K <- matrix(K, nrow = 1)
   test <- glht(fit, linfct = K)
 
-  sm <- summary(test)
+  sm <- summary(test, test = unadjusted())
   p_value_wald <- sm$test$pvalues
   ci <- confint(test)$confint
   p_value_lr <- 1 - pchisq(-2*(logLik(fit0)[[1]] - logLik(fit)[[1]]),
