@@ -44,8 +44,13 @@
 #'                                     labels = c("Female", "Male")),
 #'                        ph.ecog = as.factor(ph.ecog)) |>
 #'                        select(sex, ph.ecog, time, status)
-#'lung_nt |> nt_km(time = time, status = status,
+#'test <- lung_nt |> nt_km(time = time, status = status,
 #'                  labels = list(sex = "Sex", ph.ecog = "ECOG"))
+#'
+#'# To plot Kaplan-Meier curves with median survival time tables on the plot
+#'test <- lung_nt |> nt_km(time = time, status = status,
+#'                  labels = list(sex = "Sex", ph.ecog = "ECOG"),
+#'                  std_survival_table = get_survival_table)
 #'
 #'@import ggplot2
 #'@importFrom rlang enquo .data
@@ -58,11 +63,11 @@ nt_km <-  function(data, time, status, labels = NULL,
                    xlab = "Time", ylab = "Survival",
                    base_size = 20,
                    time_points = NULL,
-                   risk_table = TRUE, survival_table = NULL,
+                   risk_table = TRUE,
                    save = FALSE, fig_height = 5, fig_width = 7,
                    std_fun = std_km,
                    std_fun_group = std_km_group,
-                   std_survival_table = get_survival_table(),
+                   std_survival_table = NULL,
                    format = TRUE, digits = 2,
                    file = "survival", where = NULL,
                    ...) {
