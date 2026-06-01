@@ -109,7 +109,7 @@ nt_compare_tg <- function(data, group, labels = NULL,
     out <- out |> mutate('95% CI' =
                             paste0("(", .data$Lower, " ; ",
                                    .data$Upper, ")")) |>
-      select(.data$Variable, .data$Group, .data$Hypothesis,
+      select(.data$Variable, .data$Group, `Alternative Hypothesis` = .data$Alternative.Hypothesis,
              .data$Test, .data$`95% CI`, `p value` = .data$`p_value`)
   }
 
